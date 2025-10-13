@@ -1,0 +1,80 @@
+cabal-version: 3.0
+name: dashi
+version: 0.1.0.0
+synopsis: Tasty Haskell design system
+homepage: https://github.com/ners/dashi/blob/master/README.md
+license: Apache-2.0
+license-file: LICENCE.md
+author: ners
+maintainer: ners@gmx.ch
+bug-reports: https://github.com/ners/dashi/issues
+category: System
+build-type: Simple
+extra-source-files:
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type: git
+  location: https://github.com/ners/dashi
+
+common wasm
+  if arch(wasm32)
+    ghc-options:
+      -no-hs-main -optl-mexec-model=reactor "-optl-Wl,--export=hs_start"
+    cpp-options:
+      -DWASM
+
+common common
+  default-language: GHC2021
+  ghc-options:
+    -Weverything
+    -Wno-unsafe
+    -Wno-missing-safe-haskell-mode
+    -Wno-missing-export-lists
+    -Wno-missing-import-lists
+    -Wno-missing-kind-signatures
+    -Wno-all-missed-specialisations
+
+  default-extensions:
+    ApplicativeDo
+    BlockArguments
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveGeneric
+    DerivingStrategies
+    DerivingVia
+    ExplicitNamespaces
+    LambdaCase
+    NoImplicitPrelude
+    OverloadedLabels
+    OverloadedRecordDot
+    OverloadedStrings
+    RecordWildCards
+    RecursiveDo
+    StrictData
+    TypeFamilies
+    ViewPatterns
+
+  build-depends:
+    base,
+    bytestring,
+    clay,
+    generic-lens,
+    lens,
+    miso,
+    text,
+
+library
+  import: common
+  hs-source-dirs: lib
+  exposed-modules:
+    Dashi
+  build-depends:
+
+executable dashi
+  import: wasm, common
+  hs-source-dirs: app
+  main-is: Main.hs
+  build-depends:
