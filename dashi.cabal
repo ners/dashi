@@ -61,20 +61,32 @@ common common
     base,
     bytestring,
     clay,
+    containers,
+    fluent-bundle,
     generic-lens,
     lens,
     miso,
     text,
+    web-font-mdi,
 
 library
   import: common
   hs-source-dirs: lib
   exposed-modules:
     Dashi
+    Dashi.Components.Button
+    Dashi.Components.Icon
+    Dashi.Components.Spinner
+    Dashi.Style
+    Dashi.Style.Root
+    Dashi.Style.Tokens
+    Dashi.Style.Util
   build-depends:
+    aeson,
 
 executable dashi
   import: wasm, common
   hs-source-dirs: app
   main-is: Main.hs
   build-depends:
+    dashi

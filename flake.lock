@@ -172,6 +172,27 @@
         "type": "github"
       }
     },
+    "fluent-hs": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "syntax": "syntax"
+      },
+      "locked": {
+        "lastModified": 1760465597,
+        "narHash": "sha256-TKkCmS/YblVsnXIZnV4lfd5yAoDkFb+OeXGxeh0O02c=",
+        "owner": "ners",
+        "repo": "fluent-hs",
+        "rev": "796a2d6e15b07e71ae668f4d123d9cf0f7ed4ef9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ners",
+        "repo": "fluent-hs",
+        "type": "github"
+      }
+    },
     "ghc-8.6.5-iohk": {
       "flake": false,
       "locked": {
@@ -189,6 +210,22 @@
         "type": "github"
       }
     },
+    "ghc-source-gen": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1756483870,
+        "narHash": "sha256-5COVWnTkTepuUfEyC8hKDFDm5zCajFWbSU78Uctdlvo=",
+        "owner": "google",
+        "repo": "ghc-source-gen",
+        "rev": "42d650d3b62c6bc4e3d33d1abc91e3e60f446941",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google",
+        "repo": "ghc-source-gen",
+        "type": "github"
+      }
+    },
     "ghc-wasm-meta": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -198,11 +235,11 @@
       },
       "locked": {
         "host": "gitlab.haskell.org",
-        "lastModified": 1760287738,
-        "narHash": "sha256-ANjdq3byCVpTUXotTWPJgzbLEYj4OIYPXtCW2oKLdrA=",
+        "lastModified": 1760424736,
+        "narHash": "sha256-U7xNOefolVBeKO1PV15XBZXiYJiNE7GaxAYMysQ8OCU=",
         "owner": "haskell-wasm",
         "repo": "ghc-wasm-meta",
-        "rev": "dc1d273e1356c04f70d5b442645e567dd1ce92f0",
+        "rev": "5a37baa8ff6aa63491de6425aefe783258e0f019",
         "type": "gitlab"
       },
       "original": {
@@ -577,6 +614,40 @@
         "type": "github"
       }
     },
+    "mdi": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1737338259,
+        "narHash": "sha256-QMGl7soAhErrrnY3aKOZpt49yebkSNzy10p/v5OaqQ0=",
+        "owner": "Templarian",
+        "repo": "MaterialDesign",
+        "rev": "2424e748e0cc63ab7b9c095a099b9fe239b737c0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Templarian",
+        "repo": "MaterialDesign",
+        "type": "github"
+      }
+    },
+    "mdi-webfont": {
+      "flake": false,
+      "locked": {
+        "dir": "fonts",
+        "lastModified": 1703636765,
+        "narHash": "sha256-xVhKiAJy/2JaP6HEatzpuDwCbFSvPiIhdhM2csMDFbI=",
+        "owner": "Templarian",
+        "repo": "MaterialDesign-Webfont",
+        "rev": "57b567a448bd579892174cd47c47f9e187ea56c6",
+        "type": "github"
+      },
+      "original": {
+        "dir": "fonts",
+        "owner": "Templarian",
+        "repo": "MaterialDesign-Webfont",
+        "type": "github"
+      }
+    },
     "miso": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -590,11 +661,11 @@
         "servant": "servant"
       },
       "locked": {
-        "lastModified": 1760332289,
-        "narHash": "sha256-ke1/gClB+VlfG+xTG8+L72/Nra8ThBYjvzBvvQyMYAo=",
+        "lastModified": 1760573195,
+        "narHash": "sha256-2z0pVqdVjQjj0pWNNLzaicn1QrYHLRYWdZ+glkWRF+g=",
         "owner": "dmjio",
         "repo": "miso",
-        "rev": "ed4bf1b5d82f27374bc692b549255cce9fe5f19d",
+        "rev": "a0cd665e29f08f990b366da75495d0dbb903eed4",
         "type": "github"
       },
       "original": {
@@ -724,11 +795,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1760284886,
-        "narHash": "sha256-TK9Kr0BYBQ/1P5kAsnNQhmWWKgmZXwUQr4ZMjCzWf2c=",
+        "lastModified": 1760524057,
+        "narHash": "sha256-EVAqOteLBFmd7pKkb0+FIUyzTF61VKi7YmvP1tw4nEw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "cf3f5c4def3c7b5f1fc012b3d839575dbe552d43",
+        "rev": "544961dfcce86422ba200ed9a0b00dd4b1486ec5",
         "type": "github"
       },
       "original": {
@@ -757,10 +828,37 @@
     },
     "root": {
       "inputs": {
+        "fluent-hs": "fluent-hs",
+        "ghc-source-gen": "ghc-source-gen",
         "ghc-wasm-meta": "ghc-wasm-meta",
+        "mdi": "mdi",
+        "mdi-webfont": "mdi-webfont",
         "miso": "miso",
         "nix-wasm": "nix-wasm",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "web-font-mdi": "web-font-mdi"
+      }
+    },
+    "semi-iso": {
+      "inputs": {
+        "nixpkgs": [
+          "fluent-hs",
+          "syntax",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1760465104,
+        "narHash": "sha256-Cit2tXFeEv7EhAQ7xYwR++AobYrP+fDlqYgHEDlHrvI=",
+        "owner": "ners",
+        "repo": "semi-iso",
+        "rev": "27b845c5209f59bf8d3ed75ec3ced668e8415989",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ners",
+        "repo": "semi-iso",
+        "type": "github"
       }
     },
     "servant": {
@@ -796,6 +894,28 @@
       "original": {
         "owner": "input-output-hk",
         "repo": "stackage.nix",
+        "type": "github"
+      }
+    },
+    "syntax": {
+      "inputs": {
+        "nixpkgs": [
+          "fluent-hs",
+          "nixpkgs"
+        ],
+        "semi-iso": "semi-iso"
+      },
+      "locked": {
+        "lastModified": 1760465267,
+        "narHash": "sha256-w8a6W+XBbXqB2xU+LVcFx0JRy1cGDFRP1eHSzg6FIyw=",
+        "owner": "ners",
+        "repo": "syntax",
+        "rev": "a543a749281dbe378e19aa7cc21bef761c0b3090",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ners",
+        "repo": "syntax",
         "type": "github"
       }
     },
@@ -856,6 +976,29 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "web-font-mdi": {
+      "inputs": {
+        "mdi": [
+          "mdi"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1760476982,
+        "narHash": "sha256-cAI06jFZMVpOGc1ST6QE13UcgSQCDVk2IFZNPnZW4yo=",
+        "owner": "ners",
+        "repo": "web-font-mdi",
+        "rev": "d27445551da07b18c6d300e81d23c4658a43cc53",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ners",
+        "repo": "web-font-mdi",
         "type": "github"
       }
     }

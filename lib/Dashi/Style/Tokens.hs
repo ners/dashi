@@ -1,0 +1,180 @@
+{-# OPTIONS_GHC -Wno-term-variable-capture #-}
+
+module Dashi.Style.Tokens where
+
+import Clay
+import Data.List qualified as List
+import Data.Maybe (fromJust)
+import Data.Sequence (Seq)
+import Data.Sequence qualified as Seq
+import Data.String (IsString (fromString))
+import Data.Text (Text)
+import Prelude hiding (rem)
+
+class Token t where
+    tokenName :: (IsString s) => t -> s
+    allTokens :: [t]
+    default allTokens :: (Bounded t, Enum t) => [t]
+    allTokens = [minBound .. maxBound]
+
+class (Token t) => ValueToken t where
+    type ValueType t
+    tokenValue :: t -> ValueType t
+
+data SizeToken
+    = XSmall
+    | Small
+    | Medium
+    | Large
+    | XLarge
+    deriving stock (Eq, Ord, Bounded, Enum)
+
+instance Show SizeToken where
+    show XSmall = "xs"
+    show Small = "s"
+    show Medium = "m"
+    show Large = "l"
+    show XLarge = "xl"
+
+newtype Space = Space {spaceSize :: SizeToken}
+    deriving newtype (Eq, Ord, Bounded, Enum)
+
+instance Token Space where
+    tokenName = fromString . ("space-" <>) . show . spaceSize
+
+spaceEm :: SizeToken -> Number
+spaceEm = (0.5 *) . (2 ^) . fromEnum
+
+instance ValueToken Space where
+    type ValueType Space = Size LengthUnit
+    tokenValue = em . spaceEm . spaceSize
+
+newtype Radius = Radius {radiusSize :: SizeToken}
+    deriving newtype (Eq, Ord, Bounded, Enum)
+
+instance Token Radius where
+    tokenName = fromString . ("radius-" <>) . show . radiusSize
+
+instance ValueToken Radius where
+    type ValueType Radius = Size LengthUnit
+    tokenValue = em . (0.1 *) . (2 ^) . fromEnum . radiusSize
+
+data ElementState
+    = DefaultState
+    | HoveredState
+    | PressedState
+    deriving stock (Eq, Ord, Bounded, Enum)
+
+data Colour
+    = Text
+    | TextBrand
+    | TextDanger
+    | TextDisabled
+    | TextDiscovery
+    | TextInformation
+    | TextInverse
+    | TextSubtle
+    | TextSuccess
+    | TextWarning
+    | TextWarningInverse
+    | BackgroundDisabled
+    | BackgroundBrandBold ElementState
+    | BackgroundDangerBold ElementState
+    | BackgroundDiscoveryBold ElementState
+    | BackgroundNeutral ElementState
+    | BackgroundWarningBold ElementState
+    deriving stock (Eq, Ord)
+
+allColours :: Seq Colour
+allColours =
+    Seq.fromList $
+        [ Text
+        , TextBrand
+        , TextDanger
+        , TextDisabled
+        , TextDiscovery
+        , TextInformation
+        , TextInverse
+        , TextSubtle
+        , TextSuccess
+        , TextWarning
+        , TextWarningInverse
+        , BackgroundDisabled
+        ]
+            <> (BackgroundBrandBold <$> [minBound .. maxBound])
+            <> (BackgroundDangerBold <$> [minBound .. maxBound])
+            <> (BackgroundDiscoveryBold <$> [minBound .. maxBound])
+            <> (BackgroundNeutral <$> [minBound .. maxBound])
+            <> (BackgroundWarningBold <$> [minBound .. maxBound])
+
+instance Enum Colour where
+    toEnum :: Int -> Colour
+    toEnum = Seq.index allColours
+    fromEnum :: Colour -> Int
+    fromEnum = fromJust . flip Seq.elemIndexL allColours
+
+instance Bounded Colour where
+    minBound :: Colour
+    minBound = toEnum 0
+    maxBound :: Colour
+    maxBound = toEnum . pred $ Seq.length allColours
+
+instance Token Colour where
+    tokenName Text = "text"
+    tokenName TextBrand = "text-brand"
+    tokenName TextDanger = "text-danger"
+    tokenName TextDisabled = "text-disabled"
+    tokenName TextDiscovery = "text-discovery"
+    tokenName TextInformation = "text-information"
+    tokenName TextInverse = "text-inverse"
+    tokenName TextSubtle = "text-subtle"
+    tokenName TextSuccess = "text-success"
+    tokenName TextWarning = "text-warning"
+    tokenName TextWarningInverse = "text-warning-inverse"
+    tokenName BackgroundDisabled = "background-disabled"
+    tokenName (BackgroundBrandBold DefaultState) = "background-brand-bold"
+    tokenName (BackgroundBrandBold HoveredState) = "background-brand-bold-hovered"
+    tokenName (BackgroundBrandBold PressedState) = "background-brand-bold-pressed"
+    tokenName (BackgroundDangerBold DefaultState) = "background-danger-bold"
+    tokenName (BackgroundDangerBold HoveredState) = "background-danger-bold-hovered"
+    tokenName (BackgroundDangerBold PressedState) = "background-danger-bold-pressed"
+    tokenName (BackgroundDiscoveryBold DefaultState) = "background-discovery-bold"
+    tokenName (BackgroundDiscoveryBold HoveredState) = "background-discovery-bold-hovered"
+    tokenName (BackgroundDiscoveryBold PressedState) = "background-discovery-bold-pressed"
+    tokenName (BackgroundNeutral DefaultState) = "background-neutral"
+    tokenName (BackgroundNeutral HoveredState) = "background-neutral-hovered"
+    tokenName (BackgroundNeutral PressedState) = "background-neutral-pressed"
+    tokenName (BackgroundWarningBold DefaultState) = "background-warning-bold"
+    tokenName (BackgroundWarningBold HoveredState) = "background-warning-bold-hovered"
+    tokenName (BackgroundWarningBold PressedState) = "background-warning-bold-pressed"
+
+instance ValueToken Colour where
+    type ValueType Colour = Color
+    tokenValue Text = parse "#292A2E"
+    tokenValue TextBrand = parse "#1868DB"
+    tokenValue TextDanger = parse "#AE2E24"
+    tokenValue TextDiscovery = parse "#803FA5"
+    tokenValue TextInformation = parse "#1558BC"
+    tokenValue TextSuccess = parse "#292A2E"
+    tokenValue TextWarning = parse "#9E4C00"
+    tokenValue TextWarningInverse = parse "#292A2E"
+    tokenValue TextInverse = parse "#FFF"
+    tokenValue TextSubtle = parse "#505258"
+    tokenValue TextDisabled = rgba 8 15 33 0.3
+    tokenValue BackgroundDisabled = rgba 23 23 23 0.03
+    tokenValue (BackgroundNeutral st) = rgba 9 30 66 $ case st of
+        DefaultState -> 0.04
+        HoveredState -> 0.08
+        PressedState -> 0.14
+    tokenValue (BackgroundBrandBold DefaultState) = parse "#0052CC"
+    tokenValue (BackgroundBrandBold HoveredState) = parse "#0065FF"
+    tokenValue (BackgroundBrandBold PressedState) = parse "#0747A6"
+    tokenValue (BackgroundWarningBold DefaultState) = parse "#FBC828"
+    tokenValue (BackgroundWarningBold HoveredState) = parse "#FCA700"
+    tokenValue (BackgroundWarningBold PressedState) = parse "#F68909"
+    tokenValue (BackgroundDangerBold DefaultState) = parse "#C9372C"
+    tokenValue (BackgroundDangerBold HoveredState) = parse "#AE2E24"
+    tokenValue (BackgroundDangerBold PressedState) = parse "#5D1F1A"
+    tokenValue (BackgroundDiscoveryBold DefaultState) = parse "#964AC0"
+    tokenValue (BackgroundDiscoveryBold HoveredState) = parse "#803FA5"
+    tokenValue (BackgroundDiscoveryBold PressedState) = parse "#48245D"

@@ -1,0 +1,103 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
+module Dashi.Style.Root where
+
+import Clay hiding (fullWidth, var)
+import Clay qualified
+import Dashi.Style.Tokens
+import Dashi.Style.Tokens qualified as Tokens
+import Dashi.Style.Util
+import Data.Foldable (for_)
+import Data.Functor ((<&>))
+import Data.List qualified as List
+import Data.Semigroup (Semigroup (sconcat))
+import Data.String (fromString)
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Prelude hiding (div, not, rem, (**))
+
+varDecl' :: Text -> Value -> Css
+varDecl' n v = varName n ~: v
+
+varDecl :: (Val v) => Text -> v -> Css
+varDecl n = varDecl' n . value
+
+tokenDecl :: forall t. (ValueToken t, Val (ValueType t)) => Css
+tokenDecl = for_ (allTokens @t) \t -> varDecl (tokenName t) (tokenValue t)
+
+style :: Css
+style = do
+    ":root" ? do
+        varDecl @[Value]
+            "font-family-emoji"
+            [ "'Apple Color Emoji'"
+            , "'Segoe UI Emoji'"
+            , "'Segoe UI Symbol'"
+            , "'Noto Color Emoji'"
+            ]
+        varDecl @[Value]
+            "font-family-sans-serif"
+            [ "system-ui"
+            , "-apple-system"
+            , "BlinkMacSystemFont"
+            , "'Segoe UI'"
+            , "Roboto"
+            , "Oxygen"
+            , "Ubuntu"
+            , "'Fira Sans'"
+            , "'Droid Sans'"
+            , "'Helvetica Neue'"
+            , "sans-serif"
+            , var "font-family-emoji" []
+            ]
+        varDecl @[Value]
+            "font-family-monospace"
+            [ "ui-monospace"
+            , "SFMono-Regular"
+            , "'SF Mono'"
+            , "'Segou UI Mono'"
+            , "'Liberation Mono'"
+            , "'Ubuntu Mono'"
+            , "Menlo"
+            , "Consolas"
+            , "monospace"
+            , var "font-family-emoji" []
+            ]
+        varDecl "font-family" $ var @Value "font-family-sans-serif" []
+        varDecl "line-height" $ unitless 1.5
+        varDecl "font-weight" $ unitless 400
+        varDecl "font-size" $ pct 100
+        varDecl "text-underline-offset" $ rem 0.1
+        varDecl "border-color" $ parse "#0B120E24"
+        varDecl "border-radius" $ rem 0.25
+        varDecl "border-width" $ rem 0.0625
+        varDecl "outline-width" $ rem 0.125
+        varDecl "transition" $ ([value $ sec 0.2, value easeInOut] :: [Value])
+        tokenDecl @Space
+        tokenDecl @Radius
+        tokenDecl @Colour
+    star ? do
+        marginAll $ unitless 0
+        paddingAll $ unitless 0
+        fontFamily [] [inherit]
+        fontSize inherit
+        fontStyle inherit
+        fontWeight inherit
+        color inherit
+        textDecoration inherit
+        boxSizing borderBox
+        lineHeight inherit
+        "border" ~: none
+        "background" ~: none
+        disabled & do
+            important $ cursor notAllowed
+            important $ color' TextDisabled
+            important $ backgroundColor' BackgroundDisabled
+        ariaBusy True & do
+            cursor cursorProgress
+    html ? do
+        overflowX hidden
+        overflowY auto
+    body ? do
+        font $ var @Value "font-body" ["normal 400 14px/1.4 " <> var "font-family" []]
+        color $ token Text
