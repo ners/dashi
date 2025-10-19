@@ -5,3 +5,4 @@ result
 result-*
 *.woff2
 *.ico
+browser_wasi_shim

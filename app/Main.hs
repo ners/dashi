@@ -8,6 +8,7 @@ import Clay.Render qualified as Clay
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Icon qualified as Icon
 import Dashi.Components.Spinner qualified as Spinner
+import Dashi.Components.TextField qualified as TextField
 import Dashi.Style qualified as Style
 import Data.Maybe (maybeToList)
 import Data.String (IsString (fromString))
@@ -40,7 +41,7 @@ app = do
     initComponent
         { events = defaultEvents <> keyboardEvents
         , initialAction = Just Setup
-        , styles = [Style . fromString . LazyText.unpack . Clay.renderWith Clay.pretty [] $ Style.style]
+        , styles = [Style Style.styleStr]
         }
   where
     initComponent :: Component ROOT Model Action
@@ -65,4 +66,5 @@ appView model =
             | attr <- [class_ "", disabled_, aria_ "busy" "true"]
             ]
         , div_ [] [Icon.icon i [] | i <- take 100 [minBound .. maxBound]]
+        , TextField.textField [] "Field label"
         ]

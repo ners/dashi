@@ -61,17 +61,45 @@
     in
     foreach inputs.nixpkgs.legacyPackages (system: pkgs:
       let
-        staticAssets = pkgs.runCommand "static" { nativeBuildInputs = with pkgs; [ imagemagick inkscape ]; } ''
+        browser_wasi_shim = pkgs.buildNpmPackage (finalAttrs: {
+          pname = "browser_wasi_shim";
+          version = "0.4.2";
+          src = pkgs.fetchFromGitHub {
+            owner = "bjorn3";
+            repo = "browser_wasi_shim";
+            tag = "v${finalAttrs.version}";
+            hash = "sha256-okP2bT4rcqtwTk7eOdyC+DqoLACTS9srANgSEkjb06A=";
+          };
+          npmDepsHash = "sha256-5CUnps7UyX9U7ZRRaUy0t7lpXoOhFR8n7AEPTD0npF0=";
+          meta = {
+            description = "A pure javascript shim for WASI";
+            homepage = "https://github.com/bjorn3/browser_wasi_shim";
+            license = with lib.licenses; [ asl20 mit ];
+            maintainers = with lib.maintainers; [ ners ];
+          };
+        });
+        favicon = pkgs.runCommand "favicon.ico"
+          {
+            nativeBuildInputs = with pkgs; [
+              imagemagick
+              inkscape
+            ];
+          } ''
+          tmpPng="$(mktemp --suffix=.png)"
+          inkscape "${./.}/static/icon.svg" \
+            --export-width=64 \
+            --export-filename="$tmpPng"
+          convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
+          rm "$tmpPng"
+        '';
+        staticAssets = pkgs.runCommand "static" { } ''
           mkdir "$out"
           cd "$out"
           cp "${inputs.mdi-webfont}"/*.woff2 .
+          cp "${favicon}" favicon.ico
 
-          faviconSvg="${./.}/static/icon.svg"
-          faviconIco=favicon.ico
-          tmpPng=$(mktemp --suffix=.png)
-          inkscape "$faviconSvg" --export-width=64 --export-filename="$tmpPng"
-          convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$faviconIco"
-          rm "$tmpPng"
+          mkdir browser_wasi_shim
+          cp -r "${browser_wasi_shim}/lib/node_modules/@bjorn3/browser_wasi_shim/dist"/*.js browser_wasi_shim
         '';
         haskell-overlay = lib.composeManyExtensions [
           inputs.fluent-hs.overlays.haskell
@@ -116,7 +144,7 @@
           '';
         };
         legacyPackages.${system} = {
-          inherit haskellPackages wasmPackages;
+          inherit haskellPackages wasmPackages browser_wasi_shim favicon;
         };
         devShells.${system} = {
           default = haskellPackages.shellFor {

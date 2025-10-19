@@ -43,7 +43,7 @@ instance Token Space where
     tokenName = fromString . ("space-" <>) . show . spaceSize
 
 spaceEm :: SizeToken -> Number
-spaceEm = (0.5 *) . (2 ^) . fromEnum
+spaceEm = (0.4 *) . (1.75 ^) . fromEnum
 
 instance ValueToken Space where
     type ValueType Space = Size LengthUnit
@@ -77,6 +77,9 @@ data Colour
     | TextSuccess
     | TextWarning
     | TextWarningInverse
+    | Border
+    | BorderInput
+    | BackgroundInput ElementState
     | BackgroundDisabled
     | BackgroundBrandBold ElementState
     | BackgroundDangerBold ElementState
@@ -99,6 +102,8 @@ allColours =
         , TextSuccess
         , TextWarning
         , TextWarningInverse
+        , Border
+        , BorderInput
         , BackgroundDisabled
         ]
             <> (BackgroundBrandBold <$> [minBound .. maxBound])
@@ -106,6 +111,7 @@ allColours =
             <> (BackgroundDiscoveryBold <$> [minBound .. maxBound])
             <> (BackgroundNeutral <$> [minBound .. maxBound])
             <> (BackgroundWarningBold <$> [minBound .. maxBound])
+            <> (BackgroundInput <$> [minBound .. maxBound])
 
 instance Enum Colour where
     toEnum :: Int -> Colour
@@ -131,6 +137,8 @@ instance Token Colour where
     tokenName TextSuccess = "text-success"
     tokenName TextWarning = "text-warning"
     tokenName TextWarningInverse = "text-warning-inverse"
+    tokenName Border = "border-color"
+    tokenName BorderInput = "border-input-color"
     tokenName BackgroundDisabled = "background-disabled"
     tokenName (BackgroundBrandBold DefaultState) = "background-brand-bold"
     tokenName (BackgroundBrandBold HoveredState) = "background-brand-bold-hovered"
@@ -147,6 +155,9 @@ instance Token Colour where
     tokenName (BackgroundWarningBold DefaultState) = "background-warning-bold"
     tokenName (BackgroundWarningBold HoveredState) = "background-warning-bold-hovered"
     tokenName (BackgroundWarningBold PressedState) = "background-warning-bold-pressed"
+    tokenName (BackgroundInput DefaultState) = "input-background"
+    tokenName (BackgroundInput HoveredState) = "input-hover-background"
+    tokenName (BackgroundInput PressedState) = "input-pressed-background"
 
 instance ValueToken Colour where
     type ValueType Colour = Color
@@ -161,6 +172,8 @@ instance ValueToken Colour where
     tokenValue TextInverse = parse "#FFF"
     tokenValue TextSubtle = parse "#505258"
     tokenValue TextDisabled = rgba 8 15 33 0.3
+    tokenValue Border = parse "#0B120E24"
+    tokenValue BorderInput = parse "#8C8F97"
     tokenValue BackgroundDisabled = rgba 23 23 23 0.03
     tokenValue (BackgroundNeutral st) = rgba 9 30 66 $ case st of
         DefaultState -> 0.04
@@ -178,3 +191,6 @@ instance ValueToken Colour where
     tokenValue (BackgroundDiscoveryBold DefaultState) = parse "#964AC0"
     tokenValue (BackgroundDiscoveryBold HoveredState) = parse "#803FA5"
     tokenValue (BackgroundDiscoveryBold PressedState) = parse "#48245D"
+    tokenValue (BackgroundInput DefaultState) = parse "#FFF"
+    tokenValue (BackgroundInput HoveredState) = parse "#F8F8F8"
+    tokenValue (BackgroundInput PressedState) = parse "#FFF"

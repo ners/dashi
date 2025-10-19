@@ -8,13 +8,11 @@ import Clay.Property ()
 import Clay.Selector (Fix (In), Path (Elem), Refinement (Refinement), SelectorF (SelectorF))
 import Clay.Stylesheet (App (Root), Rule (Nested), key, rule, runS)
 import Dashi.Style.Tokens
-import Data.String (IsString (fromString))
+import Dashi.Util
+import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Prelude
-
-fromText :: (IsString s) => Text -> s
-fromText = fromString . Text.unpack
 
 self :: Selector
 self = ""
@@ -46,8 +44,8 @@ paddingAll = ("padding" ~::)
 borderRadiusAll :: Size a -> Css
 borderRadiusAll = ("border-radius" ~::)
 
-varName :: (IsString s) => Text -> s
-varName = fromText . ("--dashi-" <>)
+varName :: (IsString s, Semigroup s) => s -> s
+varName = ("--dashi-" <>)
 
 var :: (Val v, Other v) => Text -> [v] -> v
 var name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> ")"
@@ -91,6 +89,9 @@ backgroundColor' = backgroundColor . token
 
 paddingYX' :: SizeToken -> SizeToken -> Css
 paddingYX' y x = paddingYX (token $ Space y) (token $ Space x)
+
+paddingAll' :: SizeToken -> Css
+paddingAll' = paddingAll . token . Space
 
 borderRadiusAll' :: SizeToken -> Css
 borderRadiusAll' = borderRadiusAll . token . Radius

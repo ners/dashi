@@ -3,14 +3,12 @@ module Dashi.Components.Button where
 import Clay (label)
 import Clay hiding (action, label, var)
 import Dashi.Components.Spinner qualified as Spinner
+import Dashi.Components.Util
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Aeson qualified as Aeson
-import Data.List qualified as List
-import Data.Maybe (isJust)
 import Miso
 import Miso.Html (button_, label_)
-import Miso.Html.Property (aria_, class_)
+import Miso.Html.Property (class_)
 import Prelude
 
 data ButtonAppearance
@@ -47,24 +45,15 @@ data ComponentWidth
     | FullWidth
     deriving stock (Eq, Bounded, Enum)
 
-hasProperty :: MisoString -> Aeson.Value -> [Attribute action] -> Bool
-hasProperty k v =
-    isJust . List.find \case
-        Property k' v' -> k' == k && v' == v
-        _ -> False
-
-hasAria :: MisoString -> MisoString -> [Attribute action] -> Bool
-hasAria k = hasProperty ("aria-" <> k) . Aeson.String . fromMisoString
-
 button :: [Attribute action] -> MisoString -> View model action
 button attrs l =
     button_
         attrs
-        (label_ [] [text l] : if (hasAria "busy" "true" attrs) then [Spinner.view] else [])
+        (label_ [] [text l] : if (isAriaBusy attrs) then [Spinner.view] else [])
 
 style :: Css
 style = do
-    (Clay.button <> ".button") ? do
+    (Clay.button <> (input # "type='submit'") <> ".button") ? do
         clickable
         position relative
         display inlineFlex
@@ -72,7 +61,7 @@ style = do
         justifyContent center
         textAlign center
         verticalAlign middle
-        border (px 1) solid (var "border-color" [])
+        border (var "border-width" []) solid (token BorderInput)
         borderRadiusAll' Small
         paddingYX' XSmall Small
         fontWeight $ weight 500

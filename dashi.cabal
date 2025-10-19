@@ -77,10 +77,15 @@ library
     Dashi.Components.Button
     Dashi.Components.Icon
     Dashi.Components.Spinner
+    Dashi.Components.TextField
+    Dashi.Layout.Page
     Dashi.Style
     Dashi.Style.Root
     Dashi.Style.Tokens
+  other-modules:
+    Dashi.Components.Util
     Dashi.Style.Util
+    Dashi.Util
   build-depends:
     aeson,
 

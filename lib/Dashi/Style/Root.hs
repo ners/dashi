@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Dashi.Style.Root where
 
@@ -11,15 +12,15 @@ import Data.Foldable (for_)
 import Data.Functor ((<&>))
 import Data.List qualified as List
 import Data.Semigroup (Semigroup (sconcat))
-import Data.String (fromString)
+import Data.String (IsString, fromString)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Prelude hiding (div, not, rem, (**))
 
-varDecl' :: Text -> Value -> Css
+varDecl' :: Key Text -> Value -> Css
 varDecl' n v = varName n ~: v
 
-varDecl :: (Val v) => Text -> v -> Css
+varDecl :: (Val v) => Key Text -> v -> Css
 varDecl n = varDecl' n . value
 
 tokenDecl :: forall t. (ValueToken t, Val (ValueType t)) => Css
@@ -68,7 +69,6 @@ style = do
         varDecl "font-weight" $ unitless 400
         varDecl "font-size" $ pct 100
         varDecl "text-underline-offset" $ rem 0.1
-        varDecl "border-color" $ parse "#0B120E24"
         varDecl "border-radius" $ rem 0.25
         varDecl "border-width" $ rem 0.0625
         varDecl "outline-width" $ rem 0.125
