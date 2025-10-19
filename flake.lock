@@ -210,22 +210,6 @@
         "type": "github"
       }
     },
-    "ghc-source-gen": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1756483870,
-        "narHash": "sha256-5COVWnTkTepuUfEyC8hKDFDm5zCajFWbSU78Uctdlvo=",
-        "owner": "google",
-        "repo": "ghc-source-gen",
-        "rev": "42d650d3b62c6bc4e3d33d1abc91e3e60f446941",
-        "type": "github"
-      },
-      "original": {
-        "owner": "google",
-        "repo": "ghc-source-gen",
-        "type": "github"
-      }
-    },
     "ghc-wasm-meta": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -829,7 +813,6 @@
     "root": {
       "inputs": {
         "fluent-hs": "fluent-hs",
-        "ghc-source-gen": "ghc-source-gen",
         "ghc-wasm-meta": "ghc-wasm-meta",
         "mdi": "mdi",
         "mdi-webfont": "mdi-webfont",

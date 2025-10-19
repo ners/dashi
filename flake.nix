@@ -37,10 +37,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.mdi.follows = "mdi";
     };
-    ghc-source-gen = {
-      url = "github:google/ghc-source-gen";
-      flake = false;
-    };
   };
 
   outputs = inputs:
@@ -127,7 +123,6 @@
               '';
             });
             miso = hfinal.callCabal2nix "miso" inputs.miso { };
-            ghc-source-gen = hfinal.callCabal2nix "ghc-source-gen" inputs.ghc-source-gen { };
             jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           })
         ];

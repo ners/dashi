@@ -17,8 +17,10 @@ import Dashi.Components.InlineMessage qualified as InlineMessage
 style :: Css
 style = do
     Root.style
+    Banner.style
     Button.style
     Icon.style
+    InlineMessage.style
     Page.style
     TextField.style
 

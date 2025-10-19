@@ -74,8 +74,10 @@ library
   hs-source-dirs: lib
   exposed-modules:
     Dashi
+    Dashi.Components.Banner
     Dashi.Components.Button
     Dashi.Components.Icon
+    Dashi.Components.InlineMessage
     Dashi.Components.Spinner
     Dashi.Components.TextField
     Dashi.Layout.Page
