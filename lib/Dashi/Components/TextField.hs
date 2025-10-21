@@ -1,9 +1,9 @@
 module Dashi.Components.TextField where
 
-import Clay (Css, active, block, border, display, easeOut, em, fontSize, fontWeight, hover, input, marginBottom, sec, solid, transition, weight, (&), (?))
+import Clay (Css, active, after, block, border, content, display, easeOut, em, fontSize, fontWeight, hover, input, marginBottom, marginLeft, pct, sec, solid, stringContent, transition, weight, (&), (?))
 import Dashi.Components.Util
 import Dashi.Style.Tokens
-import Dashi.Style.Util (backgroundColor', borderRadiusAll', fullWidth, paddingYX', token, var)
+import Dashi.Style.Util (backgroundColor', borderRadiusAll', color', fullWidth, paddingYX', token, var)
 import Dashi.Util (fromText)
 import Data.Aeson qualified as Aeson
 import Miso (Attribute, MisoString, View, text)
@@ -15,7 +15,7 @@ textField :: [Attribute action] -> MisoString -> View model action
 textField attrs l =
     label_
         ([class_ "text-field"] <> labelFor)
-        [ span_ [class_ "label"] [text l]
+        [ span_ (class_ "label" : labelRequired) [text l]
         , input_ attrs
         ]
   where
@@ -23,6 +23,7 @@ textField attrs l =
         case findProp "id" attrs of
             Just (Aeson.String cssId) -> [for_ (fromText cssId)]
             _ -> []
+    labelRequired = [class_ "required" | isRequired attrs]
 
 style :: Css
 style = do
@@ -32,8 +33,12 @@ style = do
             display block
             fullWidth
             fontWeight $ weight 600
-            fontSize $ em 0.75
+            fontSize $ pct 85
             marginBottom . token $ Space XSmall
+            ".required" <> after & do
+                content $ stringContent "*"
+                color' TextDanger
+                marginLeft . token $ Space XSmall
         input ? do
             display block
             fullWidth

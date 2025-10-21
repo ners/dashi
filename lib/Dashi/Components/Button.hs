@@ -1,7 +1,6 @@
 module Dashi.Components.Button where
 
-import Clay (label)
-import Clay hiding (action, label, var)
+import Clay hiding (action, var)
 import Dashi.Components.Spinner qualified as Spinner
 import Dashi.Components.Util
 import Dashi.Style.Tokens
@@ -45,22 +44,14 @@ data ComponentWidth
     | FullWidth
     deriving stock (Eq, Bounded, Enum)
 
-button :: [Attribute action] -> MisoString -> View model action
-button attrs l =
-    button_
-        attrs
-        (label_ [] [text l] : if (isAriaBusy attrs) then [Spinner.view] else [])
+button :: [Attribute action] -> [View model action] -> View model action
+button attrs elems = button_ attrs $ label_ [] elems : [Spinner.view | isAriaBusy attrs]
 
 style :: Css
 style = do
     (Clay.button <> (input # "type='submit'") <> ".button") ? do
         clickable
         position relative
-        display inlineFlex
-        alignItems baseline
-        justifyContent center
-        textAlign center
-        verticalAlign middle
         border (var "border-width" []) solid (token BorderInput)
         borderRadiusAll' Small
         paddingYX' XSmall Small
@@ -69,9 +60,18 @@ style = do
         backgroundColor' $ BackgroundNeutral DefaultState
         transition "background" (sec 0.1) easeOut 0
         disabled & borderWidth (unitless 0)
-        label ? Clay.pointerEvents none
-        ariaBusy True & label ? opacity 0
+        label ? do
+            display inlineFlex
+            alignItems baseline
+            justifyContent center
+            textAlign center
+            verticalAlign middle
+            gap' XSmall
+            Clay.pointerEvents none
+            important $ textDecoration none
+        ".mdi" ? fontSize (em 1)
         ".spinner" ? do
+            opacity 1
             position absolute
             left $ pct 50
             "transform" -: "translateX(-50%)"
@@ -79,6 +79,7 @@ style = do
             display inlineBlock
             width $ em 1.4
             height $ em 1.4
+        ariaBusy True & label ? opacity 0
         ariaBusy False & do
             hover & backgroundColor' (BackgroundNeutral HoveredState)
             active & backgroundColor' (BackgroundNeutral PressedState)

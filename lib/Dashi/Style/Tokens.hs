@@ -74,9 +74,15 @@ data Colour
     | TextInformation
     | TextInverse
     | TextSubtle
+    | TextSubtlest
     | TextSuccess
     | TextWarning
     | TextWarningInverse
+    | IconBrand
+    | IconWarning
+    | IconDanger
+    | IconSuccess
+    | IconDiscovery
     | Border
     | BorderInput
     | BackgroundInput ElementState
@@ -99,9 +105,15 @@ allColours =
         , TextInformation
         , TextInverse
         , TextSubtle
+        , TextSubtlest
         , TextSuccess
         , TextWarning
         , TextWarningInverse
+        , IconBrand
+        , IconWarning
+        , IconDanger
+        , IconSuccess
+        , IconDiscovery
         , Border
         , BorderInput
         , BackgroundDisabled
@@ -134,9 +146,15 @@ instance Token Colour where
     tokenName TextInformation = "text-information"
     tokenName TextInverse = "text-inverse"
     tokenName TextSubtle = "text-subtle"
+    tokenName TextSubtlest = "text-subtlest"
     tokenName TextSuccess = "text-success"
     tokenName TextWarning = "text-warning"
     tokenName TextWarningInverse = "text-warning-inverse"
+    tokenName IconBrand = "icon-brand"
+    tokenName IconWarning = "icon-warning"
+    tokenName IconDanger = "icon-danger"
+    tokenName IconSuccess = "icon-success"
+    tokenName IconDiscovery = "icon-discovery"
     tokenName Border = "border-color"
     tokenName BorderInput = "border-input-color"
     tokenName BackgroundDisabled = "background-disabled"
@@ -171,7 +189,13 @@ instance ValueToken Colour where
     tokenValue TextWarningInverse = parse "#292A2E"
     tokenValue TextInverse = parse "#FFF"
     tokenValue TextSubtle = parse "#505258"
+    tokenValue TextSubtlest = parse "#6B6E76"
     tokenValue TextDisabled = rgba 8 15 33 0.3
+    tokenValue IconBrand = parse "#1868DB"
+    tokenValue IconWarning = parse "#E06C00"
+    tokenValue IconDanger = parse "#C9372C"
+    tokenValue IconSuccess = parse "#6A9A23"
+    tokenValue IconDiscovery = parse "#AF59E1"
     tokenValue Border = parse "#0B120E24"
     tokenValue BorderInput = parse "#8C8F97"
     tokenValue BackgroundDisabled = rgba 23 23 23 0.03

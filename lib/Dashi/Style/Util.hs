@@ -79,7 +79,9 @@ fontFamily' :: Value -> Css
 fontFamily' = fontFamily [] . pure . other
 
 clickable :: Css
-clickable = cursor pointer
+clickable = do
+    cursor pointer
+    hover & star ? textDecoration underline
 
 color' :: Colour -> Css
 color' = color . token
@@ -95,3 +97,6 @@ paddingAll' = paddingAll . token . Space
 
 borderRadiusAll' :: SizeToken -> Css
 borderRadiusAll' = borderRadiusAll . token . Radius
+
+gap' :: SizeToken -> Css
+gap' = ("gap" ~::) . token . Space

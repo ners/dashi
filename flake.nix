@@ -78,13 +78,13 @@
           {
             nativeBuildInputs = with pkgs; [
               imagemagick
-              inkscape
+              librsvg
             ];
           } ''
           tmpPng="$(mktemp --suffix=.png)"
-          inkscape "${./.}/static/icon.svg" \
-            --export-width=64 \
-            --export-filename="$tmpPng"
+          rsvg-convert "${./static/icon.svg}" \
+            --width 64 \
+            --output "$tmpPng"
           convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
           rm "$tmpPng"
         '';
@@ -112,13 +112,13 @@
                 cd "$out"
                 mv bin/*.wasm app.wasm
                 rmdir bin
-                $(wasm32-wasi-ghc --print-libdir)/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
+                "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
                 # hold @MagicRB accountable for this crime
                 sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
                 wasm-opt -all -O2 app.wasm -o app.wasm
                 wasm-tools strip -o app.wasm app.wasm
-                cp -r "${./.}"/static/* .
-                ln -s ${staticAssets}/* .
+                cp -r "${./static}"/* .
+                ln -s "${staticAssets}"/* .
                 sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
               '';
             });
@@ -150,7 +150,7 @@
             ];
             env.NIXPKGS_ALLOW_BROKEN = "1";
             shellHook = ''
-              ln -s ${staticAssets}/* static
+              ln -s "${staticAssets}"/* static
             '';
           };
         };

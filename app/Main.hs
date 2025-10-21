@@ -7,6 +7,8 @@ import Clay qualified
 import Clay.Render qualified as Clay
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Icon qualified as Icon
+import Dashi.Components.Message (MessageAppearance (..), messageAppearance)
+import Dashi.Components.Message qualified as Message
 import Dashi.Components.Spinner qualified as Spinner
 import Dashi.Components.TextField qualified as TextField
 import Dashi.Style qualified as Style
@@ -15,8 +17,8 @@ import Data.String (IsString (fromString))
 import Data.Text.Lazy qualified as LazyText
 import Miso
 import Miso.Html
-import Miso.Html.Property (aria_, class_, disabled_)
-import Web.Font.MDI ()
+import Miso.Html.Property (aria_, class_, disabled_, required_)
+import Web.Font.MDI (MDI (MdiStar))
 import Prelude
 
 #ifdef WASM
@@ -59,12 +61,20 @@ appView model =
             []
             [ div_
                 []
-                [ Button.button (attr : baAttrs) (maybe "DefaultButton" (fromString . show) ba)
+                [ Button.button (attr : baAttrs) (iconElems <> [label])
                 | ba <- Nothing : (Just <$> [minBound .. maxBound])
                 , let baAttrs = Button.buttonAppearance <$> maybeToList ba
+                , let label = text $ maybe "DefaultButton" (fromString . show) ba
                 ]
             | attr <- [class_ "", disabled_, aria_ "busy" "true"]
+            , icon <- [Nothing, Just MdiStar]
+            , let iconElems = Icon.icon [] <$> maybeToList icon
             ]
-        , div_ [] [Icon.icon i [] | i <- take 100 [minBound .. maxBound]]
-        , TextField.textField [] "Field label"
+        , div_ [] $ Icon.icon [] <$> take 100 [minBound .. maxBound]
+        , TextField.textField [required_ True] "Field label"
+        , div_ [] . pure $ Message.message [] (Just "Software update") (Just "You've been upgraded to version 5.2")
+        , div_ [] . pure $ Message.message [messageAppearance WarningMessage] Nothing (Just "Your bill may increase")
+        , div_ [] . pure $ Message.message [messageAppearance ErrorMessage] Nothing (Just "Username taken")
+        , div_ [] . pure $ Message.message [messageAppearance ConfirmationMessage] Nothing (Just "Files have been added")
+        , div_ [] . pure $ Message.message [messageAppearance InfoMessage] Nothing Nothing
         ]
