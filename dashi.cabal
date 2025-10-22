@@ -79,12 +79,11 @@ library
     Dashi.Components.Message
     Dashi.Components.Spinner
     Dashi.Components.TextField
+    Dashi.Components.Util
     Dashi.Layout.Page
     Dashi.Style
     Dashi.Style.Root
     Dashi.Style.Tokens
-  other-modules:
-    Dashi.Components.Util
     Dashi.Style.Util
     Dashi.Util
   build-depends:

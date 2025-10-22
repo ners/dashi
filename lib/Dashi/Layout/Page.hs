@@ -6,14 +6,6 @@ import Dashi.Style.Util
 import Data.List qualified as List
 import Prelude hiding (all, rem)
 
-gridTemplateAreas :: [[Value]] -> Css
-gridTemplateAreas areas = "grid-template-areas" ~: intercalate "\n    " ("" : (areaRow <$> areas))
-  where
-    areaRow :: [Value] -> Value
-    areaRow [] = ""
-    areaRow [x] = x
-    areaRow xs = "'" <> intercalate " " xs <> "'"
-
 style :: Css
 style = do
     body ? do

@@ -3,16 +3,20 @@
 module Dashi.Style.Tokens where
 
 import Clay
-import Data.List qualified as List
+import Control.Category ((>>>))
+import Dashi.Util (emptyAttr_)
 import Data.Maybe (fromJust)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import Data.String (IsString (fromString))
-import Data.Text (Text)
+import Miso (Attribute)
+import Miso.Html.Property (class_)
 import Prelude hiding (rem)
 
 class Token t where
     tokenName :: (IsString s) => t -> s
+    tokenAttr :: t -> Attribute action
+    tokenAttr = class_ . tokenName
     allTokens :: [t]
     default allTokens :: (Bounded t, Enum t) => [t]
     allTokens = [minBound .. maxBound]
@@ -87,6 +91,11 @@ data Colour
     | BorderInput
     | BackgroundInput ElementState
     | BackgroundDisabled
+    | BackgroundInformation
+    | BackgroundWarning
+    | BackgroundSuccess
+    | BackgroundError
+    | BackgroundDiscovery
     | BackgroundBrandBold ElementState
     | BackgroundDangerBold ElementState
     | BackgroundDiscoveryBold ElementState
@@ -117,6 +126,11 @@ allColours =
         , Border
         , BorderInput
         , BackgroundDisabled
+        , BackgroundInformation
+        , BackgroundWarning
+        , BackgroundSuccess
+        , BackgroundError
+        , BackgroundDiscovery
         ]
             <> (BackgroundBrandBold <$> [minBound .. maxBound])
             <> (BackgroundDangerBold <$> [minBound .. maxBound])
@@ -158,6 +172,11 @@ instance Token Colour where
     tokenName Border = "border-color"
     tokenName BorderInput = "border-input-color"
     tokenName BackgroundDisabled = "background-disabled"
+    tokenName BackgroundInformation = "background-information"
+    tokenName BackgroundSuccess = "background-success"
+    tokenName BackgroundWarning = "background-warning"
+    tokenName BackgroundError = "background-error"
+    tokenName BackgroundDiscovery = "background-discovery"
     tokenName (BackgroundBrandBold DefaultState) = "background-brand-bold"
     tokenName (BackgroundBrandBold HoveredState) = "background-brand-bold-hovered"
     tokenName (BackgroundBrandBold PressedState) = "background-brand-bold-pressed"
@@ -199,6 +218,11 @@ instance ValueToken Colour where
     tokenValue Border = parse "#0B120E24"
     tokenValue BorderInput = parse "#8C8F97"
     tokenValue BackgroundDisabled = rgba 23 23 23 0.03
+    tokenValue BackgroundInformation = parse "#E9F2FE"
+    tokenValue BackgroundWarning = parse "#FFF5DB"
+    tokenValue BackgroundSuccess = parse "#EFFFD6"
+    tokenValue BackgroundError = parse "#FFECEB"
+    tokenValue BackgroundDiscovery = parse "#F8EEFE"
     tokenValue (BackgroundNeutral st) = rgba 9 30 66 $ case st of
         DefaultState -> 0.04
         HoveredState -> 0.08

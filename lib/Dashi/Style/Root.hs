@@ -4,17 +4,10 @@
 module Dashi.Style.Root where
 
 import Clay hiding (fullWidth, var)
-import Clay qualified
 import Dashi.Style.Tokens
-import Dashi.Style.Tokens qualified as Tokens
 import Dashi.Style.Util
 import Data.Foldable (for_)
-import Data.Functor ((<&>))
-import Data.List qualified as List
-import Data.Semigroup (Semigroup (sconcat))
-import Data.String (IsString, fromString)
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Prelude hiding (div, not, rem, (**))
 
 varDecl' :: Key Text -> Value -> Css

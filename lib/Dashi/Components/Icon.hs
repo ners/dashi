@@ -23,5 +23,5 @@ style = do
         important $ textDecoration none
         "font" ~: "normal normal normal 1.5em/1 'Material Design Icons'"
 
-icon :: [Attribute action] -> MDI -> View model action
-icon attrs = span_ (class_ "mdi" : attrs) . pure . text . fromString . pure . mdiChar
+view :: [Attribute action] -> MDI -> View model action
+view attrs = span_ (class_ "mdi" : attrs) . pure . text . fromString . pure . mdiChar

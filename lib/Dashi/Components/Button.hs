@@ -1,75 +1,103 @@
 module Dashi.Components.Button where
 
-import Clay hiding (action, var)
+import Clay hiding (action, fullWidth, label, size, span_, var)
+import Clay qualified hiding (fullWidth)
+import Dashi.Components.Icon qualified as Icon
 import Dashi.Components.Spinner qualified as Spinner
 import Dashi.Components.Util
 import Dashi.Style.Tokens
 import Dashi.Style.Util
+import Dashi.Util (emptyAttr_)
+import Data.Maybe (catMaybes)
 import Miso
-import Miso.Html (button_, label_)
+import Miso.Html (button_, label_, span_)
 import Miso.Html.Property (class_)
+import Web.Font.MDI (MDI)
 import Prelude
 
+data ButtonSize
+    = DefaultSize
+    | CompactButton
+    | FullWidthButton
+    deriving stock (Eq, Bounded, Enum)
+
+instance Token ButtonSize where
+    tokenName DefaultSize = "default"
+    tokenName CompactButton = "compact"
+    tokenName FullWidthButton = "full-width"
+    tokenAttr DefaultSize = emptyAttr_
+    tokenAttr t = class_ $ tokenName t
+
 data ButtonAppearance
-    = PrimaryButton
+    = DefaultButton
+    | PrimaryButton
     | SubtleButton
     | WarningButton
     | DangerButton
     | DiscoveryButton
-    deriving stock (Eq, Bounded, Enum, Show)
+    deriving stock (Eq, Bounded, Enum)
 
 instance Token ButtonAppearance where
+    tokenName DefaultButton = "default"
     tokenName PrimaryButton = "primary"
     tokenName SubtleButton = "subtle"
     tokenName WarningButton = "warning"
     tokenName DangerButton = "danger"
     tokenName DiscoveryButton = "discovery"
+    tokenAttr DefaultButton = emptyAttr_
+    tokenAttr t = class_ $ tokenName t
 
-buttonAppearance :: ButtonAppearance -> Attribute action
-buttonAppearance = class_ . tokenName
+data Button = Button
+    { size :: ButtonSize
+    , appearance :: ButtonAppearance
+    , label :: MisoString
+    , leftIcon :: Maybe MDI
+    , rightIcon :: Maybe MDI
+    }
 
-data ComponentState
-    = DisabledState
-    | SelectedState
-    | LoadingState
-    deriving stock (Eq, Bounded, Enum)
-
-data ComponentSpacing
-    = DefaultSpacing
-    | CompactSpacing
-    deriving stock (Eq, Bounded, Enum)
-
-data ComponentWidth
-    = AutoWidth
-    | FullWidth
-    deriving stock (Eq, Bounded, Enum)
-
-button :: [Attribute action] -> [View model action] -> View model action
-button attrs elems = button_ attrs $ label_ [] elems : [Spinner.view | isAriaBusy attrs]
+view :: [Attribute action] -> Button -> View model action
+view attrs Button{..} =
+    button_ (tokenAttr size : tokenAttr appearance : attrs) $
+        labelElem : [Spinner.view | isAriaBusy attrs]
+  where
+    labelElem =
+        label_ [] . catMaybes $
+            [ Icon.view [] <$> leftIcon
+            , pure $ span_ [] [text label]
+            , Icon.view [] <$> rightIcon
+            ]
 
 style :: Css
 style = do
     (Clay.button <> (input # "type='submit'") <> ".button") ? do
-        clickable
+        cursor pointer
         position relative
-        border (var "border-width" []) solid (token BorderInput)
+        outline solid (var "border-width" []) (token Border)
+        marginAll $ px 1
         borderRadiusAll' Small
-        paddingYX' XSmall Small
-        fontWeight $ weight 500
+        paddingYX' XSmall Medium
+        byToken CompactButton & do
+            paddingYX (em 0.125) (token $ Space Medium)
+            Clay.span ? transform (translateY $ unitless 0)
+        byToken FullWidthButton & do
+            fullWidth
+            Clay.label ? do
+                fullWidth
+                justifyContent spaceEvenly
+        fontWeight $ weight 550
         color' TextSubtle
         backgroundColor' $ BackgroundNeutral DefaultState
         transition "background" (sec 0.1) easeOut 0
-        disabled & borderWidth (unitless 0)
-        label ? do
+        disabled & outlineWidth (unitless 0)
+        Clay.label ? do
             display inlineFlex
             alignItems baseline
             justifyContent center
             textAlign center
-            verticalAlign middle
             gap' XSmall
             Clay.pointerEvents none
-            important $ textDecoration none
-        ".mdi" ? fontSize (em 1)
+            Clay.span ? transform (translateY . px $ -1)
+        ".mdi" ? fontSize (pct 110)
         ".spinner" ? do
             opacity 1
             position absolute
@@ -79,38 +107,38 @@ style = do
             display inlineBlock
             width $ em 1.4
             height $ em 1.4
-        ariaBusy True & label ? opacity 0
+        ariaBusy True & Clay.label ? opacity 0
         ariaBusy False & do
             hover & backgroundColor' (BackgroundNeutral HoveredState)
             active & backgroundColor' (BackgroundNeutral PressedState)
-        byClass (tokenName PrimaryButton) & do
-            borderWidth $ unitless 0
+        byToken PrimaryButton & do
+            outlineWidth $ unitless 0
             color' TextInverse
             backgroundColor' $ BackgroundBrandBold DefaultState
             ariaBusy False & do
                 hover & backgroundColor' (BackgroundBrandBold HoveredState)
                 active & backgroundColor' (BackgroundBrandBold PressedState)
-        byClass (tokenName SubtleButton) & do
-            borderWidth $ unitless 0
+        byToken SubtleButton & do
+            outlineWidth $ unitless 0
             backgroundColor transparent
             ariaBusy False & do
                 hover & backgroundColor' (BackgroundNeutral HoveredState)
                 active & backgroundColor' (BackgroundNeutral PressedState)
-        byClass (tokenName WarningButton) & do
-            borderWidth $ unitless 0
+        byToken WarningButton & do
+            outlineWidth $ unitless 0
             backgroundColor' $ BackgroundWarningBold DefaultState
             ariaBusy False & do
                 hover & backgroundColor' (BackgroundWarningBold HoveredState)
                 active & backgroundColor' (BackgroundWarningBold PressedState)
-        byClass (tokenName DangerButton) & do
-            borderWidth $ unitless 0
+        byToken DangerButton & do
+            outlineWidth $ unitless 0
             color' TextInverse
             backgroundColor' $ BackgroundDangerBold DefaultState
             ariaBusy False & do
                 hover & backgroundColor' (BackgroundDangerBold HoveredState)
                 active & backgroundColor' (BackgroundDangerBold PressedState)
-        byClass (tokenName DiscoveryButton) & do
-            borderWidth $ unitless 0
+        byToken DiscoveryButton & do
+            outlineWidth $ unitless 0
             color' TextInverse
             backgroundColor' $ BackgroundDiscoveryBold DefaultState
             ariaBusy False & do

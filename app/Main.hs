@@ -3,21 +3,22 @@
 module Main where
 
 import Clay (putCss)
-import Clay qualified
-import Clay.Render qualified as Clay
+import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Icon qualified as Icon
-import Dashi.Components.Message (MessageAppearance (..), messageAppearance)
+import Dashi.Components.Message (Message (Message), MessageAppearance (..), MessageSize (..))
 import Dashi.Components.Message qualified as Message
-import Dashi.Components.Spinner qualified as Spinner
 import Dashi.Components.TextField qualified as TextField
+import Dashi.Components.Util (ariaBusy_)
 import Dashi.Style qualified as Style
+import Dashi.Style.Tokens (Token (tokenName))
+import Dashi.Util (capitalise, emptyAttr_)
+import Data.Char (toUpper)
 import Data.Maybe (maybeToList)
-import Data.String (IsString (fromString))
-import Data.Text.Lazy qualified as LazyText
+import Data.Text qualified as Text
 import Miso
 import Miso.Html
-import Miso.Html.Property (aria_, class_, disabled_, required_)
+import Miso.Html.Property (aria_, class_, disabled_, id_, required_)
 import Web.Font.MDI (MDI (MdiStar))
 import Prelude
 
@@ -43,7 +44,7 @@ app = do
     initComponent
         { events = defaultEvents <> keyboardEvents
         , initialAction = Just Setup
-        , styles = [Style Style.styleStr]
+        , styles = [Style Style.styleStr, Href "style.css"]
         }
   where
     initComponent :: Component ROOT Model Action
@@ -52,29 +53,139 @@ app = do
 appUpdate :: Action -> Effect ROOT Model Action
 appUpdate Setup = pure ()
 
+buttons :: View model action
+buttons =
+    section_ [id_ "buttons"] $
+        [ h2_ [] [text "Buttons"]
+        , div_
+            [class_ "grid"]
+            [ div_
+                []
+                [ Button.view
+                    [attr]
+                    Button
+                        { size = Button.DefaultSize
+                        , appearance
+                        , label = capitalise . tokenName $ appearance
+                        , leftIcon
+                        , rightIcon = Nothing
+                        }
+                ]
+            | leftIcon <- [Nothing, Just MdiStar]
+            , attr <- [emptyAttr_, ariaBusy_, disabled_]
+            , appearance <- [minBound .. maxBound]
+            ]
+        ]
+
+icons :: View model action
+icons =
+    section_ [id_ "icons"] $
+        [ h2_ [] [text "Icons"]
+        , div_
+            [class_ "grid"]
+            [ Icon.view [] mdi
+            | mdi <- take 124 [minBound .. maxBound]
+            ]
+        ]
+
+forms :: View model action
+forms =
+    section_ [id_ "forms"] $
+        [ h2_ [] [text "Forms"]
+        , TextField.view [required_ True] "Field label"
+        , Message.view
+            []
+            Message
+                { size = FormMessage
+                , appearance = ErrorMessage
+                , title = Nothing
+                , secondary = Just "You can use letters, numbers, and periods"
+                }
+        ]
+
 appView :: Model -> View Model Action
-appView model =
+appView _model =
     main_
         []
         [ h1_ [] [text "Hello from dashi!"]
-        , div_
-            []
-            [ div_
+        , buttons
+        , icons
+        , forms
+        , div_ [] . pure $
+            Message.view
                 []
-                [ Button.button (attr : baAttrs) (iconElems <> [label])
-                | ba <- Nothing : (Just <$> [minBound .. maxBound])
-                , let baAttrs = Button.buttonAppearance <$> maybeToList ba
-                , let label = text $ maybe "DefaultButton" (fromString . show) ba
-                ]
-            | attr <- [class_ "", disabled_, aria_ "busy" "true"]
-            , icon <- [Nothing, Just MdiStar]
-            , let iconElems = Icon.icon [] <$> maybeToList icon
-            ]
-        , div_ [] $ Icon.icon [] <$> take 100 [minBound .. maxBound]
-        , TextField.textField [required_ True] "Field label"
-        , div_ [] . pure $ Message.message [] (Just "Software update") (Just "You've been upgraded to version 5.2")
-        , div_ [] . pure $ Message.message [messageAppearance WarningMessage] Nothing (Just "Your bill may increase")
-        , div_ [] . pure $ Message.message [messageAppearance ErrorMessage] Nothing (Just "Username taken")
-        , div_ [] . pure $ Message.message [messageAppearance ConfirmationMessage] Nothing (Just "Files have been added")
-        , div_ [] . pure $ Message.message [messageAppearance InfoMessage] Nothing Nothing
+                Message
+                    { size = InlineMessage
+                    , appearance = InfoMessage
+                    , title = Just "Software update"
+                    , secondary = Just "You've been upgraded to version 5.2"
+                    }
+        , div_ [] . pure $
+            Message.view
+                []
+                Message
+                    { size = InlineMessage
+                    , appearance = WarningMessage
+                    , title = Nothing
+                    , secondary = Just "Your bill may increase"
+                    }
+        , div_ [] . pure $
+            Message.view
+                []
+                Message
+                    { size = InlineMessage
+                    , appearance = ErrorMessage
+                    , title = Nothing
+                    , secondary = Just "Username taken"
+                    }
+        , div_ [] . pure $
+            Message.view
+                []
+                Message
+                    { size = InlineMessage
+                    , appearance = SuccessMessage
+                    , title = Nothing
+                    , secondary = Just "Files have been added"
+                    }
+        , div_ [] . pure $
+            Message.view
+                []
+                Message
+                    { size = InlineMessage
+                    , appearance = DiscoveryMessage
+                    , title = Nothing
+                    , secondary = Nothing
+                    }
+        , Message.view
+            []
+            Message
+                { size = SectionMessage
+                , appearance = InfoMessage
+                , title = Just "Editing is restricted"
+                , secondary = Just "You're not allowed to change these restrictions. It's either due to the restrictions on the page, or permission settings for this space."
+                }
+        , Message.view
+            []
+            Message
+                { size = SectionMessage
+                , appearance = WarningMessage
+                , title = Just "Cannot connect to the database"
+                , secondary = Just "We're unable to save any progress at this time. Please try again later."
+                }
+        , Message.view
+            []
+            Message
+                { size = SectionMessage
+                , appearance = SuccessMessage
+                , title = Nothing
+                , secondary = Just "The file has been uploaded."
+                }
+        , Message.view
+            []
+            Message
+                { size = SectionMessage
+                , appearance = ErrorMessage
+                , title = Just "This account has been permanently deleted"
+                , secondary = Just "The user `IanAtlas` no longer has access to Atlassian services."
+                }
         ]

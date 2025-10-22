@@ -55,6 +55,9 @@ var name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> 
 token :: (Token t, Val (ValueType t), Other (ValueType t)) => t -> ValueType t
 token t = var (tokenName t) []
 
+byToken :: (Token t) => t -> Refinement
+byToken = byClass . tokenName
+
 (~:) :: Key Text -> Value -> Css
 k ~: v = key (cast k) v
 
@@ -95,8 +98,25 @@ paddingYX' y x = paddingYX (token $ Space y) (token $ Space x)
 paddingAll' :: SizeToken -> Css
 paddingAll' = paddingAll . token . Space
 
+marginAll' :: SizeToken -> Css
+marginAll' = marginAll . token . Space
+
 borderRadiusAll' :: SizeToken -> Css
 borderRadiusAll' = borderRadiusAll . token . Radius
 
 gap' :: SizeToken -> Css
 gap' = ("gap" ~::) . token . Space
+
+rowGap' :: SizeToken -> Css
+rowGap' = ("row-gap" ~::) . token . Space
+
+columnGap' :: SizeToken -> Css
+columnGap' = ("column-gap" ~::) . token . Space
+
+gridTemplateAreas :: [[Value]] -> Css
+gridTemplateAreas areas = "grid-template-areas" ~: intercalate "\n    " ("" : (areaRow <$> areas))
+  where
+    areaRow :: [Value] -> Value
+    areaRow [] = ""
+    areaRow [x] = x
+    areaRow xs = "'" <> intercalate " " xs <> "'"
