@@ -6,19 +6,16 @@ import Clay (putCss)
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Icon qualified as Icon
-import Dashi.Components.Message (Message (Message), MessageAppearance (..), MessageSize (..))
+import Dashi.Components.Message (Message (Message), MessageSize (..))
 import Dashi.Components.Message qualified as Message
 import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util (ariaBusy_)
 import Dashi.Style qualified as Style
-import Dashi.Style.Tokens (Token (tokenName))
+import Dashi.Style.Tokens
 import Dashi.Util (capitalise, emptyAttr_)
-import Data.Char (toUpper)
-import Data.Maybe (maybeToList)
-import Data.Text qualified as Text
 import Miso
 import Miso.Html
-import Miso.Html.Property (aria_, class_, disabled_, id_, required_)
+import Miso.Html.Property (class_, disabled_, id_, required_)
 import Web.Font.MDI (MDI (MdiStar))
 import Prelude
 
@@ -97,7 +94,7 @@ forms =
             []
             Message
                 { size = FormMessage
-                , appearance = ErrorMessage
+                , appearance = Danger
                 , title = Nothing
                 , secondary = Just "You can use letters, numbers, and periods"
                 }
@@ -116,7 +113,7 @@ appView _model =
                 []
                 Message
                     { size = InlineMessage
-                    , appearance = InfoMessage
+                    , appearance = Primary
                     , title = Just "Software update"
                     , secondary = Just "You've been upgraded to version 5.2"
                     }
@@ -125,7 +122,7 @@ appView _model =
                 []
                 Message
                     { size = InlineMessage
-                    , appearance = WarningMessage
+                    , appearance = Warning
                     , title = Nothing
                     , secondary = Just "Your bill may increase"
                     }
@@ -134,7 +131,7 @@ appView _model =
                 []
                 Message
                     { size = InlineMessage
-                    , appearance = ErrorMessage
+                    , appearance = Danger
                     , title = Nothing
                     , secondary = Just "Username taken"
                     }
@@ -143,7 +140,7 @@ appView _model =
                 []
                 Message
                     { size = InlineMessage
-                    , appearance = SuccessMessage
+                    , appearance = Success
                     , title = Nothing
                     , secondary = Just "Files have been added"
                     }
@@ -152,7 +149,7 @@ appView _model =
                 []
                 Message
                     { size = InlineMessage
-                    , appearance = DiscoveryMessage
+                    , appearance = Discovery
                     , title = Nothing
                     , secondary = Nothing
                     }
@@ -160,7 +157,7 @@ appView _model =
             []
             Message
                 { size = SectionMessage
-                , appearance = InfoMessage
+                , appearance = Primary
                 , title = Just "Editing is restricted"
                 , secondary = Just "You're not allowed to change these restrictions. It's either due to the restrictions on the page, or permission settings for this space."
                 }
@@ -168,7 +165,7 @@ appView _model =
             []
             Message
                 { size = SectionMessage
-                , appearance = WarningMessage
+                , appearance = Warning
                 , title = Just "Cannot connect to the database"
                 , secondary = Just "We're unable to save any progress at this time. Please try again later."
                 }
@@ -176,7 +173,7 @@ appView _model =
             []
             Message
                 { size = SectionMessage
-                , appearance = SuccessMessage
+                , appearance = Success
                 , title = Nothing
                 , secondary = Just "The file has been uploaded."
                 }
@@ -184,7 +181,7 @@ appView _model =
             []
             Message
                 { size = SectionMessage
-                , appearance = ErrorMessage
+                , appearance = Danger
                 , title = Just "This account has been permanently deleted"
                 , secondary = Just "The user `IanAtlas` no longer has access to Atlassian services."
                 }

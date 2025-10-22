@@ -55,9 +55,6 @@ var name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> 
 token :: (Token t, Val (ValueType t), Other (ValueType t)) => t -> ValueType t
 token t = var (tokenName t) []
 
-byToken :: (Token t) => t -> Refinement
-byToken = byClass . tokenName
-
 (~:) :: Key Text -> Value -> Css
 k ~: v = key (cast k) v
 
@@ -89,7 +86,7 @@ clickable = do
 color' :: Colour -> Css
 color' = color . token
 
-backgroundColor' :: Colour -> Css
+backgroundColor' :: (Token t, ValueType t ~ Color) => t -> Css
 backgroundColor' = backgroundColor . token
 
 paddingYX' :: SizeToken -> SizeToken -> Css

@@ -2,14 +2,14 @@
 
 module Dashi.Components.Message where
 
-import Clay hiding (span_, title)
+import Clay hiding (Background, icon, size, span_, title)
 import Control.Monad (forM_)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Maybe (catMaybes)
 import Data.Text qualified as Text
 import Miso
-import Miso.Html.Element (a_, span_)
+import Miso.Html.Element (a_, div_, span_)
 import Miso.Html.Property (class_)
 import Web.Font.MDI (MDI (MdiAlert, MdiAlertRhombus, MdiCheckCircle, MdiHelpCircle, MdiInformation), mdiChar)
 import Prelude
@@ -18,42 +18,31 @@ data MessageSize
     = InlineMessage
     | FormMessage
     | SectionMessage
-    deriving stock (Eq, Bounded, Enum, Show)
+    deriving stock (Eq, Bounded, Enum)
 
 instance Token MessageSize where
     tokenName InlineMessage = "inline"
     tokenName FormMessage = "form"
     tokenName SectionMessage = "section"
 
-data MessageAppearance
-    = InfoMessage
-    | WarningMessage
-    | ErrorMessage
-    | SuccessMessage
-    | DiscoveryMessage
-    deriving stock (Eq, Bounded, Enum, Show)
-
-instance Token MessageAppearance where
-    tokenName InfoMessage = "info"
-    tokenName WarningMessage = "warning"
-    tokenName ErrorMessage = "error"
-    tokenName SuccessMessage = "success"
-    tokenName DiscoveryMessage = "discovery"
-
 data Message = Message
     { size :: MessageSize
-    , appearance :: MessageAppearance
+    , appearance :: Appearance
     , title :: Maybe MisoString
     , secondary :: Maybe MisoString
     }
 
 view :: [Attribute action] -> Message -> View model action
 view attrs Message{..} =
-    a_ (class_ "message" : tokenAttr size : tokenAttr appearance : attrs) . catMaybes $
+    tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs) . catMaybes $
         [ pure $ span_ [class_ "mdi"] []
         , span_ [class_ "title"] . pure . text <$> title
         , span_ [class_ "secondary"] . pure . text <$> secondary
         ]
+  where
+    tag
+        | size == InlineMessage = a_
+        | otherwise = div_
 
 style :: Css
 style =
@@ -64,8 +53,8 @@ style =
             display inlineFlex
             flexDirection row
             alignItems center
-            ".title" ? color' Text
-            ".secondary" ? color' TextSubtle
+            ".title" ? color' (Text Default)
+            ".secondary" ? color' (Text Subtle)
             fontWeight $ weight 500
             gap' XSmall
         byToken FormMessage & do
@@ -92,27 +81,21 @@ style =
             -- There is no title, so put the secondary text in the title row
             ".mdi" |+ ".secondary" ? ("grid-area" -: "title")
             ".title" |+ ".secondary" ? (marginTop . token $ Space XSmall)
-            forM_ [minBound .. maxBound] \appearance ->
-                byToken appearance & do
-                    backgroundColor' $ case appearance of
-                        InfoMessage -> BackgroundInformation
-                        WarningMessage -> BackgroundWarning
-                        SuccessMessage -> BackgroundSuccess
-                        ErrorMessage -> BackgroundError
-                        DiscoveryMessage -> BackgroundDiscovery
         byToken FormMessage & do
             fontSize (pct 80)
-            byToken InfoMessage & ".mdi" ? display none
+            byToken Subtle & ".mdi" ? display none
             marginTop . token $ Space XSmall
-        let iconAndText InfoMessage = (MdiInformation, IconBrand, TextSubtle)
-            iconAndText WarningMessage = (MdiAlert, IconWarning, TextWarning)
-            iconAndText ErrorMessage = (MdiAlertRhombus, IconDanger, TextDanger)
-            iconAndText SuccessMessage = (MdiCheckCircle, IconSuccess, TextSuccess)
-            iconAndText DiscoveryMessage = (MdiHelpCircle, IconDiscovery, TextDiscovery)
+        let icon Default = MdiInformation
+            icon Primary = icon Default
+            icon Subtle = icon Default
+            icon Success = MdiCheckCircle
+            icon Warning = MdiAlert
+            icon Danger = MdiAlertRhombus
+            icon Discovery = MdiHelpCircle
         forM_ [minBound .. maxBound] \appearance ->
-            let (mdi, ic, tc) = iconAndText appearance
-             in byToken appearance & do
-                    byToken FormMessage & color' tc
-                    ".mdi" # before ? do
-                        content . stringContent . Text.singleton . mdiChar $ mdi
-                        color' ic
+            byToken appearance & do
+                byToken FormMessage & color' (Text appearance)
+                byToken SectionMessage & backgroundColor' (Background appearance)
+                ".mdi" # before ? do
+                    content . stringContent . Text.singleton . mdiChar . icon $ appearance
+                    color' $ Icon appearance

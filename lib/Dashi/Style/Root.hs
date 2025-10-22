@@ -84,8 +84,8 @@ style = do
         "background" ~: none
         disabled & do
             important $ cursor notAllowed
-            important $ color' TextDisabled
-            important $ backgroundColor' BackgroundDisabled
+            important $ color' DisabledText
+            important $ backgroundColor' DisabledBackground
         ariaBusy True & do
             cursor cursorProgress
     html ? do
@@ -93,4 +93,4 @@ style = do
         overflowY auto
     body ? do
         font $ var @Value "font-body" ["normal 400 14px/1.4 " <> var "font-family" []]
-        color $ token Text
+        color' $ Text Default
