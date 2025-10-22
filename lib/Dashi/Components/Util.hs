@@ -4,10 +4,12 @@ module Dashi.Components.Util where
 
 import Control.Category ((>>>))
 import Control.Lens (makePrisms, toListOf)
+import Dashi.Components.Widget ()
 import Data.Aeson qualified as Aeson
 import Data.List qualified as List
 import Miso
 import Miso.Html.Property (aria_)
+import Miso.Svg.Property (tabindex_)
 import Prelude
 
 makePrisms ''Attribute
@@ -33,3 +35,9 @@ isRequired = isBoolProp "required"
 
 ariaBusy_ :: Attribute action
 ariaBusy_ = aria_ "busy" "true"
+
+selectable_ :: Attribute action
+selectable_ = tabindex_ "0"
+
+unselectable_ :: Attribute action
+unselectable_ = tabindex_ "-1"

@@ -2,10 +2,11 @@ module Dashi.Components.Button where
 
 import Clay hiding (action, fullWidth, label, size, span_, var)
 import Clay qualified hiding (fullWidth)
-import Control.Monad (unless, when)
-import Dashi.Components.Icon qualified as Icon
-import Dashi.Components.Spinner qualified as Spinner
+import Control.Monad (when)
+import Dashi.Components.Icon ()
+import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
+import Dashi.Components.Widget
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
@@ -15,7 +16,8 @@ import Data.Maybe (catMaybes, fromJust)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import Data.String (fromString)
-import Miso
+import GHC.IsList (IsList (fromList))
+import Miso hiding (view)
 import Miso.Html (button_, label_, span_)
 import Web.Font.MDI (MDI)
 import Prelude
@@ -82,26 +84,28 @@ data Button = Button
     , rightIcon :: Maybe MDI
     }
 
-view :: [Attribute action] -> Button -> View model action
-view attrs Button{..} =
-    button_ (tokenAttr size : tokenAttr appearance : attrs) $
-        labelElem : [Spinner.view | isAriaBusy attrs]
-  where
-    labelElem =
-        label_ [] . catMaybes $
-            [ Icon.view [] <$> leftIcon
-            , pure $ span_ [] [text label]
-            , Icon.view [] <$> rightIcon
-            ]
+instance Widget Button where
+    widget' attrs Button{..} =
+        button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy]) $
+            labelElem : [widget Spinner | isBusy]
+      where
+        isBusy = isAriaBusy attrs
+        labelElem =
+            label_ [] . catMaybes $
+                [ widget <$> leftIcon
+                , pure $ span_ [] [text label]
+                , widget <$> rightIcon
+                ]
 
 style :: Css
 style = do
     ":root" ? tokenDecl @ButtonBackground
     (Clay.button <> (input # "type='submit'") <> ".button") ? do
-        cursor pointer
+        pressable
         position relative
-        outline solid (var "border-width" []) (token Border)
-        marginAll $ px 1
+        boxShadow . fromList $
+            [bsInset . bsColor (token Border) $ shadowWithBlur (unitless 0) (unitless 0) (var "border-width" [])]
+        byToken Subtle & ("box-shadow" -: "none")
         borderRadiusAll' Small
         paddingYX' XSmall Medium
         byToken CompactButton & do
@@ -116,7 +120,6 @@ style = do
         color' $ Text Subtle
         backgroundColor' $ ButtonBackground Default DefaultState
         transition "background" (sec 0.1) easeOut 0
-        disabled & outlineWidth (unitless 0)
         Clay.label ? do
             display inlineFlex
             alignItems baseline
@@ -138,7 +141,6 @@ style = do
         ariaBusy True & Clay.label ? opacity 0
         forM_ allTokens \appearance ->
             byToken appearance & do
-                unless (appearance == Default) . outlineWidth $ unitless 0
                 when (appearance `elem` [Primary, Success, Danger, Discovery]) $ color' InverseText
                 backgroundColor' $ ButtonBackground appearance DefaultState
                 ariaBusy False & do

@@ -22,10 +22,7 @@ main {
   grid-template-columns: repeat(7, 1fr);
   max-width: 100%;
   overflow: auto;
-}
-
-button {
-    margin: 0.1em;
+  padding: var(--dashi-outline-width);
 }
 
 #icons .grid {

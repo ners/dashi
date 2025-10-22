@@ -5,17 +5,18 @@ module Main where
 import Clay (putCss)
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
-import Dashi.Components.Icon qualified as Icon
 import Dashi.Components.Message (Message (Message), MessageSize (..))
 import Dashi.Components.Message qualified as Message
+import Dashi.Components.TextField (TextField (TextField))
 import Dashi.Components.TextField qualified as TextField
-import Dashi.Components.Util (ariaBusy_)
+import Dashi.Components.Util
+import Dashi.Components.Widget
 import Dashi.Style qualified as Style
 import Dashi.Style.Tokens
 import Dashi.Util (capitalise, emptyAttr_)
 import Miso
 import Miso.Html
-import Miso.Html.Property (class_, disabled_, id_, required_)
+import Miso.Html.Property (class_, disabled_, id_, pattern_, required_)
 import Web.Font.MDI (MDI (MdiStar))
 import Prelude
 
@@ -58,7 +59,7 @@ buttons =
             [class_ "grid"]
             [ div_
                 []
-                [ Button.view
+                [ widget'
                     [attr]
                     Button
                         { size = Button.DefaultSize
@@ -80,7 +81,7 @@ icons =
         [ h2_ [] [text "Icons"]
         , div_
             [class_ "grid"]
-            [ Icon.view [] mdi
+            [ widget @MDI mdi
             | mdi <- take 124 [minBound .. maxBound]
             ]
         ]
@@ -89,14 +90,15 @@ forms :: View model action
 forms =
     section_ [id_ "forms"] $
         [ h2_ [] [text "Forms"]
-        , TextField.view [required_ True] "Field label"
-        , Message.view
-            []
-            Message
-                { size = FormMessage
-                , appearance = Danger
-                , title = Nothing
-                , secondary = Just "You can use letters, numbers, and periods"
+        , widget'
+            [ required_ True
+            , pattern_ "^[a-zA-Z0-9.]+$"
+            ]
+            TextField
+                { label = "Username"
+                , value = Nothing
+                , isValid = True
+                , messages = [(Subtle, "You can use letters, numbers, and periods")]
                 }
         ]
 
@@ -109,8 +111,7 @@ appView _model =
         , icons
         , forms
         , div_ [] . pure $
-            Message.view
-                []
+            widget
                 Message
                     { size = InlineMessage
                     , appearance = Primary
@@ -118,8 +119,7 @@ appView _model =
                     , secondary = Just "You've been upgraded to version 5.2"
                     }
         , div_ [] . pure $
-            Message.view
-                []
+            widget
                 Message
                     { size = InlineMessage
                     , appearance = Warning
@@ -127,8 +127,7 @@ appView _model =
                     , secondary = Just "Your bill may increase"
                     }
         , div_ [] . pure $
-            Message.view
-                []
+            widget
                 Message
                     { size = InlineMessage
                     , appearance = Danger
@@ -136,8 +135,7 @@ appView _model =
                     , secondary = Just "Username taken"
                     }
         , div_ [] . pure $
-            Message.view
-                []
+            widget
                 Message
                     { size = InlineMessage
                     , appearance = Success
@@ -145,40 +143,35 @@ appView _model =
                     , secondary = Just "Files have been added"
                     }
         , div_ [] . pure $
-            Message.view
-                []
+            widget
                 Message
                     { size = InlineMessage
                     , appearance = Discovery
                     , title = Nothing
                     , secondary = Nothing
                     }
-        , Message.view
-            []
+        , widget
             Message
                 { size = SectionMessage
                 , appearance = Primary
                 , title = Just "Editing is restricted"
                 , secondary = Just "You're not allowed to change these restrictions. It's either due to the restrictions on the page, or permission settings for this space."
                 }
-        , Message.view
-            []
+        , widget
             Message
                 { size = SectionMessage
                 , appearance = Warning
                 , title = Just "Cannot connect to the database"
                 , secondary = Just "We're unable to save any progress at this time. Please try again later."
                 }
-        , Message.view
-            []
+        , widget
             Message
                 { size = SectionMessage
                 , appearance = Success
                 , title = Nothing
                 , secondary = Just "The file has been uploaded."
                 }
-        , Message.view
-            []
+        , widget
             Message
                 { size = SectionMessage
                 , appearance = Danger

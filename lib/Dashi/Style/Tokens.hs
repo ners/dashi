@@ -3,7 +3,7 @@
 module Dashi.Style.Tokens where
 
 import Clay
-import Dashi.Util (emptyAttr_)
+import Dashi.Util (emptyAttr_, emptyRefinement)
 import Data.Maybe (fromJust)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
@@ -24,7 +24,7 @@ class Token t where
     byToken :: t -> Refinement
     default byToken :: (Eq t) => t -> Refinement
     byToken t
-        | Just t == defaultToken = ""
+        | Just t == defaultToken = emptyRefinement
         | otherwise = byClass $ tokenName t
     allTokens :: [t]
     default allTokens :: (Bounded t, Enum t) => [t]
@@ -103,7 +103,7 @@ instance Token InputState where
     tokenName HoveredState = "hovered"
     tokenName PressedState = "pressed"
     defaultToken = Just DefaultState
-    byToken DefaultState = ""
+    byToken DefaultState = emptyRefinement
     byToken HoveredState = hover
     byToken PressedState = active
 
@@ -116,6 +116,8 @@ data Colour
     | Icon Appearance
     | Border
     | InputBorder
+    | BorderFocused
+    | InputBorderDanger
     deriving stock (Eq, Ord)
 
 allColours :: Seq Colour
@@ -129,6 +131,8 @@ allColours =
         , Icon <$> [minBound .. maxBound]
         , pure Border
         , pure InputBorder
+        , pure BorderFocused
+        , pure InputBorderDanger
         ]
 
 instance Enum Colour where
@@ -148,6 +152,8 @@ instance Token Colour where
     tokenName (Icon appearance) = "icon-" <> tokenName appearance
     tokenName Border = "border"
     tokenName InputBorder = "input-border"
+    tokenName BorderFocused = "input-border-focused"
+    tokenName InputBorderDanger = "input-border-danger"
 
 instance ValueToken Colour where
     type ValueType Colour = Color
@@ -177,3 +183,5 @@ instance ValueToken Colour where
     tokenValue (Icon Discovery) = parse "#AF59E1"
     tokenValue Border = parse "#0B120E24"
     tokenValue InputBorder = parse "#8C8F97"
+    tokenValue BorderFocused = parse "#4688EC"
+    tokenValue InputBorderDanger = parse "#E2483D"

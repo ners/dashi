@@ -1,5 +1,7 @@
 module Dashi.Util where
 
+import Clay (Refinement)
+import Clay.Selector (Refinement (Refinement))
 import Data.Char (toUpper)
 import Data.String (IsString (fromString))
 import Data.Text (Text)
@@ -18,3 +20,6 @@ capitalise s =
 
 emptyAttr_ :: Attribute action
 emptyAttr_ = Styles mempty
+
+emptyRefinement :: Refinement
+emptyRefinement = Refinement mempty

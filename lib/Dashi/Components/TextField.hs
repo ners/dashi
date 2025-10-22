@@ -3,13 +3,15 @@
 module Dashi.Components.TextField where
 
 import Clay hiding (Background, fullWidth, label, span_, var)
+import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
 import Dashi.Components.Util
+import Dashi.Components.Widget
 import Dashi.Style.Tokens hiding (Background)
 import Dashi.Style.Util
 import Dashi.Util (fromText)
 import Data.Aeson qualified as Aeson
-import Miso (Attribute, MisoString, View, text)
-import Miso.Html.Element (input_, label_, span_)
+import Miso (MisoString, text)
+import Miso.Html.Element (div_, input_, label_, span_)
 import Miso.Html.Property (class_, for_)
 import Prelude
 
@@ -26,19 +28,30 @@ instance ValueToken Background where
     tokenValue (Background HoveredState) = parse "#F8F8F8"
     tokenValue (Background PressedState) = parse "#FFF"
 
-view :: [Attribute action] -> MisoString -> View model action
-view attrs label =
-    label_
-        ([class_ "text-field"] <> labelFor)
-        [ span_ (class_ "label" : labelRequired) [text label]
-        , input_ attrs
-        ]
-  where
-    labelFor =
-        case findProp "id" attrs of
-            Just (Aeson.String cssId) -> [for_ (fromText cssId)]
-            _ -> []
-    labelRequired = [class_ "required" | isRequired attrs]
+data TextField = TextField
+    { label :: MisoString
+    , value :: Maybe MisoString
+    , isValid :: Bool
+    , messages :: [(Appearance, MisoString)]
+    }
+
+instance Widget TextField where
+    widget' attrs TextField{..} =
+        div_ [class_ "text-field"] $
+            label_
+                ([] <> labelFor)
+                [ span_ (class_ "label" : labelRequired) [text label]
+                , input_ attrs
+                ]
+                : [ widget Message{size = FormMessage, title = Nothing, ..}
+                  | (appearance, Just -> secondary) <- messages
+                  ]
+      where
+        labelFor =
+            case findProp "id" attrs of
+                Just (Aeson.String cssId) -> [for_ (fromText cssId)]
+                _ -> []
+        labelRequired = [class_ "required" | isRequired attrs]
 
 style :: Css
 style = do
@@ -56,6 +69,7 @@ style = do
                 color' $ Text Danger
                 marginLeft . token $ Space XSmall
         input ? do
+            focusable
             display block
             fullWidth
             border (var "border-width" []) solid (token InputBorder)
@@ -65,3 +79,4 @@ style = do
             backgroundColor' $ Background DefaultState
             hover & backgroundColor' (Background HoveredState)
             active & backgroundColor' (Background PressedState)
+            ":user-invalid" & ":not(:focus-visible)" & borderColor' InputBorderDanger

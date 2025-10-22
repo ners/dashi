@@ -80,6 +80,7 @@ library
     Dashi.Components.Spinner
     Dashi.Components.TextField
     Dashi.Components.Util
+    Dashi.Components.Widget
     Dashi.Layout.Page
     Dashi.Style
     Dashi.Style.Root

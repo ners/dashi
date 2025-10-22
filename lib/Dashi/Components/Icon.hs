@@ -1,6 +1,9 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module Dashi.Components.Icon where
 
 import Clay (Auto (auto), Css, FontFaceFormat (WOFF2), FontFaceSrc (FontFaceSrcUrl), Normal (normal), display, fontFace, fontFaceSrc, fontFamily, fontStyle, fontWeight, important, inlineBlock, none, textDecoration, textRendering, (?))
+import Dashi.Components.Widget
 import Dashi.Style.Util ((~:))
 import Data.String (IsString (fromString))
 import Miso
@@ -23,5 +26,5 @@ style = do
         important $ textDecoration none
         "font" ~: "normal normal normal 1.5em/1 'Material Design Icons'"
 
-view :: [Attribute action] -> MDI -> View model action
-view attrs = span_ (class_ "mdi" : attrs) . pure . text . fromString . pure . mdiChar
+instance Widget MDI where
+    widget' attrs = span_ (class_ "mdi" : attrs) . pure . text . fromString . pure . mdiChar

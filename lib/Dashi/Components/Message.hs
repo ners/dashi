@@ -4,6 +4,8 @@ module Dashi.Components.Message where
 
 import Clay hiding (Background, icon, size, span_, title)
 import Control.Monad (forM_)
+import Dashi.Components.Util (selectable_)
+import Dashi.Components.Widget
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Maybe (catMaybes)
@@ -32,24 +34,25 @@ data Message = Message
     , secondary :: Maybe MisoString
     }
 
-view :: [Attribute action] -> Message -> View model action
-view attrs Message{..} =
-    tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs) . catMaybes $
-        [ pure $ span_ [class_ "mdi"] []
-        , span_ [class_ "title"] . pure . text <$> title
-        , span_ [class_ "secondary"] . pure . text <$> secondary
-        ]
-  where
-    tag
-        | size == InlineMessage = a_
-        | otherwise = div_
+instance Widget Message where
+    widget' attrs Message{..} =
+        tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs) . catMaybes $
+            [ pure $ span_ [class_ "mdi"] []
+            , span_ [class_ "title"] . pure . text <$> title
+            , span_ [class_ "secondary"] . pure . text <$> secondary
+            ]
+      where
+        tag
+            | size == InlineMessage = a_ . (selectable_ :)
+            | otherwise = div_
 
 style :: Css
 style =
     ".message" ? do
         maxWidth $ pct 100
         byToken InlineMessage & do
-            clickable
+            pressable
+            underlinedOnHover
             display inlineFlex
             flexDirection row
             alignItems center

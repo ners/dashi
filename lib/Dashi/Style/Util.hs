@@ -78,13 +78,24 @@ instance Font Value
 fontFamily' :: Value -> Css
 fontFamily' = fontFamily [] . pure . other
 
-clickable :: Css
-clickable = do
-    cursor pointer
+focusable :: Css
+focusable = ":focus-visible" & outline solid (var "outline-width" []) (token BorderFocused)
+
+underlinedOnHover :: Css
+underlinedOnHover = do
     hover & star ? textDecoration underline
+    ":focus-visible" & star ? textDecoration underline
+
+pressable :: Css
+pressable = do
+    cursor pointer
+    focusable
 
 color' :: Colour -> Css
 color' = color . token
+
+borderColor' :: Colour -> Css
+borderColor' = borderColor . token
 
 backgroundColor' :: (Token t, ValueType t ~ Color) => t -> Css
 backgroundColor' = backgroundColor . token
