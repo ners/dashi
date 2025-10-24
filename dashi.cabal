@@ -75,8 +75,10 @@ library
   exposed-modules:
     Dashi
     Dashi.Components.Button
+    Dashi.Components.Checkbox
     Dashi.Components.Icon
     Dashi.Components.Message
+    Dashi.Components.Radio
     Dashi.Components.Spinner
     Dashi.Components.TextField
     Dashi.Components.Util

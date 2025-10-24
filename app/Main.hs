@@ -5,8 +5,10 @@ module Main where
 import Clay (putCss)
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
+import Dashi.Components.Checkbox (Checkbox (..))
 import Dashi.Components.Message (Message (Message), MessageSize (..))
 import Dashi.Components.Message qualified as Message
+import Dashi.Components.Radio (Radio (..))
 import Dashi.Components.TextField (TextField (TextField))
 import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
@@ -16,7 +18,7 @@ import Dashi.Style.Tokens
 import Dashi.Util (capitalise, emptyAttr_)
 import Miso
 import Miso.Html
-import Miso.Html.Property (class_, disabled_, id_, pattern_, required_)
+import Miso.Html.Property (class_, disabled_, href_, id_, pattern_, required_)
 import Web.Font.MDI (MDI (MdiStar))
 import Prelude
 
@@ -96,9 +98,36 @@ forms =
             ]
             TextField
                 { label = "Username"
+                , name = "username"
                 , value = Nothing
                 , isValid = True
                 , messages = [(Subtle, "You can use letters, numbers, and periods")]
+                }
+        , widget'
+            [required_ True]
+            Radio
+                { legend = "Do you like Haskell?"
+                , name = "haskell"
+                , options = [True, False]
+                , selectedOption = Nothing
+                , optionLabel = \case
+                    True -> [text "Yeah!"]
+                    False -> [text "Getting there"]
+                , messages = []
+                }
+        , widget'
+            []
+            Checkbox
+                { legend = Nothing
+                , name = "terms"
+                , options = [()]
+                , selectedOptions = []
+                , optionLabel =
+                    const
+                        [ text "I have read and accept the "
+                        , a_ [href_ "#"] [text "terms and conditions"]
+                        ]
+                , messages = []
                 }
         ]
 

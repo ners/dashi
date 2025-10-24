@@ -30,3 +30,4 @@ instance Widget Spinner where
                     ]
                 ]
             ]
+    style = pure ()

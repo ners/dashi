@@ -6,6 +6,12 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "github:ners/nixpkgs/haskell";
+    nix-wasm = {
+      url = "github:ners/nix-wasm";
+      inputs.ghc-wasm-meta.follows = "ghc-wasm-meta";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     fluent-hs = {
       url = "github:ners/fluent-hs";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,13 +22,7 @@
     };
     miso = {
       url = "github:dmjio/miso";
-      inputs.ghc-wasm-meta.follows = "ghc-wasm-meta";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-wasm = {
-      url = "github:ners/nix-wasm";
-      inputs.ghc-wasm-meta.follows = "ghc-wasm-meta";
-      inputs.nixpkgs.follows = "nixpkgs";
+      flake = false;
     };
     mdi = {
       url = "github:Templarian/MaterialDesign";
@@ -54,22 +54,30 @@
           (file: any file.hasExt [ "cabal" "hs" "md" ])
           root;
       };
+      pname = "dashi";
     in
-    foreach inputs.nixpkgs.legacyPackages (system: pkgs:
+    foreach inputs.nixpkgs.legacyPackages (system: pkgs':
       let
+        pkgs = pkgs' // {
+          haskellPackages = pkgs'.haskellPackages.extend haskell-overlay;
+        };
+        wasmPkgs' = inputs.nix-wasm.legacyPackages.${system};
+        wasmPkgs = wasmPkgs' // {
+          haskellPackages = wasmPkgs'.haskellPackages.extend haskell-overlay;
+        };
         browser_wasi_shim = pkgs.buildNpmPackage (finalAttrs: {
           pname = "browser_wasi_shim";
           version = "0.4.2";
           src = pkgs.fetchFromGitHub {
-            owner = "bjorn3";
+            owner = "haskell-wasm";
             repo = "browser_wasi_shim";
-            tag = "v${finalAttrs.version}";
-            hash = "sha256-okP2bT4rcqtwTk7eOdyC+DqoLACTS9srANgSEkjb06A=";
+            rev = "815f6e937f18fce1734ced181fe76a3d379f7f4b";
+            hash = "sha256-Mpg04drlMjBGn0fxu9krrXNYiEYlTXo7nMJGgVj2WkQ=";
           };
-          npmDepsHash = "sha256-5CUnps7UyX9U7ZRRaUy0t7lpXoOhFR8n7AEPTD0npF0=";
+          npmDepsHash = "sha256-JHvXfcZQoSYN8yXcbQoGFnuNAV+IDipc0utJ8KHj18Q=";
           meta = {
             description = "A pure javascript shim for WASI";
-            homepage = "https://github.com/bjorn3/browser_wasi_shim";
+            homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
             license = with lib.licenses; [ asl20 mit ];
             maintainers = with lib.maintainers; [ ners ];
           };
@@ -95,13 +103,13 @@
           cp "${favicon}" favicon.ico
 
           mkdir browser_wasi_shim
-          cp -r "${browser_wasi_shim}/lib/node_modules/@bjorn3/browser_wasi_shim/dist"/*.js browser_wasi_shim
+          cp -r "${browser_wasi_shim}"/lib/node_modules/*/browser_wasi_shim/dist/*.js browser_wasi_shim
         '';
         haskell-overlay = lib.composeManyExtensions [
           inputs.fluent-hs.overlays.haskell
           (inputs.web-font-mdi.overlays.haskell pkgs.haskell.lib)
           (hfinal: hprev: with pkgs.haskell.lib.compose; {
-            dashi = (hfinal.callCabal2nix "dashi" (sourceFilter ./.) { }).overrideAttrs (attrs: {
+            ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: {
               nativeBuildInputs = with pkgs; [
                 binaryen
                 nodejs
@@ -126,32 +134,36 @@
             jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           })
         ];
-        extend = hp: hp.extend haskell-overlay;
-        wasmPackages = extend inputs.nix-wasm.legacyPackages.${system}.haskellPackages;
-        haskellPackages = extend pkgs.haskellPackages;
       in
       {
         packages.${system}.default = pkgs.writeShellApplication {
-          name = "dashi-app";
+          name = "${pname}-app";
           runtimeInputs = with pkgs; [ http-server ];
           text = ''
-            http-server ${wasmPackages.dashi}
+            http-server ${wasmPkgs.haskellPackages.${pname}}
           '';
         };
         legacyPackages.${system} = {
-          inherit haskellPackages wasmPackages browser_wasi_shim favicon;
+          inherit (pkgs) haskellPackages;
+          inherit wasmPkgs;
         };
         devShells.${system} = {
-          default = haskellPackages.shellFor {
-            packages = ps: [ ps.dashi ];
+          default = pkgs.haskellPackages.shellFor {
+            packages = ps: [ ps.${pname} ];
             nativeBuildInputs = with pkgs.haskellPackages; [
               cabal-install
               haskell-language-server
             ];
             env.NIXPKGS_ALLOW_BROKEN = "1";
             shellHook = ''
-              ln -s "${staticAssets}"/* static
+              ln -fs "${staticAssets}"/* static
             '';
+          };
+          wasm = wasmPkgs.haskellPackages.shellFor {
+            packages = ps: [ ps.${pname} ];
+            nativeBuildInputs = with wasmPkgs; [
+              cabal-install
+            ];
           };
         };
       });

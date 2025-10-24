@@ -89,7 +89,7 @@ instance Widget Button where
         button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy]) $
             labelElem : [widget Spinner | isBusy]
       where
-        isBusy = isAriaBusy attrs
+        isBusy = hasAriaBusy attrs
         labelElem =
             label_ [] . catMaybes $
                 [ widget <$> leftIcon
@@ -97,52 +97,51 @@ instance Widget Button where
                 , widget <$> rightIcon
                 ]
 
-style :: Css
-style = do
-    ":root" ? tokenDecl @ButtonBackground
-    (Clay.button <> (input # "type='submit'") <> ".button") ? do
-        pressable
-        position relative
-        boxShadow . fromList $
-            [bsInset . bsColor (token Border) $ shadowWithBlur (unitless 0) (unitless 0) (var "border-width" [])]
-        byToken Subtle & ("box-shadow" -: "none")
-        borderRadiusAll' Small
-        paddingYX' XSmall Medium
-        byToken CompactButton & do
-            paddingYX (em 0.125) (token $ Space Medium)
-            Clay.span ? transform (translateY $ unitless 0)
-        byToken FullWidthButton & do
-            fullWidth
-            Clay.label ? do
+    style = do
+        ":root" ? tokenDecl @ButtonBackground
+        (Clay.button <> (input # "type='submit'") <> ".button") ? do
+            pressable
+            position relative
+            boxShadow . fromList $
+                [bsInset . bsColor (token Border) $ shadowWithBlur nil nil (var "border-width" [])]
+            byToken Subtle & ("box-shadow" -: "none")
+            borderRadiusAll' Small
+            paddingYX' XSmall Medium
+            byToken CompactButton & do
+                paddingYX (em 0.125) (token $ Space Medium)
+                Clay.span ? transform (translateY nil)
+            byToken FullWidthButton & do
                 fullWidth
-                justifyContent spaceEvenly
-        fontWeight $ weight 550
-        color' $ Text Subtle
-        backgroundColor' $ ButtonBackground Default DefaultState
-        transition "background" (sec 0.1) easeOut 0
-        Clay.label ? do
-            display inlineFlex
-            alignItems baseline
-            justifyContent center
-            textAlign center
-            gap' XSmall
-            Clay.pointerEvents none
-            Clay.span ? transform (translateY . px $ -1)
-        ".mdi" ? fontSize (pct 110)
-        ".spinner" ? do
-            opacity 1
-            position absolute
-            left $ pct 50
-            "transform" -: "translateX(-50%)"
-            top . token $ Space XSmall
-            display inlineBlock
-            width $ em 1.4
-            height $ em 1.4
-        ariaBusy True & Clay.label ? opacity 0
-        forM_ allTokens \appearance ->
-            byToken appearance & do
-                when (appearance `elem` [Primary, Success, Danger, Discovery]) $ color' InverseText
-                backgroundColor' $ ButtonBackground appearance DefaultState
-                ariaBusy False & do
-                    hover & backgroundColor' (ButtonBackground appearance HoveredState)
-                    active & backgroundColor' (ButtonBackground appearance PressedState)
+                Clay.label ? do
+                    fullWidth
+                    justifyContent spaceEvenly
+            fontWeight $ weight 550
+            color' $ Text Subtle
+            backgroundColor' $ ButtonBackground Default DefaultState
+            transition "background" (sec 0.1) easeOut 0
+            Clay.label ? do
+                display inlineFlex
+                alignItems baseline
+                justifyContent center
+                textAlign center
+                gap' XSmall
+                Clay.pointerEvents none
+                Clay.span ? transform (translateY . px $ -1)
+            ".mdi" ? fontSize (pct 110)
+            ".spinner" ? do
+                opacity 1
+                position absolute
+                left $ pct 50
+                "transform" -: "translateX(-50%)"
+                top . token $ Space XSmall
+                display inlineBlock
+                width $ em 1.4
+                height $ em 1.4
+            ariaBusy True & Clay.label ? opacity 0
+            forM_ allTokens \appearance ->
+                byToken appearance & do
+                    when (appearance `elem` [Primary, Success, Danger, Discovery]) $ color' InverseText
+                    backgroundColor' $ ButtonBackground appearance DefaultState
+                    ariaBusy False & do
+                        hover & backgroundColor' (ButtonBackground appearance HoveredState)
+                        active & backgroundColor' (ButtonBackground appearance PressedState)

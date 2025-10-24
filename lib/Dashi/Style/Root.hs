@@ -59,7 +59,7 @@ style = do
             ]
         varDecl "font-family" $ var @Value "font-family-sans-serif" []
         varDecl "line-height" $ unitless 1.5
-        varDecl "font-weight" $ unitless 400
+        varDecl "font-weight" $ weight 400
         varDecl "font-size" $ pct 100
         varDecl "text-underline-offset" $ rem 0.1
         varDecl "border-radius" $ rem 0.25
@@ -70,8 +70,8 @@ style = do
         tokenDecl @Radius
         tokenDecl @Colour
     star ? do
-        marginAll $ unitless 0
-        paddingAll $ unitless 0
+        marginAll nil
+        paddingAll nil
         fontFamily [] [inherit]
         fontSize inherit
         fontStyle inherit
@@ -82,6 +82,7 @@ style = do
         lineHeight inherit
         "border" ~: none
         "background" ~: none
+        "appearance" ~: none
         disabled & do
             important $ cursor notAllowed
             important $ color' DisabledText
