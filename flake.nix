@@ -55,85 +55,101 @@
           root;
       };
       pname = "dashi";
+      browser_wasi_shim = pkgs: pkgs.buildNpmPackage (finalAttrs: {
+        pname = "browser_wasi_shim";
+        version = "0.4.2";
+        src = pkgs.fetchFromGitHub {
+          owner = "haskell-wasm";
+          repo = "browser_wasi_shim";
+          rev = "815f6e937f18fce1734ced181fe76a3d379f7f4b";
+          hash = "sha256-Mpg04drlMjBGn0fxu9krrXNYiEYlTXo7nMJGgVj2WkQ=";
+        };
+        npmDepsHash = "sha256-JHvXfcZQoSYN8yXcbQoGFnuNAV+IDipc0utJ8KHj18Q=";
+        meta = {
+          description = "A pure javascript shim for WASI";
+          homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
+          license = with lib.licenses; [ asl20 mit ];
+          maintainers = with lib.maintainers; [ ners ];
+        };
+      });
+      favicon = pkgs: pkgs.runCommand "favicon.ico"
+        {
+          nativeBuildInputs = with pkgs; [
+            imagemagick
+            librsvg
+          ];
+        } ''
+        tmpPng="$(mktemp --suffix=.png)"
+        rsvg-convert "${./static/icon.svg}" \
+          --width 64 \
+          --output "$tmpPng"
+        convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
+        rm "$tmpPng"
+      '';
+      staticAssets = pkgs: pkgs.runCommand "static" { } ''
+        mkdir "$out"
+        cd "$out"
+        cp "${inputs.mdi-webfont}"/*.woff2 .
+        cp "${favicon pkgs}" favicon.ico
+
+        mkdir browser_wasi_shim
+        cp -r "${browser_wasi_shim pkgs}"/lib/node_modules/*/browser_wasi_shim/dist/*.js browser_wasi_shim
+      '';
+      haskell-overlay = pkgs: lib.composeManyExtensions [
+        inputs.fluent-hs.overlays.haskell
+        (inputs.web-font-mdi.overlays.haskell pkgs.haskell.lib)
+        (hfinal: hprev: with pkgs.haskell.lib.compose; {
+          ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: {
+            nativeBuildInputs = with pkgs; [
+              binaryen
+              nodejs
+              wasm-tools
+            ] ++ attrs.nativeBuildInputs or [ ];
+            postInstall = (attrs.postInstall or "") + lib.optionalString (hfinal.ghc.targetPrefix == "wasm32-wasi-") ''
+              cd "$out"
+              mv bin/*.wasm app.wasm
+              rmdir bin
+              "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
+              # hold @MagicRB accountable for this crime
+              sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
+              wasm-opt -all -O2 app.wasm -o app.wasm
+              wasm-tools strip -o app.wasm app.wasm
+              cp -r "${./static}"/* .
+              ln -s "${staticAssets pkgs}"/* .
+              sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
+            '';
+          });
+          miso = hfinal.callCabal2nix "miso" inputs.miso { };
+          jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
+        })
+      ];
+      overlay = lib.composeManyExtensions [
+        (final: prev: {
+          haskell = prev.haskell // {
+            packageOverrides = lib.composeManyExtensions [
+              prev.haskell.packageOverrides
+              (haskell-overlay prev)
+            ];
+          };
+        })
+      ];
     in
+    {
+      overlays = {
+        default = overlay;
+        haskell = haskell-overlay;
+      };
+    }
+    //
     foreach inputs.nixpkgs.legacyPackages (system: pkgs':
       let
         pkgs = pkgs' // {
-          haskellPackages = pkgs'.haskellPackages.extend haskell-overlay;
+          haskellPackages = pkgs'.haskellPackages.extend (haskell-overlay pkgs');
         };
         wasmPkgs' = inputs.nix-wasm.legacyPackages.${system};
         wasmPkgs = wasmPkgs' // {
-          haskellPackages = wasmPkgs'.haskellPackages.extend haskell-overlay;
+          haskellPackages = wasmPkgs'.haskellPackages.extend (haskell-overlay pkgs');
         };
-        browser_wasi_shim = pkgs.buildNpmPackage (finalAttrs: {
-          pname = "browser_wasi_shim";
-          version = "0.4.2";
-          src = pkgs.fetchFromGitHub {
-            owner = "haskell-wasm";
-            repo = "browser_wasi_shim";
-            rev = "815f6e937f18fce1734ced181fe76a3d379f7f4b";
-            hash = "sha256-Mpg04drlMjBGn0fxu9krrXNYiEYlTXo7nMJGgVj2WkQ=";
-          };
-          npmDepsHash = "sha256-JHvXfcZQoSYN8yXcbQoGFnuNAV+IDipc0utJ8KHj18Q=";
-          meta = {
-            description = "A pure javascript shim for WASI";
-            homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
-            license = with lib.licenses; [ asl20 mit ];
-            maintainers = with lib.maintainers; [ ners ];
-          };
-        });
-        favicon = pkgs.runCommand "favicon.ico"
-          {
-            nativeBuildInputs = with pkgs; [
-              imagemagick
-              librsvg
-            ];
-          } ''
-          tmpPng="$(mktemp --suffix=.png)"
-          rsvg-convert "${./static/icon.svg}" \
-            --width 64 \
-            --output "$tmpPng"
-          convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
-          rm "$tmpPng"
-        '';
-        staticAssets = pkgs.runCommand "static" { } ''
-          mkdir "$out"
-          cd "$out"
-          cp "${inputs.mdi-webfont}"/*.woff2 .
-          cp "${favicon}" favicon.ico
-
-          mkdir browser_wasi_shim
-          cp -r "${browser_wasi_shim}"/lib/node_modules/*/browser_wasi_shim/dist/*.js browser_wasi_shim
-        '';
-        haskell-overlay = lib.composeManyExtensions [
-          inputs.fluent-hs.overlays.haskell
-          (inputs.web-font-mdi.overlays.haskell pkgs.haskell.lib)
-          (hfinal: hprev: with pkgs.haskell.lib.compose; {
-            ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: {
-              nativeBuildInputs = with pkgs; [
-                binaryen
-                nodejs
-                wasm-tools
-              ] ++ attrs.nativeBuildInputs or [ ];
-              postInstall = ''
-                ${attrs.postInstall or ""}
-                cd "$out"
-                mv bin/*.wasm app.wasm
-                rmdir bin
-                "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
-                # hold @MagicRB accountable for this crime
-                sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
-                wasm-opt -all -O2 app.wasm -o app.wasm
-                wasm-tools strip -o app.wasm app.wasm
-                cp -r "${./static}"/* .
-                ln -s "${staticAssets}"/* .
-                sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
-              '';
-            });
-            miso = hfinal.callCabal2nix "miso" inputs.miso { };
-            jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
-          })
-        ];
       in
       {
         packages.${system}.default = pkgs.writeShellApplication {
@@ -156,7 +172,7 @@
             ];
             env.NIXPKGS_ALLOW_BROKEN = "1";
             shellHook = ''
-              ln -fs "${staticAssets}"/* static
+              ln -fs "${staticAssets pkgs}"/* static
             '';
           };
           wasm = wasmPkgs.haskellPackages.shellFor {
