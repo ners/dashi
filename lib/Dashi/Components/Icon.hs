@@ -2,7 +2,7 @@
 
 module Dashi.Components.Icon where
 
-import Clay (Auto (auto), Content, Css, FontFaceFormat (WOFF2), FontFaceSrc (FontFaceSrcUrl), Normal (normal), display, fontFace, fontFaceSrc, fontFamily, fontStyle, fontWeight, important, inlineBlock, none, stringContent, textDecoration, textRendering, (?))
+import Clay (Auto (auto), Content, Css, FontFaceFormat (WOFF2), FontFaceSrc (FontFaceSrcUrl), Normal (normal), display, fontFace, fontFaceSrc, fontFamily, fontStyle, fontWeight, important, inlineBlock, none, stringContent, textDecoration, textRendering, userSelect, (?))
 import Dashi.Components.Widget
 import Dashi.Style.Util ((~:))
 import Data.String (IsString (fromString))
@@ -19,7 +19,7 @@ iconFont = "font" ~: "normal normal normal 1.5em/1 'Material Design Icons'"
 iconContent :: MDI -> Content
 iconContent = stringContent . Text.singleton . mdiChar
 
-instance Widget MDI where
+instance Widget MDI model action where
     widget' attrs = span_ (class_ "mdi" : attrs) . pure . text . fromString . pure . mdiChar
     style = do
         fontFace do
@@ -32,3 +32,4 @@ instance Widget MDI where
             textRendering auto
             important $ textDecoration none
             iconFont
+            userSelect none

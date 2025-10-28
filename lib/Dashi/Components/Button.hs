@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module Dashi.Components.Button where
 
 import Clay hiding (action, fullWidth, label, size, span_, var)
@@ -10,9 +12,10 @@ import Dashi.Components.Widget
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Foldable (forM_)
+import Data.Foldable (for_)
 import Data.List qualified as List
 import Data.Maybe (catMaybes, fromJust)
+import Data.Semigroup (sconcat)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import Data.String (fromString)
@@ -84,7 +87,7 @@ data Button = Button
     , rightIcon :: Maybe MDI
     }
 
-instance Widget Button where
+instance Widget Button model action where
     widget' attrs Button{..} =
         button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy]) $
             labelElem : [widget Spinner | isBusy]
@@ -99,7 +102,7 @@ instance Widget Button where
 
     style = do
         ":root" ? tokenDecl @ButtonBackground
-        (Clay.button <> (input # "type='submit'") <> ".button") ? do
+        sconcat [Clay.button, input # ("type" @= "submit"), ".button"] ? do
             pressable
             position relative
             boxShadow . fromList $
@@ -125,9 +128,10 @@ instance Widget Button where
                 justifyContent center
                 textAlign center
                 gap' XSmall
+                lineHeight $ unitless 1.5
                 Clay.pointerEvents none
-                Clay.span ? transform (translateY . px $ -1)
-            ".mdi" ? fontSize (pct 110)
+                Clay.span # ":not(.mdi)" ? transform (translateY . em $ -0.1)
+            ".mdi" ? fontSize' Large
             ".spinner" ? do
                 opacity 1
                 position absolute
@@ -138,9 +142,9 @@ instance Widget Button where
                 width $ em 1.4
                 height $ em 1.4
             ariaBusy True & Clay.label ? opacity 0
-            forM_ allTokens \appearance ->
+            for_ @[] allTokens \appearance ->
                 byToken appearance & do
-                    when (appearance `elem` [Primary, Success, Danger, Discovery]) $ color' InverseText
+                    when (elem @[] appearance [Primary, Success, Danger, Discovery]) $ color' InverseText
                     backgroundColor' $ ButtonBackground appearance DefaultState
                     ariaBusy False & do
                         hover & backgroundColor' (ButtonBackground appearance HoveredState)

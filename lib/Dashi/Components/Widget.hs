@@ -3,10 +3,22 @@
 module Dashi.Components.Widget where
 
 import Clay (Css)
+import Control.Applicative (Applicative (pure))
 import Miso
 
-class Widget w where
+class Widget w model action where
     widget' :: [Attribute action] -> w -> View model action
     widget :: w -> View model action
     widget = widget' []
     style :: Css
+
+data SomeWidget = forall w model action. (Widget w model action) => SomeWidget w
+
+instance Widget () model action where
+    widget' _ () = VText ""
+    style = pure ()
+
+instance Widget (View model action) model action where
+    widget' :: [Attribute action] -> View model action -> View model action
+    widget' _ view = view
+    style = pure ()

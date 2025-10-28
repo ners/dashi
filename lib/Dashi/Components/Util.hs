@@ -47,8 +47,14 @@ tryGetId =
         Aeson.String s -> Just (fromText s)
         _ -> Nothing
 
-ariaBusy_ :: Attribute action
-ariaBusy_ = aria_ "busy" "true"
+ariaBusy_ :: Bool -> Attribute action
+ariaBusy_ =
+    aria_ "busy" . \case
+        True -> "true"
+        False -> "false"
+
+ariaRole_ :: MisoString -> Attribute action
+ariaRole_ = aria_ "role"
 
 selectable_ :: Attribute action
 selectable_ = tabindex_ "0"

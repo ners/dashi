@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
@@ -5,21 +6,26 @@ module Dashi.Style.Util where
 
 import Clay hiding (cast, fullWidth, var)
 import Clay.Property ()
-import Clay.Selector (Fix (In), Path (Elem), Refinement (Refinement), SelectorF (SelectorF))
+import Clay.Render (renderRefinement)
+import Clay.Selector (Fix (In), Path (Elem), Refinement (Refinement), SelectorF (SelectorF), refinementFromText)
 import Clay.Stylesheet (App (Root), Rule (Nested), key, rule, runS)
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Text.Lazy qualified as LazyText
 import Prelude
 
 self :: Selector
 self = ""
 
 ariaBusy :: Bool -> Refinement
-ariaBusy True = "@aria-busy='true'"
+ariaBusy True = "aria-busy" @= "true"
 ariaBusy False = Clay.not $ ariaBusy True
+
+ariaRole :: Text -> Refinement
+ariaRole = ("aria-role" @=)
 
 fullWidth :: Css
 fullWidth = width $ pct 100
@@ -128,3 +134,22 @@ gridTemplateAreas areas = "grid-template-areas" ~: intercalate "\n    " ("" : (a
     areaRow [] = ""
     areaRow [x] = x
     areaRow xs = "'" <> intercalate " " xs <> "'"
+
+fontSize' :: SizeToken -> Css
+fontSize' = Clay.fontSize . token . FontSize
+
+isOneOf :: [Refinement] -> Refinement
+isOneOf refinements =
+    refinementFromText . LazyText.toStrict $
+        ":is(" <> LazyText.intercalate "," (concatMap renderRefinement refinements) <> ")"
+
+isOneOf' :: (Token t) => [t] -> Refinement
+isOneOf' = isOneOf . fmap byToken
+
+isOneOfAll' :: forall t. (Token t) => Refinement
+isOneOfAll' = isOneOf' $ allTokens @t
+
+has :: Selector -> Refinement
+has selector =
+    refinementFromText . LazyText.toStrict $
+        ":has(" <> renderSelector selector <> ")"

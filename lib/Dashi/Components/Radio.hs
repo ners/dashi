@@ -1,76 +1,62 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Dashi.Components.Radio where
 
-import Clay hiding (fullWidth, legend, name, option, span_, type_)
-import Clay qualified
+import Clay hiding (fullWidth, label, legend, name, option, selected, span_, type_)
 import Dashi.Components.Icon (iconContent)
-import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
-import Dashi.Components.Util
+import Dashi.Components.Util (ariaRole_)
 import Dashi.Components.Widget
 import Dashi.Style.Tokens hiding (Background)
 import Dashi.Style.Util
-import Miso (MisoString, View, text)
-import Miso.Html.Element (fieldset_, input_, label_, legend_, span_)
-import Miso.Html.Property (class_, name_, selected_, type_)
+import Data.Functor ((<&>))
+import Miso (MisoString, View)
+import Miso.Html.Element (fieldset_, input_, label_, span_)
+import Miso.Html.Property (name_, selected_, type_)
 import Web.Font.MDI (MDI (MdiRadioboxBlank, MdiRadioboxMarked))
 import Prelude
 
-data Radio a = Radio
-    { legend :: MisoString
-    , name :: MisoString
-    , options :: [a]
-    , selectedOption :: Maybe a
-    , optionLabel :: forall model action. a -> [View model action]
-    , messages :: [(Appearance, MisoString)]
+data Radio = Radio
+    { name :: MisoString
+    , label :: forall model action. [View model action]
+    , selected :: Bool
     }
 
-instance (Eq a) => Widget (Radio a) where
+instance Widget Radio model action where
     widget' attrs Radio{..} =
-        fieldset_ [class_ "radio-field"] . mconcat $
-            [ pure $ legend_ [class_ "required" | hasRequired attrs] [text legend]
-            , option <$> options
-            , message <$> messages
+        label_
+            []
+            [ input_ $ type_ "radio" : name_ name : selected_ selected : attrs
+            , span_ [] label
             ]
-      where
-        option :: a -> View model action
-        option o =
-            label_
-                []
-                [ input_ $ type_ "radio" : name_ name : [selected_ True | Just o == selectedOption]
-                , span_ [class_ "label"] $ optionLabel o
-                ]
-        message :: (Appearance, MisoString) -> View model action
-        message (appearance, Just -> secondary) = widget Message{size = FormMessage, title = Nothing, ..}
-
-    style = do
+    style =
         -- Shared style is applied in the Checkbox component
         input # ("type" @= "radio") ? do
             before & content (iconContent MdiRadioboxBlank)
             checked <> before & do
                 color' BorderFocused
                 content $ iconContent MdiRadioboxMarked
-        ".radio-field" ? do
-            display flex
-            flexDirection column
-            rowGap' XSmall
-            Clay.legend ? do
-                display block
-                fullWidth
-                fontWeight $ weight 600
-                fontSize $ pct 85
-                marginBottom . token $ Space Small
-                ".required" <> after & do
-                    fontWeight $ weight 400
-                    content $ stringContent "*"
-                    color' $ Text Danger
-                    marginLeft . token $ Space XSmall
-            Clay.label ? do
-                pressable
-                display flex
-                flexDirection row
-                alignItems center
-                columnGap' XSmall
-                fullWidth
-                paddingLeft . token $ Space XSmall
+
+data RadioGroup o = RadioGroup
+    { name :: MisoString
+    , options :: [o]
+    , label :: forall model action. o -> [View model action]
+    , selected :: o -> Bool
+    }
+
+instance (Eq a) => Widget (RadioGroup a) model action where
+    widget' attrs RadioGroup{..} =
+        fieldset_ [ariaRole_ "radiogroup"] $
+            options <&> \o ->
+                widget'
+                    attrs
+                    Radio
+                        { name
+                        , label = label o
+                        , selected = selected o
+                        }
+
+    style =
+        -- Shared style is applied in the CheckboxGroup component
+        pure ()

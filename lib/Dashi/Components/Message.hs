@@ -34,7 +34,7 @@ data Message = Message
     , secondary :: Maybe MisoString
     }
 
-instance Widget Message where
+instance Widget Message model action where
     widget' attrs Message{..} =
         tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs) . catMaybes $
             [ pure $ span_ [class_ "mdi"] []
@@ -77,16 +77,15 @@ instance Widget Message where
                 ".mdi" ? ("grid-area" -: "icon")
                 ".title" ? do
                     "grid-area" -: "title"
-                    fontSize $ pct 115
+                    fontSize' $ Large
                     fontWeight $ weight 700
                 ".secondary" ? ("grid-area" -: "secondary")
                 -- There is no title, so put the secondary text in the title row
                 ".mdi" |+ ".secondary" ? ("grid-area" -: "title")
                 ".title" |+ ".secondary" ? (marginTop . token $ Space XSmall)
             byToken FormMessage & do
-                fontSize (pct 80)
+                fontSize' Small
                 byToken Subtle & ".mdi" ? display none
-                marginTop . token $ Space XSmall
             let icon Default = MdiInformation
                 icon Primary = icon Default
                 icon Subtle = icon Default

@@ -2,12 +2,13 @@
 
 module Dashi.Style.Tokens where
 
-import Clay
+import Clay hiding (FontSize, fontSize)
 import Dashi.Util (emptyAttr_, emptyRefinement)
 import Data.Maybe (fromJust)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import Data.String (IsString (fromString))
+import GHC.IsList (IsList (..))
 import Miso (Attribute)
 import Miso.Html.Property (class_)
 import Prelude hiding (rem)
@@ -26,9 +27,9 @@ class Token t where
     byToken t
         | Just t == defaultToken = emptyRefinement
         | otherwise = byClass $ tokenName t
-    allTokens :: [t]
-    default allTokens :: (Bounded t, Enum t) => [t]
-    allTokens = [minBound .. maxBound]
+    allTokens :: (IsList l, Item l ~ t) => l
+    default allTokens :: (IsList l, Item l ~ t, Bounded t, Enum t) => l
+    allTokens = fromList [minBound .. maxBound]
 
 class (Token t) => ValueToken t where
     type ValueType t
@@ -71,6 +72,21 @@ instance Token Radius where
 instance ValueToken Radius where
     type ValueType Radius = Size LengthUnit
     tokenValue = em . (0.1 *) . (2 ^) . fromEnum . radiusSize
+
+newtype FontSize = FontSize {fontSize :: SizeToken}
+    deriving newtype (Eq, Ord, Bounded, Enum)
+
+instance Token FontSize where
+    tokenName = fromString . ("font-size-" <>) . show . fontSize
+
+instance ValueToken FontSize where
+    type ValueType FontSize = Size Percentage
+    tokenValue FontSize{..} = pct $ case fontSize of
+        XSmall -> 60
+        Small -> 85
+        Medium -> 100
+        Large -> 125
+        XLarge -> 200
 
 data Appearance
     = Default

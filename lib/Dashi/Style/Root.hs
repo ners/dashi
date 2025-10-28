@@ -3,7 +3,7 @@
 
 module Dashi.Style.Root where
 
-import Clay hiding (fullWidth, var)
+import Clay hiding (FontSize, fullWidth, var)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Foldable (for_)
@@ -17,7 +17,7 @@ varDecl :: (Val v) => Key Text -> v -> Css
 varDecl n = varDecl' n . value
 
 tokenDecl :: forall t. (ValueToken t, Val (ValueType t)) => Css
-tokenDecl = for_ (allTokens @t) \t -> varDecl (tokenName t) (tokenValue t)
+tokenDecl = for_ @[] (allTokens @t) \t -> varDecl (tokenName t) (tokenValue t)
 
 style :: Css
 style = do
@@ -69,11 +69,12 @@ style = do
         tokenDecl @Space
         tokenDecl @Radius
         tokenDecl @Colour
+        tokenDecl @FontSize
     star ? do
         marginAll nil
         paddingAll nil
         fontFamily [] [inherit]
-        fontSize inherit
+        Clay.fontSize inherit
         fontStyle inherit
         fontWeight inherit
         color inherit

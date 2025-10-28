@@ -2,19 +2,14 @@
 
 module Dashi.Components.TextField where
 
-import Clay hiding (Background, fullWidth, label, name, span_, value, var)
-import Clay.Elements qualified as Clay
-import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
-import Dashi.Components.Util
+import Clay hiding (Background, Number, fullWidth, label, name, span_, type_, value, var)
 import Dashi.Components.Widget
 import Dashi.Style.Root (tokenDecl)
-import Dashi.Style.Tokens hiding (Background)
+import Dashi.Style.Tokens hiding (Background, Text)
 import Dashi.Style.Util
-import Dashi.Util (fromText)
-import Data.Aeson qualified as Aeson
-import Miso (MisoString, text)
-import Miso.Html.Element (div_, input_, label_, span_)
-import Miso.Html.Property (class_, for_, name_)
+import Miso (MisoString)
+import Miso.Html.Element (input_)
+import Miso.Html.Property (name_, type_)
 import Prelude
 
 newtype Background = Background InputState
@@ -30,54 +25,41 @@ instance ValueToken Background where
     tokenValue (Background HoveredState) = parse "#F8F8F8"
     tokenValue (Background PressedState) = parse "#FFF"
 
+data Type
+    = Text
+    | Password
+    | Number
+    | Email
+    deriving stock (Eq, Ord, Bounded, Enum)
+
+instance Token Type where
+    tokenName Text = "text"
+    tokenName Password = "password"
+    tokenName Number = "number"
+    tokenName Email = "email"
+    tokenAttr = type_ . tokenName
+    byToken = ("type" @=) . tokenName
+
 data TextField = TextField
-    { label :: MisoString
-    , name :: MisoString
+    { name :: MisoString
+    , type' :: Type
     , value :: Maybe MisoString
     , isValid :: Bool
-    , messages :: [(Appearance, MisoString)]
     }
 
-instance Widget TextField where
-    widget' attrs TextField{..} =
-        div_ [class_ "text-field"] $
-            label_
-                labelFor
-                [ span_ (class_ "label" : labelRequired) [text label]
-                , input_ (name_ name : attrs)
-                ]
-                : [ widget Message{size = FormMessage, title = Nothing, ..}
-                  | (appearance, Just -> secondary) <- messages
-                  ]
-      where
-        labelFor =
-            case findProp "id" attrs of
-                Just (Aeson.String cssId) -> [for_ (fromText cssId)]
-                _ -> []
-        labelRequired = [class_ "required" | hasRequired attrs]
-
+instance Widget TextField model action where
+    widget' attrs TextField{..} = input_ (tokenAttr type' : name_ name : attrs)
     style = do
         ":root" ? tokenDecl @Background
-        ".text-field" ? do
-            (self <> Clay.label <> ".label" <> input) ? do
-                display block
-                fullWidth
-            ".label" ? do
-                fontWeight $ weight 600
-                fontSize $ pct 85
-                marginBottom . token $ Space XSmall
-                ".required" <> after & do
-                    fontWeight $ weight 400
-                    content $ stringContent "*"
-                    color' $ Text Danger
-                    marginLeft . token $ Space XSmall
-            input ? do
-                focusable
-                border (var "border-width" []) solid (token InputBorder)
-                paddingAll' XSmall
-                borderRadiusAll' Small
-                transition "background" (sec 0.1) easeOut 0
-                backgroundColor' $ Background DefaultState
-                hover & backgroundColor' (Background HoveredState)
-                active & backgroundColor' (Background PressedState)
-                ":user-invalid" & ":not(:focus-visible)" & borderColor' InputBorderDanger
+        (textarea <> input # isOneOfAll' @Type) ? do
+            display block
+            fullWidth
+            focusable
+            border (var "border-width" []) solid (token InputBorder)
+            paddingAll' XSmall
+            borderRadiusAll' Small
+            transition "background" (sec 0.1) easeOut 0
+            backgroundColor' $ Background DefaultState
+            hover & backgroundColor' (Background HoveredState)
+            active & backgroundColor' (Background PressedState)
+            ":user-invalid" & ":not(:focus-visible)" & borderColor' InputBorderDanger

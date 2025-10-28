@@ -2,13 +2,15 @@
 
 module Main where
 
-import Clay (putCss)
+import Dashi.Components.ActionBar (ActionBar (..))
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Checkbox (Checkbox (..))
+import Dashi.Components.Form (FormField (..))
 import Dashi.Components.Message (Message (Message), MessageSize (..))
 import Dashi.Components.Message qualified as Message
-import Dashi.Components.Radio (Radio (..))
+import Dashi.Components.Radio (RadioGroup (..))
+import Dashi.Components.TextArea (TextArea (..))
 import Dashi.Components.TextField (TextField (TextField))
 import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
@@ -18,7 +20,7 @@ import Dashi.Style.Tokens
 import Dashi.Util (capitalise, emptyAttr_)
 import Miso
 import Miso.Html
-import Miso.Html.Property (class_, disabled_, href_, id_, pattern_, required_)
+import Miso.Html.Property (class_, disabled_, href_, id_)
 import Web.Font.MDI (MDI (MdiStar))
 import Prelude
 
@@ -27,9 +29,7 @@ foreign export javascript "hs_start" main :: IO ()
 #endif
 
 main :: IO ()
-main = do
-    putCss Style.style
-    run (startApp app)
+main = run (startApp app)
 
 data Model = Model
     deriving stock (Eq)
@@ -72,7 +72,7 @@ buttons =
                         }
                 ]
             | leftIcon <- [Nothing, Just MdiStar]
-            , attr <- [emptyAttr_, ariaBusy_, disabled_]
+            , attr <- [emptyAttr_, ariaBusy_ True, disabled_]
             , appearance <- [minBound .. maxBound]
             ]
         ]
@@ -88,47 +88,101 @@ icons =
             ]
         ]
 
-forms :: View model action
+forms :: forall model action. View model action
 forms =
     section_ [id_ "forms"] $
         [ h2_ [] [text "Forms"]
-        , widget'
-            [ required_ True
-            , pattern_ "^[a-zA-Z0-9.]+$"
-            ]
-            TextField
-                { label = "Username"
-                , name = "username"
-                , value = Nothing
-                , isValid = True
-                , messages = [(Subtle, "You can use letters, numbers, and periods")]
-                }
-        , widget'
-            [required_ True]
-            Radio
-                { legend = "Do you like Haskell?"
-                , name = "haskell"
-                , options = [True, False]
-                , selectedOption = Nothing
-                , optionLabel = \case
-                    True -> [text "Yeah!"]
-                    False -> [text "Getting there"]
-                , messages = []
-                }
-        , widget'
+        , form
             []
-            Checkbox
-                { legend = Nothing
-                , name = "terms"
-                , options = [()]
-                , selectedOptions = []
-                , optionLabel =
-                    const
-                        [ text "I have read and accept the "
-                        , a_ [href_ "#"] [text "terms and conditions"]
+            [ widget
+                FormField
+                    { legend = [text "Username"]
+                    , required = True
+                    , field =
+                        TextField
+                            { name = "username"
+                            , type' = TextField.Text
+                            , value = Nothing
+                            , isValid = True
+                            }
+                    , messages = []
+                    }
+            , widget
+                FormField
+                    { legend = [text "Password"]
+                    , required = True
+                    , field =
+                        TextField
+                            { name = "password"
+                            , type' = TextField.Password
+                            , value = Nothing
+                            , isValid = True
+                            }
+                    , messages = []
+                    }
+            , widget
+                FormField
+                    { legend = [text "What is the airspeed velocity of an unladen swallow?"]
+                    , required = True
+                    , field =
+                        TextArea
+                            { name = "swallow"
+                            , value = Nothing
+                            , isValid = True
+                            }
+                    , messages = []
+                    }
+            , widget
+                FormField
+                    { legend = [text "Do you like Haskell?"]
+                    , required = True
+                    , field =
+                        RadioGroup
+                            { name = "haskell"
+                            , options = [True, False]
+                            , label = \case
+                                True -> [text "Yeah!"]
+                                False -> [text "Getting there"]
+                            , selected = const False
+                            }
+                    , messages = []
+                    }
+            , widget
+                FormField
+                    { legend = []
+                    , required = True
+                    , field =
+                        Checkbox
+                            { name = "terms"
+                            , label = [text "I have read and accept the ", a_ [href_ "#"] [text "terms and conditions"]]
+                            , selected = True
+                            }
+                    , messages = []
+                    }
+            , widget
+                ActionBar
+                    { left = []
+                    , centre = []
+                    , right =
+                        [ widget
+                            Button
+                                { size = Button.DefaultSize
+                                , appearance = Subtle
+                                , label = "Cancel"
+                                , leftIcon = Nothing
+                                , rightIcon = Nothing
+                                }
+                        , widget
+                            Button
+                                { size = Button.DefaultSize
+                                , appearance = Primary
+                                , label = "Sign up"
+                                , leftIcon = Nothing
+                                , rightIcon = Nothing
+                                }
                         ]
-                , messages = []
-                }
+                    }
+            ]
         ]
 
 appView :: Model -> View Model Action

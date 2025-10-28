@@ -10,7 +10,7 @@ main {
   width: 100%;
   max-width: 50rem;
   margin: auto;
-  padding: 1em;
+  padding: var(--dashi-space-l);
 }
 
 .grid {
@@ -28,4 +28,15 @@ main {
 #icons .grid {
   grid-template-columns: repeat(auto-fill, minmax(1.5em, 1fr));
   grid-template-rows: masonry;
+}
+
+section, form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dashi-space-m);
+}
+
+h2 {
+  font-size: 125%;
+  font-weight: bold;
 }

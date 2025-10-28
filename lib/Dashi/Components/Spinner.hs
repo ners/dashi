@@ -7,7 +7,7 @@ import Prelude
 
 data Spinner = Spinner
 
-instance Widget Spinner where
+instance Widget Spinner model action where
     widget' attrs Spinner =
         svg_
             ( [ width_ "24"

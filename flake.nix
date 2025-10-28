@@ -170,7 +170,6 @@
               cabal-install
               haskell-language-server
             ];
-            env.NIXPKGS_ALLOW_BROKEN = "1";
             shellHook = ''
               ln -fs "${staticAssets pkgs}"/* static
             '';
