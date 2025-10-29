@@ -61,10 +61,10 @@
         src = pkgs.fetchFromGitHub {
           owner = "haskell-wasm";
           repo = "browser_wasi_shim";
-          rev = "815f6e937f18fce1734ced181fe76a3d379f7f4b";
-          hash = "sha256-Mpg04drlMjBGn0fxu9krrXNYiEYlTXo7nMJGgVj2WkQ=";
+          rev = "381277af3cf7d49b90cad2d5b23a2b55cd36f874";
+          hash = "sha256-6oj2H2eB8KaqFcp+9VU9iXFnsuZ/ljDp9724xBeNUM8=";
         };
-        npmDepsHash = "sha256-JHvXfcZQoSYN8yXcbQoGFnuNAV+IDipc0utJ8KHj18Q=";
+        npmDepsHash = "sha256-2EXpcUxuhP/FHtALb3j0zIQWRfeII1r495ydm+lAp3Y=";
         meta = {
           description = "A pure javascript shim for WASI";
           homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
@@ -152,12 +152,15 @@
         };
       in
       {
-        packages.${system}.default = pkgs.writeShellApplication {
-          name = "${pname}-app";
-          runtimeInputs = with pkgs; [ http-server ];
-          text = ''
-            http-server ${wasmPkgs.haskellPackages.${pname}}
-          '';
+        packages.${system} = {
+          default = pkgs.haskellPackages.${pname};
+          wasmServer = pkgs.writeShellApplication {
+            name = "${pname}-wasm-server";
+            runtimeInputs = with pkgs; [ http-server ];
+            text = ''
+              http-server ${wasmPkgs.haskellPackages.${pname}}
+            '';
+          };
         };
         legacyPackages.${system} = {
           inherit (pkgs) haskellPackages;
@@ -168,6 +171,7 @@
             packages = ps: [ ps.${pname} ];
             nativeBuildInputs = with pkgs.haskellPackages; [
               cabal-install
+              ghcid
               haskell-language-server
             ];
             shellHook = ''
