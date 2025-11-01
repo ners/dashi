@@ -5,8 +5,10 @@ module Main where
 import Dashi.Components.ActionBar (ActionBar (..))
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
+import Dashi.Components.Chart qualified as Chart
 import Dashi.Components.Checkbox (Checkbox (..))
 import Dashi.Components.Form (FormField (..))
+import Dashi.Components.Heading
 import Dashi.Components.Message (Message (Message), MessageSize (..))
 import Dashi.Components.Message qualified as Message
 import Dashi.Components.Radio (RadioGroup (..))
@@ -17,7 +19,7 @@ import Dashi.Components.Util
 import Dashi.Components.Widget
 import Dashi.Style qualified as Style
 import Dashi.Style.Tokens
-import Dashi.Util (capitalise, emptyAttr_)
+import Dashi.Util
 import Miso
 import Miso.Html
 import Miso.Html.Property (class_, disabled_, href_, id_)
@@ -53,10 +55,23 @@ app = do
 appUpdate :: Action -> Effect ROOT Model Action
 appUpdate Setup = pure ()
 
+appView :: Model -> View Model Action
+appView _model =
+    main_
+        []
+        [ widget $ Heading XLarge "Hello from dashi 👋"
+        , buttons
+        , icons
+        , forms
+        , inlineMessages
+        , sectionMessages
+        , diagrams
+        ]
+
 buttons :: View model action
 buttons =
     section_ [id_ "buttons"] $
-        [ h2_ [] [text "Buttons"]
+        [ widget $ Heading Large "Buttons"
         , div_
             [class_ "grid"]
             [ div_
@@ -80,18 +95,18 @@ buttons =
 icons :: View model action
 icons =
     section_ [id_ "icons"] $
-        [ h2_ [] [text "Icons"]
+        [ widget $ Heading Large "Icons"
         , div_
             [class_ "grid"]
             [ widget @MDI mdi
-            | mdi <- take 124 [minBound .. maxBound]
+            | mdi <- take 120 [minBound .. maxBound]
             ]
         ]
 
 forms :: forall model action. View model action
 forms =
     section_ [id_ "forms"] $
-        [ h2_ [] [text "Forms"]
+        [ widget $ Heading Large "Forms"
         , form
             []
             [ widget
@@ -185,54 +200,51 @@ forms =
             ]
         ]
 
-appView :: Model -> View Model Action
-appView _model =
-    main_
-        []
-        [ h1_ [] [text "Hello from dashi!"]
-        , buttons
-        , icons
-        , forms
-        , div_ [] . pure $
-            widget
-                Message
-                    { size = InlineMessage
-                    , appearance = Primary
-                    , title = Just "Software update"
-                    , secondary = Just "You've been upgraded to version 5.2"
-                    }
-        , div_ [] . pure $
-            widget
-                Message
-                    { size = InlineMessage
-                    , appearance = Warning
-                    , title = Nothing
-                    , secondary = Just "Your bill may increase"
-                    }
-        , div_ [] . pure $
-            widget
-                Message
-                    { size = InlineMessage
-                    , appearance = Danger
-                    , title = Nothing
-                    , secondary = Just "Username taken"
-                    }
-        , div_ [] . pure $
-            widget
-                Message
-                    { size = InlineMessage
-                    , appearance = Success
-                    , title = Nothing
-                    , secondary = Just "Files have been added"
-                    }
-        , div_ [] . pure $
-            widget
-                Message
-                    { size = InlineMessage
-                    , appearance = Discovery
-                    , title = Nothing
-                    , secondary = Nothing
-                    }
+inlineMessages :: View model action
+inlineMessages =
+    section_ [id_ "inline-messages"] $
+        [ widget $ Heading Large "Inline messages"
+        , widget
+            Message
+                { size = InlineMessage
+                , appearance = Primary
+                , title = Just "Software update"
+                , secondary = Just "You've been upgraded to version 5.2"
+                }
+        , widget
+            Message
+                { size = InlineMessage
+                , appearance = Warning
+                , title = Nothing
+                , secondary = Just "Your bill may increase"
+                }
+        , widget
+            Message
+                { size = InlineMessage
+                , appearance = Danger
+                , title = Nothing
+                , secondary = Just "Username taken"
+                }
+        , widget
+            Message
+                { size = InlineMessage
+                , appearance = Success
+                , title = Nothing
+                , secondary = Just "Files have been added"
+                }
+        , widget
+            Message
+                { size = InlineMessage
+                , appearance = Discovery
+                , title = Nothing
+                , secondary = Nothing
+                }
+        ]
+
+sectionMessages :: View model action
+sectionMessages =
+    section_ [id_ "section-messages"] $
+        [ widget $ Heading Large "Section messages"
         , widget
             Message
                 { size = SectionMessage
@@ -262,3 +274,15 @@ appView _model =
                 , secondary = Just "The user `IanAtlas` no longer has access to Atlassian services."
                 }
         ]
+
+diagrams :: View model action
+diagrams =
+    section_ [id_ "diagrams"] $
+        [ widget $ Heading Large "Diagrams"
+        , div_ [] . pure $ Chart.chart 740 300 do
+            Chart.plot (Chart.line "amplitude modulation" [signal [0, (0.5) .. 400]])
+            Chart.plot (Chart.points "points" (signal [0, 7 .. 400]))
+        ]
+  where
+    signal :: [Double] -> [(Double, Double)]
+    signal xs = [(x, (sin (x * pi / 45) + 1) / 2 * (sin (x * pi / 5))) | x <- xs]

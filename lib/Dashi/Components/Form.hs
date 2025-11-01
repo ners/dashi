@@ -51,14 +51,14 @@ instance {-# OVERLAPPING #-} Widget (FormField ()) model action where
         Clay.legend <> (Clay.label ** ".legend") ? do
             display block
             fullWidth
-            fontWeight $ weight 600
+            fontWeight $ weight 500
             fontSize' Small
-            marginBottom . token $ Space Small
+            marginBottom . token $ Space XSmall
         let requiredChild = self # Clay.required
         (Clay.legend # has (self |+ requiredChild) <> (Clay.label # has requiredChild) ** ".legend")
             ? after
             & do
-                fontWeight $ weight 400
+                fontWeight $ weight 300
                 content $ stringContent "*"
                 color' $ Text Danger
                 marginLeft . token $ Space XSmall

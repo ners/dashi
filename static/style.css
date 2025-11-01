@@ -33,10 +33,10 @@ main {
 section, form {
   display: flex;
   flex-direction: column;
-  gap: var(--dashi-space-m);
+  gap: var(--dashi-space-s);
 }
 
-h2 {
-  font-size: 125%;
-  font-weight: bold;
+div:has(canvas) {
+  max-width: 100%;
+  overflow: auto;
 }

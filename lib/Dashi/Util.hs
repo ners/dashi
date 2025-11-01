@@ -9,6 +9,9 @@ import Data.Text qualified as Text
 import Miso (Attribute (Styles), MisoString, fromMisoString, toMisoString)
 import Prelude
 
+ishow :: (Show a, IsString s) => a -> s
+ishow = fromString . show
+
 fromText :: (IsString s) => Text -> s
 fromText = fromString . Text.unpack
 

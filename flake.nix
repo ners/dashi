@@ -6,7 +6,10 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # nixpkgs.url = "github:ners/nixpkgs/haskell";
+    ghc-wasm-meta = {
+      url = "gitlab:ners/ghc-wasm-meta/fix-nix-hostPlatform?host=gitlab.haskell.org";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-wasm = {
       url = "github:ners/nix-wasm";
       inputs.ghc-wasm-meta.follows = "ghc-wasm-meta";
@@ -16,12 +19,12 @@
       url = "github:ners/fluent-hs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    ghc-wasm-meta = {
-      url = "gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     miso = {
-      url = "github:dmjio/miso";
+      url = "github:haskell-miso/miso";
+      flake = false;
+    };
+    miso-diagrams = {
+      url = "github:haskell-miso/miso-diagrams";
       flake = false;
     };
     mdi = {
@@ -61,10 +64,10 @@
         src = pkgs.fetchFromGitHub {
           owner = "haskell-wasm";
           repo = "browser_wasi_shim";
-          rev = "381277af3cf7d49b90cad2d5b23a2b55cd36f874";
-          hash = "sha256-6oj2H2eB8KaqFcp+9VU9iXFnsuZ/ljDp9724xBeNUM8=";
+          rev = "6abe61658bea264cd4858ac43286b3105e6d36e5";
+          hash = "sha256-9L6fYoE60Yl/ASQ3Klrye2cKLBAutrVWD9H0pNGL0h0=";
         };
-        npmDepsHash = "sha256-2EXpcUxuhP/FHtALb3j0zIQWRfeII1r495ydm+lAp3Y=";
+        npmDepsHash = "sha256-+iNoeoVpXuJm7AN49LPp2IqHeDxAe9a9ozCFu5DChuU=";
         meta = {
           description = "A pure javascript shim for WASI";
           homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
@@ -80,47 +83,58 @@
           ];
         } ''
         tmpPng="$(mktemp --suffix=.png)"
-        rsvg-convert "${./static/icon.svg}" \
+        rsvg-convert "${./.}"/static/icon.svg \
           --width 64 \
           --output "$tmpPng"
         convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
         rm "$tmpPng"
       '';
       staticAssets = pkgs: pkgs.runCommand "static" { } ''
-        mkdir "$out"
+        cp -r "${./.}"/static "$out"
         cd "$out"
+        chmod -R +w .
+
         cp "${inputs.mdi-webfont}"/*.woff2 .
         cp "${favicon pkgs}" favicon.ico
 
         mkdir browser_wasi_shim
         cp -r "${browser_wasi_shim pkgs}"/lib/node_modules/*/browser_wasi_shim/dist/*.js browser_wasi_shim
       '';
-      haskell-overlay = pkgs: lib.composeManyExtensions [
+      isWasmPkgs = haskellPackages: haskellPackages.ghc.targetPrefix == "wasm32-wasi-";
+      haskell-overlay = pkgs: with pkgs.haskell.lib.compose; lib.composeManyExtensions [
         inputs.fluent-hs.overlays.haskell
         (inputs.web-font-mdi.overlays.haskell pkgs.haskell.lib)
-        (hfinal: hprev: with pkgs.haskell.lib.compose; {
+        (hfinal: hprev: {
           ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: {
             nativeBuildInputs = with pkgs; [
               binaryen
               nodejs
               wasm-tools
             ] ++ attrs.nativeBuildInputs or [ ];
-            postInstall = (attrs.postInstall or "") + lib.optionalString (hfinal.ghc.targetPrefix == "wasm32-wasi-") ''
+            postInstall = (attrs.postInstall or "") + lib.optionalString (isWasmPkgs hprev) ''
               cd "$out"
-              mv bin/*.wasm app.wasm
+              cp -r "${staticAssets pkgs}" static
+              chmod -R +w static
+              mv bin/*.wasm static/app.wasm
               rmdir bin
+              cd static
               "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
               # hold @MagicRB accountable for this crime
               sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
               wasm-opt -all -O2 app.wasm -o app.wasm
               wasm-tools strip -o app.wasm app.wasm
-              cp -r "${./static}"/* .
-              ln -s "${staticAssets pkgs}"/* .
               sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
+              cd ..
+              mv static/index.html .
             '';
           });
           miso = hfinal.callCabal2nix "miso" inputs.miso { };
+          miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
+          plots = doJailbreak (unmarkBroken hprev.plots);
+        })
+        (hfinal: hprev: lib.optionalAttrs (isWasmPkgs hprev) {
+          zlib = addBuildDepend hprev.zlib-clib hprev.zlib;
         })
       ];
       overlay = lib.composeManyExtensions [
@@ -150,10 +164,12 @@
         wasmPkgs = wasmPkgs' // {
           haskellPackages = wasmPkgs'.haskellPackages.extend (haskell-overlay pkgs');
         };
+        packages = ps: [ ps.${pname} ];
       in
       {
         packages.${system} = {
           default = pkgs.haskellPackages.${pname};
+          wasm = wasmPkgs.haskellPackages.${pname};
           wasmServer = pkgs.writeShellApplication {
             name = "${pname}-wasm-server";
             runtimeInputs = with pkgs; [ http-server ];
@@ -168,18 +184,19 @@
         };
         devShells.${system} = {
           default = pkgs.haskellPackages.shellFor {
-            packages = ps: [ ps.${pname} ];
+            inherit packages;
             nativeBuildInputs = with pkgs.haskellPackages; [
               cabal-install
               ghcid
               haskell-language-server
             ];
             shellHook = ''
-              ln -fs "${staticAssets pkgs}"/* static
+              find static -type l -delete
+              ln -s "${staticAssets pkgs}"/* static
             '';
           };
           wasm = wasmPkgs.haskellPackages.shellFor {
-            packages = ps: [ ps.${pname} ];
+            inherit packages;
             nativeBuildInputs = with wasmPkgs; [
               cabal-install
             ];

@@ -76,8 +76,10 @@ library
     Dashi
     Dashi.Components.ActionBar
     Dashi.Components.Button
+    Dashi.Components.Chart
     Dashi.Components.Checkbox
     Dashi.Components.Form
+    Dashi.Components.Heading
     Dashi.Components.Icon
     Dashi.Components.Message
     Dashi.Components.Radio
@@ -94,10 +96,15 @@ library
     Dashi.Util
   build-depends:
     aeson,
+    miso-diagrams,
+    Chart,
+    Chart-diagrams,
+    diagrams-lib,
 
 executable dashi
   import: wasm, common
   hs-source-dirs: app
   main-is: Main.hs
+  other-modules:
   build-depends:
-    dashi
+    dashi,

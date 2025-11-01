@@ -94,5 +94,5 @@ style = do
         overflowX hidden
         overflowY auto
     body ? do
-        font $ var @Value "font-body" ["normal 400 14px/1.4 " <> var "font-family" []]
+        font $ var @Value "font-body" ["normal " <> var "font-weight" [] <> " 14px/1.4 " <> var "font-family" []]
         color' $ Text Default

@@ -7,6 +7,7 @@ import Dashi.Components.ActionBar (ActionBar)
 import Dashi.Components.Button (Button)
 import Dashi.Components.Checkbox (Checkbox, CheckboxGroup)
 import Dashi.Components.Form (FormField)
+import Dashi.Components.Heading (Heading)
 import Dashi.Components.Message (Message)
 import Dashi.Components.Radio (Radio, RadioGroup)
 import Dashi.Components.TextArea (TextArea)
@@ -30,6 +31,7 @@ style = do
     Widget.style @(RadioGroup ())
     Widget.style @Button
     Widget.style @Checkbox
+    Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
     Widget.style @Radio

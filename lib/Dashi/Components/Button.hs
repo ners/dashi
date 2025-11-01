@@ -21,7 +21,7 @@ import Data.Sequence qualified as Seq
 import Data.String (fromString)
 import GHC.IsList (IsList (fromList))
 import Miso hiding (view)
-import Miso.Html (button_, label_, span_)
+import Miso.Html.Element (button_, label_, span_)
 import Web.Font.MDI (MDI)
 import Prelude
 

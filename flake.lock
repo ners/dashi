@@ -63,16 +63,17 @@
       },
       "locked": {
         "host": "gitlab.haskell.org",
-        "lastModified": 1761769325,
-        "narHash": "sha256-USwjCfoXHtnn8ZXRthZqPommyIBTFmkHAuhAEMEwesY=",
-        "owner": "haskell-wasm",
+        "lastModified": 1762008043,
+        "narHash": "sha256-CLVqoTiBeysUdGJeZFPyDNgRVSArrTXEBiGUZZjQYM4=",
+        "owner": "ners",
         "repo": "ghc-wasm-meta",
-        "rev": "8b1e0361d66eb11aca914b1219e269dfa798ed2f",
+        "rev": "c0c7ca4158cca7d1d3f3afba0eaff725cbd7d1a0",
         "type": "gitlab"
       },
       "original": {
         "host": "gitlab.haskell.org",
-        "owner": "haskell-wasm",
+        "owner": "ners",
+        "ref": "fix-nix-hostPlatform",
         "repo": "ghc-wasm-meta",
         "type": "gitlab"
       }
@@ -114,16 +115,32 @@
     "miso": {
       "flake": false,
       "locked": {
-        "lastModified": 1761751971,
-        "narHash": "sha256-9OvRDh7+wxNSiBa8pYC3Uki2dG7xW1S2ucvwL8SAcrU=",
-        "owner": "dmjio",
+        "lastModified": 1762012009,
+        "narHash": "sha256-LWTrifdbpLVGVQgNGFTc/2N0pU9K98X4y+mN3pNWje8=",
+        "owner": "haskell-miso",
         "repo": "miso",
-        "rev": "2ce93123b39f0fb1ac5c2e1f506d2a4f52b1e33e",
+        "rev": "c3a357b214ec00e4f462033369d9e08eef3599e6",
         "type": "github"
       },
       "original": {
-        "owner": "dmjio",
+        "owner": "haskell-miso",
         "repo": "miso",
+        "type": "github"
+      }
+    },
+    "miso-diagrams": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1762014938,
+        "narHash": "sha256-J796w0uVbfs7qnfSMzWYOuBcdLSIrtoy2WKVDr14z2E=",
+        "owner": "haskell-miso",
+        "repo": "miso-diagrams",
+        "rev": "0a060b43cc401a02e323955f3cbe05238476bd68",
+        "type": "github"
+      },
+      "original": {
+        "owner": "haskell-miso",
+        "repo": "miso-diagrams",
         "type": "github"
       }
     },
@@ -153,11 +170,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1761672384,
-        "narHash": "sha256-o9KF3DJL7g7iYMZq9SWgfS1BFlNbsm6xplRjVlOCkXI=",
+        "lastModified": 1761907660,
+        "narHash": "sha256-kJ8lIZsiPOmbkJypG+B5sReDXSD1KGu2VEPNqhRa/ew=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "08dacfca559e1d7da38f3cf05f1f45ee9bfd213c",
+        "rev": "2fb006b87f04c4d3bdf08cfdbc7fab9c13d94a15",
         "type": "github"
       },
       "original": {
@@ -174,6 +191,7 @@
         "mdi": "mdi",
         "mdi-webfont": "mdi-webfont",
         "miso": "miso",
+        "miso-diagrams": "miso-diagrams",
         "nix-wasm": "nix-wasm",
         "nixpkgs": "nixpkgs",
         "web-font-mdi": "web-font-mdi"

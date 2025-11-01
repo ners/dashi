@@ -43,18 +43,18 @@ data SizeToken
     | XLarge
     deriving stock (Eq, Ord, Bounded, Enum)
 
-instance Show SizeToken where
-    show XSmall = "xs"
-    show Small = "s"
-    show Medium = "m"
-    show Large = "l"
-    show XLarge = "xl"
+instance Token SizeToken where
+    tokenName XSmall = "xs"
+    tokenName Small = "s"
+    tokenName Medium = "m"
+    tokenName Large = "l"
+    tokenName XLarge = "xl"
 
 newtype Space = Space {spaceSize :: SizeToken}
     deriving newtype (Eq, Ord, Bounded, Enum)
 
 instance Token Space where
-    tokenName = fromString . ("space-" <>) . show . spaceSize
+    tokenName = fromString . ("space-" <>) . tokenName . spaceSize
 
 spaceEm :: SizeToken -> Number
 spaceEm = (0.4 *) . (1.75 ^) . fromEnum
@@ -67,7 +67,7 @@ newtype Radius = Radius {radiusSize :: SizeToken}
     deriving newtype (Eq, Ord, Bounded, Enum)
 
 instance Token Radius where
-    tokenName = fromString . ("radius-" <>) . show . radiusSize
+    tokenName = fromString . ("radius-" <>) . tokenName . radiusSize
 
 instance ValueToken Radius where
     type ValueType Radius = Size LengthUnit
@@ -77,7 +77,7 @@ newtype FontSize = FontSize {fontSize :: SizeToken}
     deriving newtype (Eq, Ord, Bounded, Enum)
 
 instance Token FontSize where
-    tokenName = fromString . ("font-size-" <>) . show . fontSize
+    tokenName = fromString . ("font-size-" <>) . tokenName . fontSize
 
 instance ValueToken FontSize where
     type ValueType FontSize = Size Percentage
