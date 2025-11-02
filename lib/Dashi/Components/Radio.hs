@@ -17,13 +17,13 @@ import Miso.Html.Property (name_, selected_, type_)
 import Web.Font.MDI (MDI (MdiRadioboxBlank, MdiRadioboxMarked))
 import Prelude
 
-data Radio = Radio
+data Radio model action = Radio
     { name :: MisoString
-    , label :: forall model action. [View model action]
+    , label :: [View model action]
     , selected :: Bool
     }
 
-instance Widget Radio model action where
+instance Widget (Radio model action) model action where
     widget' attrs Radio{..} =
         label_
             []
@@ -38,14 +38,14 @@ instance Widget Radio model action where
                 color' BorderFocused
                 content $ iconContent MdiRadioboxMarked
 
-data RadioGroup o = RadioGroup
+data RadioGroup o model action = RadioGroup
     { name :: MisoString
     , options :: [o]
-    , label :: forall model action. o -> [View model action]
+    , label :: o -> [View model action]
     , selected :: o -> Bool
     }
 
-instance (Eq a) => Widget (RadioGroup a) model action where
+instance (Eq a) => Widget (RadioGroup a model action) model action where
     widget' attrs RadioGroup{..} =
         fieldset_ [ariaRole_ "radiogroup"] $
             options <&> \o ->

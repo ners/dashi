@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedLists #-}
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 
 module Dashi.Components.Button where
 
@@ -14,15 +15,14 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Foldable (for_)
 import Data.List qualified as List
-import Data.Maybe (catMaybes, fromJust)
+import Data.Maybe (fromJust)
 import Data.Semigroup (sconcat)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import Data.String (fromString)
 import GHC.IsList (IsList (fromList))
 import Miso hiding (view)
-import Miso.Html.Element (button_, label_, span_)
-import Web.Font.MDI (MDI)
+import Miso.Html.Element (button_, label_)
 import Prelude
 
 data ButtonBackground = ButtonBackground Appearance InputState
@@ -69,36 +69,30 @@ instance ValueToken ButtonBackground where
 
 data ButtonSize
     = DefaultSize
+    | IconButton
     | CompactButton
     | FullWidthButton
     deriving stock (Eq, Bounded, Enum)
 
 instance Token ButtonSize where
     tokenName DefaultSize = "default"
+    tokenName IconButton = "icon"
     tokenName CompactButton = "compact"
     tokenName FullWidthButton = "full-width"
     defaultToken = Just DefaultSize
 
-data Button = Button
+data Button model action = Button
     { size :: ButtonSize
     , appearance :: Appearance
-    , label :: MisoString
-    , leftIcon :: Maybe MDI
-    , rightIcon :: Maybe MDI
+    , label :: [View model action]
     }
 
-instance Widget Button model action where
+instance Widget (Button model action) model action where
     widget' attrs Button{..} =
         button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy]) $
-            labelElem : [widget Spinner | isBusy]
+            label_ [] label : [widget Spinner | isBusy]
       where
         isBusy = hasAriaBusy attrs
-        labelElem =
-            label_ [] . catMaybes $
-                [ widget <$> leftIcon
-                , pure $ span_ [] [text label]
-                , widget <$> rightIcon
-                ]
 
     style = do
         ":root" ? tokenDecl @ButtonBackground
@@ -110,6 +104,9 @@ instance Widget Button model action where
             byToken Subtle & ("box-shadow" -: "none")
             borderRadiusAll' Small
             paddingYX' XSmall Medium
+            byToken IconButton & do
+                paddingYX' XSmall XSmall
+                Clay.label ? Clay.span # ".mdi" ? transform none
             byToken CompactButton & do
                 paddingYX (em 0.125) (token $ Space Medium)
                 Clay.span ? transform (translateY nil)
@@ -131,6 +128,7 @@ instance Widget Button model action where
                 lineHeight $ unitless 1.5
                 Clay.pointerEvents none
                 Clay.span # ":not(.mdi)" ? transform (translateY . em $ -0.1)
+                Clay.span # ".mdi" ? transform (translateY . em $ 0.1)
             ".mdi" ? fontSize' Large
             ".spinner" ? do
                 opacity 1

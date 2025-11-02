@@ -1,7 +1,9 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Main where
 
+import Control.Lens.Operators
 import Dashi.Components.ActionBar (ActionBar (..))
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
@@ -12,6 +14,7 @@ import Dashi.Components.Heading
 import Dashi.Components.Message (Message (Message), MessageSize (..))
 import Dashi.Components.Message qualified as Message
 import Dashi.Components.Radio (RadioGroup (..))
+import Dashi.Components.Select (Select (..))
 import Dashi.Components.TextArea (TextArea (..))
 import Dashi.Components.TextField (TextField (TextField))
 import Dashi.Components.TextField qualified as TextField
@@ -20,10 +23,17 @@ import Dashi.Components.Widget
 import Dashi.Style qualified as Style
 import Dashi.Style.Tokens
 import Dashi.Util
+import Data.Generics.Labels ()
+import Data.Maybe (maybeToList)
+import Data.Text qualified as Text
+import GHC.Generics (Generic)
+import Language (Language)
+import Language qualified
+import Language.Fluent.Bundle (Bundle (..))
 import Miso
 import Miso.Html
 import Miso.Html.Property (class_, disabled_, href_, id_)
-import Web.Font.MDI (MDI (MdiStar))
+import Web.Font.MDI (MDI (MdiStar, MdiWhiteBalanceSunny))
 import Prelude
 
 #ifdef WASM
@@ -33,13 +43,28 @@ foreign export javascript "hs_start" main :: IO ()
 main :: IO ()
 main = run (startApp app)
 
+instance Eq (a -> b) where
+    (==) _ _ = True
+
+deriving stock instance Eq Bundle
+
 data Model = Model
-    deriving stock (Eq)
+    { bundle :: Maybe Bundle
+    , language :: Language
+    }
+    deriving stock (Eq, Generic)
 
 emptyModel :: Model
-emptyModel = Model
+emptyModel =
+    Model
+        { bundle = Nothing
+        , language = Language.English
+        }
 
-data Action = Setup
+data Action
+    = Setup
+    | SetLanguage Language
+    | NoOp
 
 app :: App Model Action
 app = do
@@ -54,12 +79,38 @@ app = do
 
 appUpdate :: Action -> Effect ROOT Model Action
 appUpdate Setup = pure ()
+appUpdate (SetLanguage lang) = #language .= lang
+appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
-appView _model =
+appView model =
     main_
         []
-        [ widget $ Heading XLarge "Hello from dashi 👋"
+        [ header_
+            []
+            [ widget $ Heading XLarge "Hello from dashi 👋"
+            , div_
+                []
+                [ widget' @(Select Language Model Action)
+                    [ appearance_ Subtle
+                    , onChange $ maybe NoOp SetLanguage . Language.fromCode
+                    ]
+                    Select
+                        { name = "language"
+                        , options = [minBound .. maxBound]
+                        , selectedOption = Just model.language
+                        , value = Language.code
+                        , label = pure . text . fromText . Text.toUpper . Language.code
+                        }
+                , widget' @(Button Model Action)
+                    []
+                    Button
+                        { size = Button.IconButton
+                        , appearance = Subtle
+                        , label = [widget MdiWhiteBalanceSunny]
+                        }
+                ]
+            ]
         , buttons
         , icons
         , forms
@@ -68,7 +119,7 @@ appView _model =
         , diagrams
         ]
 
-buttons :: View model action
+buttons :: forall model action. View model action
 buttons =
     section_ [id_ "buttons"] $
         [ widget $ Heading Large "Buttons"
@@ -76,14 +127,12 @@ buttons =
             [class_ "grid"]
             [ div_
                 []
-                [ widget'
+                [ widget' @(Button model action)
                     [attr]
                     Button
                         { size = Button.DefaultSize
                         , appearance
-                        , label = capitalise . tokenName $ appearance
-                        , leftIcon
-                        , rightIcon = Nothing
+                        , label = (widget <$> maybeToList leftIcon) <> [text . capitalise . tokenName $ appearance]
                         }
                 ]
             | leftIcon <- [Nothing, Just MdiStar]
@@ -109,7 +158,7 @@ forms =
         [ widget $ Heading Large "Forms"
         , form
             []
-            [ widget
+            [ widget @(FormField _ model action) @model @action
                 FormField
                     { legend = [text "Username"]
                     , required = True
@@ -122,7 +171,7 @@ forms =
                             }
                     , messages = []
                     }
-            , widget
+            , widget @(FormField _ model action) @model @action
                 FormField
                     { legend = [text "Password"]
                     , required = True
@@ -135,7 +184,7 @@ forms =
                             }
                     , messages = []
                     }
-            , widget
+            , widget @(FormField _ model action) @model @action
                 FormField
                     { legend = [text "What is the airspeed velocity of an unladen swallow?"]
                     , required = True
@@ -147,7 +196,7 @@ forms =
                             }
                     , messages = []
                     }
-            , widget
+            , widget @(FormField (RadioGroup _ model action) model action) @model @action
                 FormField
                     { legend = [text "Do you like Haskell?"]
                     , required = True
@@ -162,7 +211,7 @@ forms =
                             }
                     , messages = []
                     }
-            , widget
+            , widget @(FormField (Checkbox model action) model action) @model @action
                 FormField
                     { legend = []
                     , required = True
@@ -179,21 +228,17 @@ forms =
                     { left = []
                     , centre = []
                     , right =
-                        [ widget
+                        [ widget @(Button model action) @model @action
                             Button
                                 { size = Button.DefaultSize
                                 , appearance = Subtle
-                                , label = "Cancel"
-                                , leftIcon = Nothing
-                                , rightIcon = Nothing
+                                , label = [text "Cancel"]
                                 }
-                        , widget
+                        , widget @(Button model action) @model @action
                             Button
                                 { size = Button.DefaultSize
                                 , appearance = Primary
-                                , label = "Sign up"
-                                , leftIcon = Nothing
-                                , rightIcon = Nothing
+                                , label = [text "Sign up"]
                                 }
                         ]
                     }

@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Dashi.Components.ActionBar where
@@ -23,13 +24,13 @@ instance Token Area where
     tokenName Centre = "centre"
     tokenName Right = "right"
 
-data ActionBar = ActionBar
-    { left :: forall model action. [View model action]
-    , centre :: forall model action. [View model action]
-    , right :: forall model action. [View model action]
+data ActionBar model action = ActionBar
+    { left :: [View model action]
+    , centre :: [View model action]
+    , right :: [View model action]
     }
 
-instance Widget ActionBar model action where
+instance Widget (ActionBar model action) model action where
     widget' attrs ActionBar{..} =
         div_
             (class_ "action-bar" : attrs)

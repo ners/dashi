@@ -20,13 +20,13 @@ import Miso.Html.Property (name_, selected_, type_)
 import Web.Font.MDI (MDI (MdiCheckboxBlankOutline, MdiCheckboxMarked))
 import Prelude
 
-data Checkbox = Checkbox
+data Checkbox model action = Checkbox
     { name :: MisoString
-    , label :: forall model action. [View model action]
+    , label :: [View model action]
     , selected :: Bool
     }
 
-instance Widget Checkbox model action where
+instance Widget (Checkbox model action) model action where
     widget' attrs Checkbox{..} =
         label_
             []
@@ -56,14 +56,14 @@ instance Widget Checkbox model action where
                     color' BorderFocused
                     content $ iconContent MdiCheckboxMarked
 
-data CheckboxGroup o = CheckboxGroup
+data CheckboxGroup o model action = CheckboxGroup
     { name :: MisoString
     , options :: [o]
-    , label :: forall model action. o -> [View model action]
+    , label :: o -> [View model action]
     , selected :: o -> Bool
     }
 
-instance (Eq a) => Widget (CheckboxGroup a) model action where
+instance (Eq a) => Widget (CheckboxGroup a model action) model action where
     widget' attrs CheckboxGroup{..} =
         fieldset_ [ariaRole_ "group"] $
             options <&> \o ->

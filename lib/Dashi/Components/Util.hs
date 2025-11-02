@@ -5,6 +5,7 @@ module Dashi.Components.Util where
 import Control.Lens (makePrisms, toListOf)
 import Control.Monad ((>=>))
 import Dashi.Components.Widget ()
+import Dashi.Style.Tokens (Appearance, Token (..))
 import Dashi.Util (fromText)
 import Data.Aeson qualified as Aeson
 import Data.List qualified as List
@@ -61,3 +62,6 @@ selectable_ = tabindex_ "0"
 
 unselectable_ :: Attribute action
 unselectable_ = tabindex_ "-1"
+
+appearance_ :: Appearance -> Attribute action
+appearance_ = tokenAttr

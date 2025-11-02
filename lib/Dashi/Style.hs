@@ -10,6 +10,7 @@ import Dashi.Components.Form (FormField)
 import Dashi.Components.Heading (Heading)
 import Dashi.Components.Message (Message)
 import Dashi.Components.Radio (Radio, RadioGroup)
+import Dashi.Components.Select (Select)
 import Dashi.Components.TextArea (TextArea)
 import Dashi.Components.TextField (TextField)
 import Dashi.Components.Widget qualified as Widget
@@ -20,21 +21,22 @@ import Data.Text.Lazy qualified as LazyText
 import Web.Font.MDI (MDI)
 import Prelude
 
-style :: Css
+style :: forall value model action. (value ~ (), model ~ (), action ~ ()) => Css
 style = do
     Root.style
     Page.style
 
-    Widget.style @ActionBar
-    Widget.style @(CheckboxGroup ())
-    Widget.style @(FormField ())
-    Widget.style @(RadioGroup ())
-    Widget.style @Button
-    Widget.style @Checkbox
+    Widget.style @(ActionBar model action) @model @action
+    Widget.style @(CheckboxGroup value model action) @model @action
+    Widget.style @(FormField value model action) @model @action
+    Widget.style @(RadioGroup value model action) @model @action
+    Widget.style @(Button model action) @model @action
+    Widget.style @(Checkbox model action) @model @action
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
-    Widget.style @Radio
+    Widget.style @(Radio model action) @model @action
+    Widget.style @(Select value model action) @model @action
     Widget.style @TextArea
     Widget.style @TextField
 

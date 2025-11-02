@@ -41,11 +41,11 @@
         "syntax": "syntax"
       },
       "locked": {
-        "lastModified": 1760465597,
-        "narHash": "sha256-TKkCmS/YblVsnXIZnV4lfd5yAoDkFb+OeXGxeh0O02c=",
+        "lastModified": 1762015816,
+        "narHash": "sha256-6ILdUruzsXmqtkJ+AK7YXJdq8YaEq22RYz/akoMJVMY=",
         "owner": "ners",
         "repo": "fluent-hs",
-        "rev": "796a2d6e15b07e71ae668f4d123d9cf0f7ed4ef9",
+        "rev": "1e50f5fdd975576171ea5d01108106c6d3bb58c8",
         "type": "github"
       },
       "original": {

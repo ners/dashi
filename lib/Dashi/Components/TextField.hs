@@ -51,11 +51,14 @@ instance Widget TextField model action where
     widget' attrs TextField{..} = input_ (tokenAttr type' : name_ name : attrs)
     style = do
         ":root" ? tokenDecl @Background
-        (textarea <> input # isOneOfAll' @Type) ? do
+        (select <> textarea <> input # isOneOfAll' @Type) ? do
             display block
             fullWidth
             focusable
             border (var "border-width" []) solid (token InputBorder)
+            byToken Subtle & do
+                "border" ~: none
+                hover & border (var "border-width" []) solid (token InputBorder)
             paddingAll' XSmall
             borderRadiusAll' Small
             transition "background" (sec 0.1) easeOut 0

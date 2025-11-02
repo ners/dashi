@@ -16,8 +16,8 @@ import Miso.Html.Element (fieldset_, label_, legend_, span_)
 import Miso.Html.Property (class_, required_)
 import Prelude hiding ((**))
 
-data FormField w = FormField
-    { legend :: forall model action. [View model action]
+data FormField w model action = FormField
+    { legend :: [View model action]
     , required :: Bool
     , field :: w
     , messages :: [(Appearance, MisoString)]
@@ -26,22 +26,22 @@ data FormField w = FormField
 viewMessage :: (Appearance, MisoString) -> View model action
 viewMessage (appearance, Just -> secondary) = widget Message{size = FormMessage, title = Nothing, ..}
 
-viewWithLegend :: (Widget w model action) => [Attribute action] -> FormField w -> View model action
+viewWithLegend :: (Widget w model action) => [Attribute action] -> FormField w model action -> View model action
 viewWithLegend attrs FormField{..} =
     fieldset_ [class_ "form-field"] $
         [legend_ [] legend | not . null $ legend] <> [widget' ([required_ True | required] <> attrs) field] <> (viewMessage <$> messages)
 
-viewWithLabel :: (Widget w model action) => [Attribute action] -> FormField w -> View model action
+viewWithLabel :: (Widget w model action) => [Attribute action] -> FormField w model action -> View model action
 viewWithLabel attrs FormField{..} =
     fieldset_ [class_ "form-field"] $
         label_ [] ([span_ [class_ "legend"] legend | not . null $ legend] <> [widget' ([required_ True | required] <> attrs) field])
             : (viewMessage <$> messages)
 
-instance (Widget w model action) => Widget (FormField w) model action where
+instance (Widget w model action) => Widget (FormField w model action) model action where
     widget' = viewWithLabel
     style = pure ()
 
-instance {-# OVERLAPPING #-} Widget (FormField ()) model action where
+instance {-# OVERLAPPING #-} Widget (FormField () model action) model action where
     widget' = viewWithLegend
     style = do
         ".form-field" ? do
@@ -63,10 +63,10 @@ instance {-# OVERLAPPING #-} Widget (FormField ()) model action where
                 color' $ Text Danger
                 marginLeft . token $ Space XSmall
 
-instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (CheckboxGroup o)) model action where
+instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (CheckboxGroup o model action) model action) model action where
     widget' = viewWithLegend
     style = pure ()
 
-instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (RadioGroup o)) model action where
+instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (RadioGroup o model action) model action) model action where
     widget' = viewWithLegend
     style = pure ()

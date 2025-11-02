@@ -13,9 +13,22 @@ main {
   padding: var(--dashi-space-l);
 }
 
+header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    > div {
+        display: flex;
+        flex-direction: row;
+        gap: var(--dashi-space-xs);
+        height: fit-content;
+    }
+}
+
 .grid {
   display: grid;
-  gap: 0.25em;
+  gap: var(--dashi-space-xs);
 }
 
 #buttons .grid {

@@ -62,7 +62,6 @@ common common
     bytestring,
     clay,
     containers,
-    fluent-bundle,
     generic-lens,
     lens,
     miso,
@@ -83,6 +82,7 @@ library
     Dashi.Components.Icon
     Dashi.Components.Message
     Dashi.Components.Radio
+    Dashi.Components.Select
     Dashi.Components.Spinner
     Dashi.Components.TextArea
     Dashi.Components.TextField
@@ -106,5 +106,9 @@ executable dashi
   hs-source-dirs: app
   main-is: Main.hs
   other-modules:
+    Language
   build-depends:
     dashi,
+    extra,
+    fluent-bundle,
+    fluent-syntax,

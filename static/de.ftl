@@ -1,0 +1,1 @@
+hello = Hallo von dashi 👋
