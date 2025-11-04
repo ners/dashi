@@ -1,10 +1,15 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
+{-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Main where
 
 import Control.Lens.Operators
+import Control.Monad (liftM2)
 import Dashi.Components.ActionBar (ActionBar (..))
+import Dashi.Components.Avatar (Avatar (..), AvatarItem (..))
+import Dashi.Components.Avatar qualified as Avatar
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Chart qualified as Chart
@@ -24,12 +29,14 @@ import Dashi.Style qualified as Style
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.Generics.Labels ()
-import Data.Maybe (maybeToList)
+import Data.Maybe (isJust, maybeToList)
+import Data.String (IsString (fromString))
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
 import Language (Language)
 import Language qualified
 import Language.Fluent.Bundle (Bundle (..))
+import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
 import Miso.Html
 import Miso.Html.Property (class_, disabled_, href_, id_)
@@ -65,20 +72,59 @@ data Action
     = Setup
     | SetLanguage Language
     | NoOp
+    deriving stock (Show)
+
+traceAction :: Action -> Effect parent model action
+traceAction = io_ . consoleLog . fromString . ("action: " <>) . show
 
 app :: App Model Action
 app = do
     initComponent
         { events = defaultEvents <> keyboardEvents
         , initialAction = Just Setup
-        , styles = [Style Style.styleStr, Href "style.css"]
+        , styles = [Style Style.styleStr, Href "/static/style.css"]
         }
   where
     initComponent :: Component ROOT Model Action
-    initComponent = component emptyModel appUpdate appView
+    initComponent = component emptyModel (liftM2 (>>) traceAction appUpdate) appView
 
 appUpdate :: Action -> Effect ROOT Model Action
-appUpdate Setup = pure ()
+appUpdate Setup = io_ do
+    let createElement = JSaddle.js1 @String @String "createElement"
+        setAttribute = JSaddle.js2 @String @String @String "setAttribute"
+        appendChild :: JSaddle.JSM JSaddle.JSVal -> JSaddle.JSF
+        appendChild = JSaddle.js1 @String "appendChild"
+    doc <- JSaddle.jsg @String "document"
+    head <- doc ^. JSaddle.js @_ @String "head"
+    head
+        ^. JSaddle.js1 @String @String "getElementsByTagName" "title"
+        ^. JSaddle.js1 @String @Int "item" 0
+        ^. JSaddle.js0 @String "remove"
+    head ^. appendChild do
+        e <- doc ^. createElement "meta"
+        e ^. setAttribute "charset" "utf-8"
+        pure e
+    head ^. appendChild do
+        e <- doc ^. createElement "meta"
+        e ^. setAttribute "name" "viewport"
+        e ^. setAttribute "content" "width=device-width, initial-scale=1, shrink-to-fit=no"
+        pure e
+    head ^. appendChild do
+        e <- doc ^. createElement "title"
+        e ^. JSaddle.jss @String @String "innerHTML" "Dashi"
+        pure e
+    head ^. appendChild do
+        e <- doc ^. createElement "link"
+        e ^. setAttribute "rel" "icon"
+        e ^. setAttribute "href" "/favicon.ico"
+        pure e
+    head ^. appendChild do
+        e <- doc ^. createElement "link"
+        e ^. setAttribute "rel" "icon"
+        e ^. setAttribute "href" "/static/icon.svg"
+        e ^. setAttribute "type" "image/svg+xml"
+        pure e
+    pure ()
 appUpdate (SetLanguage lang) = #language .= lang
 appUpdate NoOp = pure ()
 
@@ -111,12 +157,32 @@ appView model =
                         }
                 ]
             ]
+        , avatars
         , buttons
         , icons
         , forms
         , inlineMessages
         , sectionMessages
         , diagrams
+        ]
+
+avatars :: View model action
+avatars =
+    section_ [id_ "avatars"] $
+        [ widget $ Heading Large "Avatars"
+        , div_
+            [class_ "grid"]
+            [ widget AvatarItem{avatar = Avatar{size = Medium, ..}, ..}
+            | (username, name, initials) <-
+                [ ("ueli", "Ueli Wyss", "UW")
+                , ("heidi", "Heidi Müller", "HM")
+                ]
+            , content <- [Avatar.Identicon username, Avatar.Initials initials]
+            , primaryText <- [Just name]
+            , secondaryText <- [Nothing, Just username]
+            , shape <- allTokens
+            , isJust primaryText || isJust secondaryText
+            ]
         ]
 
 buttons :: forall model action. View model action

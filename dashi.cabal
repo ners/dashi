@@ -74,6 +74,7 @@ library
   exposed-modules:
     Dashi
     Dashi.Components.ActionBar
+    Dashi.Components.Avatar
     Dashi.Components.Button
     Dashi.Components.Chart
     Dashi.Components.Checkbox
@@ -95,11 +96,16 @@ library
     Dashi.Style.Util
     Dashi.Util
   build-depends:
-    aeson,
-    miso-diagrams,
     Chart,
     Chart-diagrams,
+    JuicyPixels,
+    aeson,
+    base64,
     diagrams-lib,
+    identicon,
+    identicon-style-squares,
+    miso-diagrams,
+    pureMD5,
 
 executable dashi
   import: wasm, common
@@ -112,3 +118,4 @@ executable dashi
     extra,
     fluent-bundle,
     fluent-syntax,
+    jsaddle,

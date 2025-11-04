@@ -83,19 +83,31 @@
           ];
         } ''
         tmpPng="$(mktemp --suffix=.png)"
-        rsvg-convert "${./.}"/static/icon.svg \
+        rsvg-convert "${./static/icon.svg}" \
           --width 64 \
           --output "$tmpPng"
         convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
         rm "$tmpPng"
       '';
+      apple-touch-icon = pkgs: pkgs.runCommand "apple-touch-icon.png"
+        {
+          nativeBuildInputs = with pkgs; [
+            librsvg
+          ];
+        } ''
+        rsvg-convert "${./static/icon.svg}" \
+          --background-color '#3457D5' \
+          --width 180 \
+          --output "$out"
+      '';
       staticAssets = pkgs: pkgs.runCommand "static" { } ''
-        cp -r "${./.}"/static "$out"
+        cp -r "${./static}" "$out"
         cd "$out"
         chmod -R +w .
 
         cp "${inputs.mdi-webfont}"/*.woff2 .
         cp "${favicon pkgs}" favicon.ico
+        cp "${apple-touch-icon pkgs}" apple-touch-icon.png
 
         mkdir browser_wasi_shim
         cp -r "${browser_wasi_shim pkgs}"/lib/node_modules/*/browser_wasi_shim/dist/*.js browser_wasi_shim
@@ -125,13 +137,16 @@
               wasm-tools strip -o app.wasm app.wasm
               sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
               cd ..
-              mv static/index.html .
+              mv static/index.html static/favicon.ico static/apple-touch-icon.png .
             '';
           });
           miso = hfinal.callCabal2nix "miso" inputs.miso { };
           miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
+          identicon-style-squares = doJailbreak hprev.identicon-style-squares;
+          polyvariadic = doJailbreak (unmarkBroken hprev.polyvariadic);
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           plots = doJailbreak (unmarkBroken hprev.plots);
+          pointfree-fancy = doJailbreak (unmarkBroken hprev.pointfree-fancy);
         })
         (hfinal: hprev: lib.optionalAttrs (isWasmPkgs hprev) {
           zlib = addBuildDepend hprev.zlib-clib hprev.zlib;
@@ -189,10 +204,12 @@
               cabal-install
               ghcid
               haskell-language-server
+              pointfree-fancy
             ];
             shellHook = ''
               find static -type l -delete
               ln -s "${staticAssets pkgs}"/* static
+              ln -fs static/index.html static/favicon.ico static/apple-touch-icon.png .
             '';
           };
           wasm = wasmPkgs.haskellPackages.shellFor {

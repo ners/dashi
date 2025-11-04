@@ -31,6 +31,10 @@ header {
   gap: var(--dashi-space-xs);
 }
 
+#avatars .grid {
+  grid-template-columns: repeat(3, auto);
+}
+
 #buttons .grid {
   grid-template-columns: repeat(7, 1fr);
   max-width: 100%;

@@ -4,6 +4,7 @@ module Dashi.Style where
 
 import Clay hiding (style)
 import Dashi.Components.ActionBar (ActionBar)
+import Dashi.Components.Avatar (Avatar, AvatarItem)
 import Dashi.Components.Button (Button)
 import Dashi.Components.Checkbox (Checkbox, CheckboxGroup)
 import Dashi.Components.Form (FormField)
@@ -26,17 +27,19 @@ style = do
     Root.style
     Page.style
 
+    Widget.style @Avatar @model @action
+    Widget.style @AvatarItem @model @action
     Widget.style @(ActionBar model action) @model @action
-    Widget.style @(CheckboxGroup value model action) @model @action
-    Widget.style @(FormField value model action) @model @action
-    Widget.style @(RadioGroup value model action) @model @action
     Widget.style @(Button model action) @model @action
     Widget.style @(Checkbox model action) @model @action
+    Widget.style @(CheckboxGroup value model action) @model @action
+    Widget.style @(FormField value model action) @model @action
+    Widget.style @(Radio model action) @model @action
+    Widget.style @(RadioGroup value model action) @model @action
+    Widget.style @(Select value model action) @model @action
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
-    Widget.style @(Radio model action) @model @action
-    Widget.style @(Select value model action) @model @action
     Widget.style @TextArea
     Widget.style @TextField
 

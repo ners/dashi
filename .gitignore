@@ -3,6 +3,9 @@ dist-newstyle
 .direnv
 result
 result-*
-*.woff2
+
 *.ico
+*.png
+*.woff2
 browser_wasi_shim
+index.html
