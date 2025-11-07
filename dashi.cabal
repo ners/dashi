@@ -91,6 +91,7 @@ library
     Dashi.Components.Widget
     Dashi.Layout.Page
     Dashi.Style
+    Dashi.Style.Colour
     Dashi.Style.Root
     Dashi.Style.Tokens
     Dashi.Style.Util
@@ -98,6 +99,7 @@ library
   build-depends:
     Chart,
     Chart-diagrams,
+    Color,
     JuicyPixels,
     aeson,
     base64,

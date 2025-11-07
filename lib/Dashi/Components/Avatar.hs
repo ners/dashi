@@ -8,7 +8,8 @@ import Codec.Picture qualified as Juicy
 import Codec.Picture.Types qualified as Juicy
 import Dashi.Components.Icon ()
 import Dashi.Components.Widget
-import Dashi.Style.Tokens hiding (Icon)
+import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Base64.Types qualified as Base64
 import Data.ByteString.Lazy.Base64 qualified as LazyByteString
@@ -68,7 +69,7 @@ instance Widget Avatar model action where
                 w, h, pad :: Int
                 w = 100
                 h = 100
-                pad = 15
+                pad = 25
                 unpad = flip (-) pad
                 transparent = Juicy.PixelRGBA8 0 0 0 0
              in
@@ -107,11 +108,12 @@ instance Widget Avatar model action where
                             XLarge -> 6
                     width $ rem sizeEm
                     height $ rem sizeEm
+                    lineHeight $ rem sizeEm
                     Clay.fontSize (rem $ sizeEm / 3)
             overflow hidden
-            backgroundColor' (Background Default)
+            backgroundColor' (Colour.Background Primary)
             fontWeight $ weight 600
-            color' $ Text Subtle
+            color' $ Colour.Text Subtle
             display inlineFlex
             alignItems center
             justifyContent center
@@ -119,7 +121,7 @@ instance Widget Avatar model action where
                 width $ pct 100
                 height $ pct 100
             byToken Square & do
-                borderRadiusAll' Small
+                borderRadiusAll' Medium
             byToken Circle & do
                 borderRadiusAll $ vh 100
             byToken Hexagon & do
@@ -145,7 +147,7 @@ instance Widget AvatarItem model action where
             ".avatar" ? ("grid-area" -: "avatar")
             ".primary" ? fontWeight (weight 500)
             ".secondary" ? do
-                color' $ Text Subtle
+                color' $ Colour.Text Subtle
                 fontSize' Small
             display flex
             columnGap' Small

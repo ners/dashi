@@ -9,7 +9,8 @@ import Dashi.Components.Checkbox (CheckboxGroup)
 import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
 import Dashi.Components.Radio (RadioGroup)
 import Dashi.Components.Widget
-import Dashi.Style.Tokens hiding (Background)
+import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso (Attribute, MisoString, View)
 import Miso.Html.Element (fieldset_, label_, legend_, span_)
@@ -60,7 +61,7 @@ instance {-# OVERLAPPING #-} Widget (FormField () model action) model action whe
             & do
                 fontWeight $ weight 300
                 content $ stringContent "*"
-                color' $ Text Danger
+                color' $ Colour.Text Danger
                 marginLeft . token $ Space XSmall
 
 instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (CheckboxGroup o model action) model action) model action where

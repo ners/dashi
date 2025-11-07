@@ -5,7 +5,7 @@ module Dashi.Components.ActionBar where
 
 import Clay hiding (area, fullWidth, left, legend, name, not, option, required, right, selected, span_, type_)
 import Dashi.Components.Widget
-import Dashi.Style.Tokens hiding (Background)
+import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Foldable (for_)
 import Miso (View)

@@ -65,3 +65,6 @@ unselectable_ = tabindex_ "-1"
 
 appearance_ :: Appearance -> Attribute action
 appearance_ = tokenAttr
+
+autocomplete_ :: MisoString -> Attribute action
+autocomplete_ = textProp "autocomplete"

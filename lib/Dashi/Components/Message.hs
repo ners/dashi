@@ -1,15 +1,18 @@
+{-# LANGUAGE OverloadedLists #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Dashi.Components.Message where
 
 import Clay hiding (Background, icon, size, span_, title)
-import Control.Monad (forM_)
 import Dashi.Components.Icon (iconContent)
 import Dashi.Components.Util (selectable_)
 import Dashi.Components.Widget
+import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
+import Data.Foldable (for_)
 import Data.Maybe (catMaybes)
+import Data.Semigroup (sconcat)
 import Miso
 import Miso.Html.Element (a_, div_, span_)
 import Miso.Html.Property (class_)
@@ -55,8 +58,8 @@ instance Widget Message model action where
                 display inlineFlex
                 flexDirection row
                 alignItems center
-                ".title" ? color' (Text Default)
-                ".secondary" ? color' (Text Subtle)
+                ".title" ? color' (Colour.Text Default)
+                ".secondary" ? color' (Colour.Text Subtle)
                 fontWeight $ weight 500
                 gap' XSmall
             byToken FormMessage & do
@@ -67,22 +70,25 @@ instance Widget Message model action where
             byToken SectionMessage & do
                 borderRadiusAll' Medium
                 paddingAll' Medium
-                display grid
-                gridTemplateAreas
-                    [ ["icon", "title"]
-                    , ["icon", "secondary"]
-                    ]
+                display flex
+                alignItems center
+                sconcat [has ".title", has ".secondary"] & do
+                    display grid
+                    gridTemplateAreas
+                        [ ["icon", "title"]
+                        , ["icon", "secondary"]
+                        ]
+                    ".mdi" ? do
+                        "grid-area" -: "icon"
+                        alignSelf baseline
+                    ".title" ? ("grid-area" -: "title")
+                    ".secondary" ? ("grid-area" -: "secondary")
+                    rowGap' XSmall
                 gridTemplateColumns [em 1.5, auto]
                 columnGap' Small
-                ".mdi" ? ("grid-area" -: "icon")
                 ".title" ? do
-                    "grid-area" -: "title"
                     fontSize' $ Large
                     fontWeight $ weight 700
-                ".secondary" ? ("grid-area" -: "secondary")
-                -- There is no title, so put the secondary text in the title row
-                ".mdi" |+ ".secondary" ? ("grid-area" -: "title")
-                ".title" |+ ".secondary" ? (marginTop . token $ Space XSmall)
             byToken FormMessage & do
                 fontSize' Small
                 byToken Subtle & ".mdi" ? display none
@@ -93,10 +99,10 @@ instance Widget Message model action where
                 icon Warning = MdiAlert
                 icon Danger = MdiAlertRhombus
                 icon Discovery = MdiHelpCircle
-            forM_ [minBound .. maxBound] \appearance ->
+            for_ @[] [minBound .. maxBound] \appearance ->
                 byToken appearance & do
-                    byToken FormMessage & color' (Text appearance)
-                    byToken SectionMessage & backgroundColor' (Background appearance)
+                    byToken FormMessage & color' (Colour.Text appearance)
+                    byToken SectionMessage & backgroundColor' (Colour.Background appearance)
                     ".mdi" # before ? do
                         content . iconContent . icon $ appearance
-                        color' $ Icon appearance
+                        color' $ Colour.Text appearance

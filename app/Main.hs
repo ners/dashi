@@ -29,7 +29,7 @@ import Dashi.Style qualified as Style
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.Generics.Labels ()
-import Data.Maybe (isJust, maybeToList)
+import Data.Maybe (isJust)
 import Data.String (IsString (fromString))
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
@@ -40,7 +40,7 @@ import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
 import Miso.Html
 import Miso.Html.Property (class_, disabled_, href_, id_)
-import Web.Font.MDI (MDI (MdiStar, MdiWhiteBalanceSunny))
+import Web.Font.MDI
 import Prelude
 
 #ifdef WASM
@@ -135,27 +135,24 @@ appView model =
         [ header_
             []
             [ widget $ Heading XLarge "Hello from dashi 👋"
-            , div_
-                []
-                [ widget' @(Select Language Model Action)
-                    [ appearance_ Subtle
-                    , onChange $ maybe NoOp SetLanguage . Language.fromCode
-                    ]
-                    Select
-                        { name = "language"
-                        , options = [minBound .. maxBound]
-                        , selectedOption = Just model.language
-                        , value = Language.code
-                        , label = pure . text . fromText . Text.toUpper . Language.code
-                        }
-                , widget' @(Button Model Action)
-                    []
-                    Button
-                        { size = Button.IconButton
-                        , appearance = Subtle
-                        , label = [widget MdiWhiteBalanceSunny]
-                        }
+            , widget' @(Select Language Model Action)
+                [ appearance_ Subtle
+                , onChange $ maybe NoOp SetLanguage . Language.fromCode
                 ]
+                Select
+                    { name = "language"
+                    , options = [minBound .. maxBound]
+                    , selectedOption = Just model.language
+                    , value = Language.code
+                    , label = pure . text . fromText . Text.toUpper . Language.code
+                    }
+            , widget' @(Button Model Action)
+                []
+                Button
+                    { size = Button.IconButton
+                    , appearance = Subtle
+                    , label = [widget MdiWhiteBalanceSunny]
+                    }
             ]
         , avatars
         , buttons
@@ -198,12 +195,19 @@ buttons =
                     Button
                         { size = Button.DefaultSize
                         , appearance
-                        , label = (widget <$> maybeToList leftIcon) <> [text . capitalise . tokenName $ appearance]
+                        , label = [widget (iconFor appearance) | hasIcon] <> [text . capitalise . tokenName $ appearance]
                         }
                 ]
-            | leftIcon <- [Nothing, Just MdiStar]
+            | hasIcon <- [False, True]
             , attr <- [emptyAttr_, ariaBusy_ True, disabled_]
             , appearance <- [minBound .. maxBound]
+            , let iconFor Default = MdiStar
+                  iconFor Primary = MdiSendVariant
+                  iconFor Subtle = MdiArrowLeft
+                  iconFor Success = MdiCheck
+                  iconFor Warning = MdiSecurity
+                  iconFor Danger = MdiTrashCan
+                  iconFor Discovery = MdiCreation
             ]
         ]
 
@@ -214,7 +218,7 @@ icons =
         , div_
             [class_ "grid"]
             [ widget @MDI mdi
-            | mdi <- take 120 [minBound .. maxBound]
+            | mdi <- take (28 * 4) [minBound .. maxBound]
             ]
         ]
 
@@ -237,7 +241,8 @@ forms =
                             }
                     , messages = []
                     }
-            , widget @(FormField _ model action) @model @action
+            , widget' @(FormField _ model action) @model @action
+                [autocomplete_ "current-password"]
                 FormField
                     { legend = [text "Password"]
                     , required = True

@@ -2,28 +2,37 @@
 
 module Dashi.Components.TextField where
 
-import Clay hiding (Background, Number, fullWidth, label, name, span_, type_, value, var)
+import Clay hiding (Background, Color, Number, fullWidth, label, name, span_, type_, value, var)
 import Dashi.Components.Widget
+import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
-import Dashi.Style.Tokens hiding (Background, Text)
+import Dashi.Style.Tokens
 import Dashi.Style.Util
+import Graphics.Color.Space (Alpha)
+import Graphics.Color.Space.OKLAB.LCH
 import Miso (MisoString)
 import Miso.Html.Element (input_)
 import Miso.Html.Property (name_, type_)
 import Prelude
 
+newtype Border = Border InputState
+    deriving newtype (Eq, Bounded, Enum)
+
 newtype Background = Background InputState
-    deriving newtype (Eq, Ord, Bounded, Enum)
+    deriving newtype (Eq, Bounded, Enum)
 
 instance Token Background where
-    tokenName (Background state) = "text-field-background-" <> tokenName state
+    tokenName (Background state) = "input-background-" <> tokenName state
     tokenAttr (Background state) = tokenAttr state
 
 instance ValueToken Background where
-    type ValueType Background = Color
-    tokenValue (Background DefaultState) = parse "#FFF"
-    tokenValue (Background HoveredState) = parse "#F8F8F8"
-    tokenValue (Background PressedState) = parse "#FFF"
+    type ValueType Background = Color (Alpha OKLCH) Float
+    tokenValue (Background state) =
+        ColorOKLCHA l c h $ case state of
+            HoveredState -> 0.05
+            _ -> 0
+      where
+        ColorOKLCHA l c h _ = tokenValue $ Colour.Text Default
 
 data Type
     = Text
@@ -55,14 +64,16 @@ instance Widget TextField model action where
             display block
             fullWidth
             focusable
-            border (var "border-width" []) solid (token InputBorder)
-            byToken Subtle & do
-                "border" ~: none
-                hover & border (var "border-width" []) solid (token InputBorder)
+            border (var "border-width" []) solid (colorToken Colour.Border)
+            byToken Subtle & borderColor transparent
             paddingAll' XSmall
             borderRadiusAll' Small
-            transition "background" (sec 0.1) easeOut 0
+            transition "background" (sec 0.2) easeOut 0
             backgroundColor' $ Background DefaultState
-            hover & backgroundColor' (Background HoveredState)
-            active & backgroundColor' (Background PressedState)
-            ":user-invalid" & ":not(:focus-visible)" & borderColor' InputBorderDanger
+            hover <> Clay.not focusVisible & do
+                borderColor' $ Colour.Border
+                backgroundColor' $ Background HoveredState
+            focusVisible & do
+                borderColor' Colour.BorderFocused
+                backgroundColor' $ Background ActiveState
+            ":user-invalid" & ":not(:focus-visible)" & borderColor' Colour.BorderDanger

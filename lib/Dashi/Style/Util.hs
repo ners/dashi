@@ -4,11 +4,14 @@
 
 module Dashi.Style.Util where
 
-import Clay hiding (cast, fullWidth, var)
+import Clay hiding (Color, cast, fullWidth, var)
+import Clay qualified
 import Clay.Property ()
 import Clay.Render (renderRefinement)
 import Clay.Selector (Fix (In), Path (Elem), Refinement (Refinement), SelectorF (SelectorF), refinementFromText)
 import Clay.Stylesheet (App (Root), Rule (Nested), key, rule, runS)
+import Dashi.Style.Colour ()
+import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.String (IsString)
@@ -61,6 +64,9 @@ var name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> 
 token :: (Token t, Val (ValueType t), Other (ValueType t)) => t -> ValueType t
 token t = var (tokenName t) []
 
+colorToken :: (Token t) => t -> Clay.Color
+colorToken t = var (tokenName t) []
+
 (~:) :: Key Text -> Value -> Css
 k ~: v = key (cast k) v
 
@@ -85,26 +91,29 @@ fontFamily' :: Value -> Css
 fontFamily' = fontFamily [] . pure . other
 
 focusable :: Css
-focusable = ":focus-visible" & outline solid (var "outline-width" []) (token BorderFocused)
+focusable = focusVisible & outline solid (var "outline-width" []) (colorToken Colour.BorderFocused)
 
 underlinedOnHover :: Css
 underlinedOnHover = do
     hover & star ? textDecoration underline
-    ":focus-visible" & star ? textDecoration underline
+    focusVisible & star ? textDecoration underline
+
+focusVisible :: Refinement
+focusVisible = ":focus-visible"
 
 pressable :: Css
 pressable = do
     cursor pointer
     focusable
 
-color' :: Colour -> Css
-color' = color . token
+color' :: (Token t) => t -> Css
+color' = color . colorToken
 
-borderColor' :: Colour -> Css
-borderColor' = borderColor . token
+borderColor' :: (Token t) => t -> Css
+borderColor' = borderColor . colorToken
 
-backgroundColor' :: (Token t, ValueType t ~ Color) => t -> Css
-backgroundColor' = backgroundColor . token
+backgroundColor' :: (Token t) => t -> Css
+backgroundColor' = backgroundColor . colorToken
 
 paddingYX' :: SizeToken -> SizeToken -> Css
 paddingYX' y x = paddingYX (token $ Space y) (token $ Space x)

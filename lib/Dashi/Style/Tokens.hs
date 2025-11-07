@@ -2,11 +2,8 @@
 
 module Dashi.Style.Tokens where
 
-import Clay hiding (FontSize, fontSize)
+import Clay hiding (Color, FontSize, fontSize)
 import Dashi.Util (emptyAttr_, emptyRefinement)
-import Data.Maybe (fromJust)
-import Data.Sequence (Seq)
-import Data.Sequence qualified as Seq
 import Data.String (IsString (fromString))
 import GHC.IsList (IsList (..))
 import Miso (Attribute)
@@ -90,18 +87,18 @@ instance ValueToken FontSize where
 
 data Appearance
     = Default
-    | Primary
     | Subtle
+    | Primary
     | Success
     | Warning
     | Danger
     | Discovery
-    deriving stock (Eq, Ord, Bounded, Enum)
+    deriving stock (Eq, Bounded, Enum)
 
 instance Token Appearance where
     tokenName Default = "default"
-    tokenName Primary = "primary"
     tokenName Subtle = "subtle"
+    tokenName Primary = "primary"
     tokenName Success = "success"
     tokenName Warning = "warning"
     tokenName Danger = "danger"
@@ -111,93 +108,14 @@ instance Token Appearance where
 data InputState
     = DefaultState
     | HoveredState
-    | PressedState
-    deriving stock (Eq, Ord, Bounded, Enum)
+    | ActiveState
+    deriving stock (Eq, Bounded, Enum)
 
 instance Token InputState where
     tokenName DefaultState = "default"
     tokenName HoveredState = "hovered"
-    tokenName PressedState = "pressed"
+    tokenName ActiveState = "active"
     defaultToken = Just DefaultState
     byToken DefaultState = emptyRefinement
     byToken HoveredState = hover
-    byToken PressedState = active
-
-data Colour
-    = Text Appearance
-    | InverseText
-    | DisabledText
-    | Background Appearance
-    | DisabledBackground
-    | Icon Appearance
-    | Border
-    | InputBorder
-    | BorderFocused
-    | InputBorderDanger
-    deriving stock (Eq, Ord)
-
-allColours :: Seq Colour
-allColours =
-    mconcat . fmap Seq.fromList $
-        [ Text <$> [minBound .. maxBound]
-        , pure InverseText
-        , pure DisabledText
-        , Background <$> [minBound .. maxBound]
-        , pure DisabledBackground
-        , Icon <$> [minBound .. maxBound]
-        , pure Border
-        , pure InputBorder
-        , pure BorderFocused
-        , pure InputBorderDanger
-        ]
-
-instance Enum Colour where
-    toEnum = Seq.index allColours
-    fromEnum = fromJust . flip Seq.elemIndexL allColours
-
-instance Bounded Colour where
-    minBound = toEnum 0
-    maxBound = toEnum . pred $ Seq.length allColours
-
-instance Token Colour where
-    tokenName (Text appearance) = "text-" <> tokenName appearance
-    tokenName InverseText = "text-inverse"
-    tokenName DisabledText = "text-disabled"
-    tokenName (Background appearance) = "background-" <> tokenName appearance
-    tokenName DisabledBackground = "background-disabled"
-    tokenName (Icon appearance) = "icon-" <> tokenName appearance
-    tokenName Border = "border"
-    tokenName InputBorder = "input-border"
-    tokenName BorderFocused = "input-border-focused"
-    tokenName InputBorderDanger = "input-border-danger"
-
-instance ValueToken Colour where
-    type ValueType Colour = Color
-    tokenValue (Text Default) = parse "#292A2E"
-    tokenValue (Text Primary) = parse "#1868DB"
-    tokenValue (Text Subtle) = parse "#505258"
-    tokenValue (Text Success) = parse "#292A2E"
-    tokenValue (Text Warning) = parse "#9E4C00"
-    tokenValue (Text Danger) = parse "#AE2E24"
-    tokenValue (Text Discovery) = parse "#803FA5"
-    tokenValue DisabledText = rgba 8 15 33 0.3
-    tokenValue (Background Default) = parse "#E9F2FE"
-    tokenValue (Background Subtle) = parse "#E9F2FE"
-    tokenValue (Background Primary) = tokenValue $ Background Default
-    tokenValue (Background Warning) = parse "#FFF5DB"
-    tokenValue (Background Success) = parse "#EFFFD6"
-    tokenValue (Background Danger) = parse "#FFECEB"
-    tokenValue (Background Discovery) = parse "#F8EEFE"
-    tokenValue DisabledBackground = rgba 23 23 23 0.03
-    tokenValue InverseText = parse "#FFF"
-    tokenValue (Icon Default) = tokenValue $ Text Default
-    tokenValue (Icon Primary) = tokenValue $ Text Primary
-    tokenValue (Icon Subtle) = tokenValue $ Text Subtle
-    tokenValue (Icon Success) = parse "#6A9A23"
-    tokenValue (Icon Warning) = parse "#E06C00"
-    tokenValue (Icon Danger) = parse "#C9372C"
-    tokenValue (Icon Discovery) = parse "#AF59E1"
-    tokenValue Border = parse "#0B120E24"
-    tokenValue InputBorder = parse "#8C8F97"
-    tokenValue BorderFocused = parse "#4688EC"
-    tokenValue InputBorderDanger = parse "#E2483D"
+    byToken ActiveState = active

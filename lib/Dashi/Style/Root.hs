@@ -1,9 +1,13 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Dashi.Style.Root where
 
-import Clay hiding (FontSize, fullWidth, var)
+import Clay hiding (Color, FontSize, fullWidth, var)
+import Dashi.Style.Colour ()
+import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Foldable (for_)
@@ -68,7 +72,10 @@ style = do
         varDecl "transition" $ ([value $ sec 0.2, value easeInOut] :: [Value])
         tokenDecl @Space
         tokenDecl @Radius
-        tokenDecl @Colour
+        tokenDecl @Colour.Text
+        tokenDecl @Colour.InverseText
+        tokenDecl @Colour.Background
+        tokenDecl @Colour.Border
         tokenDecl @FontSize
     star ? do
         marginAll nil
@@ -86,8 +93,8 @@ style = do
         "appearance" ~: none
         disabled & do
             important $ cursor notAllowed
-            important $ color' DisabledText
-            important $ backgroundColor' DisabledBackground
+            opacity 0.3
+            "filter" -: "grayscale(100%)"
         ariaBusy True & do
             cursor cursorProgress
     html ? do
@@ -95,4 +102,4 @@ style = do
         overflowY auto
     body ? do
         font $ var @Value "font-body" ["normal " <> var "font-weight" [] <> " 14px/1.4 " <> var "font-family" []]
-        color' $ Text Default
+        color' $ Colour.Text Default

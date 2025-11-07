@@ -8,8 +8,6 @@ import Clay hiding (fullWidth, label, legend, name, option, selected, span_, typ
 import Dashi.Components.Icon (iconContent)
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Components.Widget
-import Dashi.Style.Tokens hiding (Background)
-import Dashi.Style.Util
 import Data.Functor ((<&>))
 import Miso (MisoString, View)
 import Miso.Html.Element (fieldset_, input_, label_, span_)
@@ -34,9 +32,7 @@ instance Widget (Radio model action) model action where
         -- Shared style is applied in the Checkbox component
         input # ("type" @= "radio") ? do
             before & content (iconContent MdiRadioboxBlank)
-            checked <> before & do
-                color' BorderFocused
-                content $ iconContent MdiRadioboxMarked
+            checked <> before & content (iconContent MdiRadioboxMarked)
 
 data RadioGroup o model action = RadioGroup
     { name :: MisoString

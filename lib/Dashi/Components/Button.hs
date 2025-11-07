@@ -3,13 +3,14 @@
 
 module Dashi.Components.Button where
 
-import Clay hiding (action, fullWidth, label, size, span_, var)
-import Clay qualified hiding (fullWidth)
+import Clay hiding (Background, Color, action, fullWidth, label, size, span_, var)
+import Clay qualified hiding (Color, fullWidth)
 import Control.Monad (when)
 import Dashi.Components.Icon ()
 import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
 import Dashi.Components.Widget
+import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
@@ -21,51 +22,44 @@ import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import Data.String (fromString)
 import GHC.IsList (IsList (fromList))
+import Graphics.Color.Model (Alpha, setAlpha)
+import Graphics.Color.Space.OKLAB.LCH
 import Miso hiding (view)
 import Miso.Html.Element (button_, label_)
 import Prelude
 
-data ButtonBackground = ButtonBackground Appearance InputState
-    deriving stock (Eq, Ord)
+data Background = Background Appearance InputState
+    deriving stock (Eq)
 
-allButtonBackgrounds :: Seq ButtonBackground
-allButtonBackgrounds = Seq.fromList $ ButtonBackground <$> [minBound .. maxBound] <*> [minBound .. maxBound]
+allBackgrounds :: Seq Background
+allBackgrounds = Seq.fromList $ Background <$> [minBound .. maxBound] <*> [minBound .. maxBound]
 
-instance Enum ButtonBackground where
-    toEnum = Seq.index allButtonBackgrounds
-    fromEnum = fromJust . flip Seq.elemIndexL allButtonBackgrounds
+instance Enum Background where
+    toEnum = Seq.index allBackgrounds
+    fromEnum = fromJust . flip Seq.elemIndexL allBackgrounds
 
-instance Bounded ButtonBackground where
+instance Bounded Background where
     minBound = toEnum 0
-    maxBound = toEnum . pred $ Seq.length allButtonBackgrounds
+    maxBound = toEnum . pred $ Seq.length allBackgrounds
 
-instance Token ButtonBackground where
-    tokenName (ButtonBackground appearance state) =
+instance Token Background where
+    tokenName (Background appearance state) =
         fromString . List.intercalate "-" $
-            ["button", tokenName appearance, tokenName state]
+            ["button-background", tokenName appearance, tokenName state]
 
-instance ValueToken ButtonBackground where
-    type ValueType ButtonBackground = Color
-    tokenValue (ButtonBackground Default st) =
-        rgba 9 30 66 $ case st of
-            DefaultState -> 0.04
-            HoveredState -> 0.08
-            PressedState -> 0.14
-    tokenValue (ButtonBackground Primary DefaultState) = parse "#0052CC"
-    tokenValue (ButtonBackground Primary HoveredState) = parse "#0065FF"
-    tokenValue (ButtonBackground Primary PressedState) = parse "#0747A6"
-    tokenValue (ButtonBackground Success _) = tokenValue $ Icon Success -- TODO find better colour
-    tokenValue (ButtonBackground Subtle DefaultState) = transparent
-    tokenValue (ButtonBackground Subtle st) = tokenValue $ ButtonBackground Default st
-    tokenValue (ButtonBackground Warning DefaultState) = parse "#FBC828"
-    tokenValue (ButtonBackground Warning HoveredState) = parse "#FCA700"
-    tokenValue (ButtonBackground Warning PressedState) = parse "#F68909"
-    tokenValue (ButtonBackground Danger DefaultState) = parse "#C9372C"
-    tokenValue (ButtonBackground Danger HoveredState) = parse "#AE2E24"
-    tokenValue (ButtonBackground Danger PressedState) = parse "#5D1F1A"
-    tokenValue (ButtonBackground Discovery DefaultState) = parse "#964AC0"
-    tokenValue (ButtonBackground Discovery HoveredState) = parse "#803FA5"
-    tokenValue (ButtonBackground Discovery PressedState) = parse "#48245D"
+instance ValueToken Background where
+    type ValueType Background = Color (Alpha OKLCH) Float
+    tokenValue (Background Default state) = ColorOKLCHA 0.2422 0.0735 260.41 $ case state of
+        DefaultState -> 0.05
+        HoveredState -> 0.1
+        ActiveState -> 0.15
+    tokenValue (Background Subtle DefaultState) = flip setAlpha 0 . tokenValue $ Background Default DefaultState
+    tokenValue (Background Subtle state) = tokenValue $ Background Default state
+    tokenValue (Background appearance state) =
+        ColorOKLCHA l' c h 1
+      where
+        ColorOKLCHA l c h _ = tokenValue $ Colour.Text appearance
+        l' = l - (fromIntegral . fromEnum $ state) * 0.1
 
 data ButtonSize
     = DefaultSize
@@ -95,12 +89,13 @@ instance Widget (Button model action) model action where
         isBusy = hasAriaBusy attrs
 
     style = do
-        ":root" ? tokenDecl @ButtonBackground
+        ":root" ? tokenDecl @Background
         sconcat [Clay.button, input # ("type" @= "submit"), ".button"] ? do
             pressable
+            userSelect none
             position relative
             boxShadow . fromList $
-                [bsInset . bsColor (token Border) $ shadowWithBlur nil nil (var "border-width" [])]
+                [bsInset . bsColor (colorToken Colour.Border) $ shadowWithBlur nil nil (var "border-width" [])]
             byToken Subtle & ("box-shadow" -: "none")
             borderRadiusAll' Small
             paddingYX' XSmall Medium
@@ -116,19 +111,19 @@ instance Widget (Button model action) model action where
                     fullWidth
                     justifyContent spaceEvenly
             fontWeight $ weight 550
-            color' $ Text Subtle
-            backgroundColor' $ ButtonBackground Default DefaultState
-            transition "background" (sec 0.1) easeOut 0
+            color' $ Colour.Text Subtle
+            backgroundColor' $ Background Default DefaultState
+            transition "background" (sec 0.2) easeOut 0
             Clay.label ? do
                 display inlineFlex
                 alignItems baseline
                 justifyContent center
                 textAlign center
                 gap' XSmall
-                lineHeight $ unitless 1.5
+                lineHeight $ unitless 1.6
                 Clay.pointerEvents none
                 Clay.span # ":not(.mdi)" ? transform (translateY . em $ -0.1)
-                Clay.span # ".mdi" ? transform (translateY . em $ 0.1)
+                Clay.span # ".mdi" ? transform (translateY . em $ 0.05)
             ".mdi" ? fontSize' Large
             ".spinner" ? do
                 opacity 1
@@ -142,8 +137,8 @@ instance Widget (Button model action) model action where
             ariaBusy True & Clay.label ? opacity 0
             for_ @[] allTokens \appearance ->
                 byToken appearance & do
-                    when (elem @[] appearance [Primary, Success, Danger, Discovery]) $ color' InverseText
-                    backgroundColor' $ ButtonBackground appearance DefaultState
-                    ariaBusy False & do
-                        hover & backgroundColor' (ButtonBackground appearance HoveredState)
-                        active & backgroundColor' (ButtonBackground appearance PressedState)
+                    when (elem @[] appearance [Primary, Success, Warning, Danger, Discovery]) $ color' Colour.InverseText
+                    backgroundColor' $ Background appearance DefaultState
+                    sconcat [ariaBusy False, Clay.not disabled] & do
+                        hover & backgroundColor' (Background appearance HoveredState)
+                        active & backgroundColor' (Background appearance ActiveState)

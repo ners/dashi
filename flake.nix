@@ -140,6 +140,14 @@
               mv static/index.html static/favicon.ico static/apple-touch-icon.png .
             '';
           });
+          Color =
+            hfinal.callHackageDirect
+              {
+                pkg = "Color";
+                ver = "0.4.1";
+                sha256 = "sha256-ZPCgejtsH558h7cE5Y/wfKWYKKXK+rbKIG2ErDyyA6o=";
+              }
+              { };
           miso = hfinal.callCabal2nix "miso" inputs.miso { };
           miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
           identicon-style-squares = doJailbreak hprev.identicon-style-squares;

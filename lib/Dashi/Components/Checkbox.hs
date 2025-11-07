@@ -4,12 +4,13 @@
 
 module Dashi.Components.Checkbox where
 
-import Clay hiding (fullWidth, label, legend, name, option, selected, span_, type_)
+import Clay hiding (Color, fullWidth, label, legend, name, option, selected, span_, type_)
 import Clay qualified
 import Dashi.Components.Icon (iconContent, iconFont)
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Components.Widget
-import Dashi.Style.Tokens hiding (Background)
+import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Functor ((<&>))
 import Data.Semigroup (sconcat)
@@ -38,8 +39,8 @@ instance Widget (Checkbox model action) model action where
         checkboxOrRadio ? do
             pressable
             iconFont
-            color' InputBorder
-            transition "color" (ms 100) easeInOut (sec 0)
+            color' Colour.Border
+            checked & color' Colour.BorderFocused
         Clay.label # has (self |> checkboxOrRadio) ? do
             pressable
             display flex
@@ -50,11 +51,7 @@ instance Widget (Checkbox model action) model action where
             paddingLeft . token $ Space XSmall
         input # ("type" @= "checkbox") ? do
             before & content (iconContent MdiCheckboxBlankOutline)
-            checked
-                <> before
-                & do
-                    color' BorderFocused
-                    content $ iconContent MdiCheckboxMarked
+            checked <> before & content (iconContent MdiCheckboxMarked)
 
 data CheckboxGroup o model action = CheckboxGroup
     { name :: MisoString
