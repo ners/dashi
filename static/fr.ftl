@@ -1,1 +1,1 @@
-hello = Bonjour depuis dashi 👋
+hello = Bonjour de dashi 👋

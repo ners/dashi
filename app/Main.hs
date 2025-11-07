@@ -1,10 +1,12 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Main where
 
+import Control.Applicative ((<|>))
 import Control.Lens.Operators
 import Control.Monad (liftM2)
 import Dashi.Components.ActionBar (ActionBar (..))
@@ -29,13 +31,14 @@ import Dashi.Style qualified as Style
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.Generics.Labels ()
+import Data.List.Extra qualified as List
 import Data.Maybe (isJust)
 import Data.String (IsString (fromString))
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
-import Language (Language)
-import Language qualified
-import Language.Fluent.Bundle (Bundle (..))
+import Language
+import Language.Fluent.Bundle (Bundle (..), buildBundle)
+import Language.Fluent.Syntax.Resource qualified as Resource
 import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
 import Miso.Html
@@ -53,24 +56,45 @@ main = run (startApp app)
 instance Eq (a -> b) where
     (==) _ _ = True
 
+instance Show (a -> b) where
+    show _ = "<function>"
+
 deriving stock instance Eq Bundle
 
+deriving stock instance Show Bundle
+
+data RequestStatus req res
+    = NotRequested
+    | RequestInProgress req
+    | ResponseReceived (Either String res)
+    deriving stock (Eq, Show, Generic)
+
+requestData :: RequestStatus req res -> Maybe req
+requestData (RequestInProgress req) = Just req
+requestData _ = Nothing
+
+responseData :: RequestStatus req res -> Maybe res
+responseData (ResponseReceived (Right res)) = Just res
+responseData _ = Nothing
+
 data Model = Model
-    { bundle :: Maybe Bundle
-    , language :: Language
+    { bundle :: RequestStatus Language Bundle
     }
     deriving stock (Eq, Generic)
+
+instance Translatable Model where
+    getBundle = responseData . bundle
 
 emptyModel :: Model
 emptyModel =
     Model
-        { bundle = Nothing
-        , language = Language.English
+        { bundle = NotRequested
         }
 
 data Action
     = Setup
     | SetLanguage Language
+    | SetBundle (Either String Bundle)
     | NoOp
     deriving stock (Show)
 
@@ -89,43 +113,61 @@ app = do
     initComponent = component emptyModel (liftM2 (>>) traceAction appUpdate) appView
 
 appUpdate :: Action -> Effect ROOT Model Action
-appUpdate Setup = io_ do
-    let createElement = JSaddle.js1 @String @String "createElement"
-        setAttribute = JSaddle.js2 @String @String @String "setAttribute"
-        appendChild :: JSaddle.JSM JSaddle.JSVal -> JSaddle.JSF
-        appendChild = JSaddle.js1 @String "appendChild"
-    doc <- JSaddle.jsg @String "document"
-    head <- doc ^. JSaddle.js @_ @String "head"
-    head
-        ^. JSaddle.js1 @String @String "getElementsByTagName" "title"
-        ^. JSaddle.js1 @String @Int "item" 0
-        ^. JSaddle.js0 @String "remove"
-    head ^. appendChild do
-        e <- doc ^. createElement "meta"
-        e ^. setAttribute "charset" "utf-8"
-        pure e
-    head ^. appendChild do
-        e <- doc ^. createElement "meta"
-        e ^. setAttribute "name" "viewport"
-        e ^. setAttribute "content" "width=device-width, initial-scale=1, shrink-to-fit=no"
-        pure e
-    head ^. appendChild do
-        e <- doc ^. createElement "title"
-        e ^. JSaddle.jss @String @String "innerHTML" "Dashi"
-        pure e
-    head ^. appendChild do
-        e <- doc ^. createElement "link"
-        e ^. setAttribute "rel" "icon"
-        e ^. setAttribute "href" "/favicon.ico"
-        pure e
-    head ^. appendChild do
-        e <- doc ^. createElement "link"
-        e ^. setAttribute "rel" "icon"
-        e ^. setAttribute "href" "/static/icon.svg"
-        e ^. setAttribute "type" "image/svg+xml"
-        pure e
-    pure ()
-appUpdate (SetLanguage lang) = #language .= lang
+appUpdate Setup = do
+    -- TODO take this from header / local storage / browser settings ...
+    appUpdate $ SetLanguage Language.English
+    io_ do
+        let createElement = JSaddle.js1 @String @String "createElement"
+            setAttribute = JSaddle.js2 @String @String @String "setAttribute"
+            appendChild :: JSaddle.JSM JSaddle.JSVal -> JSaddle.JSF
+            appendChild = JSaddle.js1 @String "appendChild"
+        doc <- JSaddle.jsg @String "document"
+        head <- doc ^. JSaddle.js @_ @String "head"
+        head
+            ^. JSaddle.js1 @String @String "getElementsByTagName" "title"
+            ^. JSaddle.js1 @String @Int "item" 0
+            ^. JSaddle.js0 @String "remove"
+        head ^. appendChild do
+            e <- doc ^. createElement "meta"
+            e ^. setAttribute "charset" "utf-8"
+            pure e
+        head ^. appendChild do
+            e <- doc ^. createElement "meta"
+            e ^. setAttribute "name" "viewport"
+            e ^. setAttribute "content" "width=device-width, initial-scale=1, shrink-to-fit=no"
+            pure e
+        head ^. appendChild do
+            e <- doc ^. createElement "title"
+            e ^. JSaddle.jss @String @String "innerHTML" "Dashi"
+            pure e
+        head ^. appendChild do
+            e <- doc ^. createElement "link"
+            e ^. setAttribute "rel" "icon"
+            e ^. setAttribute "href" "/favicon.ico"
+            pure e
+        head ^. appendChild do
+            e <- doc ^. createElement "link"
+            e ^. setAttribute "rel" "icon"
+            e ^. setAttribute "href" "/static/icon.svg"
+            e ^. setAttribute "type" "image/svg+xml"
+            pure e
+        pure ()
+appUpdate (SetLanguage lang) = do
+    #bundle .= RequestInProgress lang
+    getText
+        ("/static/" <> Language.code lang <> ".ftl")
+        []
+        setBundle
+        (SetBundle . Left . (.body))
+    io_ do
+        doc <- JSaddle.jsg @String "document"
+        html <- doc ^. JSaddle.js @_ @String "documentElement"
+        html ^. JSaddle.js2 @String @String @String "setAttribute" "lang" (Language.code lang)
+        pure ()
+  where
+    setBundle :: Response MisoString -> Action
+    setBundle Response{body} = SetBundle . fmap (buildBundle [Language.code lang] . pure) . Resource.parse . fromMisoString $ body
+appUpdate (SetBundle b) = #bundle .= ResponseReceived b
 appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
@@ -134,7 +176,7 @@ appView model =
         []
         [ header_
             []
-            [ widget $ Heading XLarge "Hello from dashi 👋"
+            [ widget . Heading XLarge $ unsafeTranslate model "hello"
             , widget' @(Select Language Model Action)
                 [ appearance_ Subtle
                 , onChange $ maybe NoOp SetLanguage . Language.fromCode
@@ -142,7 +184,10 @@ appView model =
                 Select
                     { name = "language"
                     , options = [minBound .. maxBound]
-                    , selectedOption = Just model.language
+                    , selectedOption =
+                        let req = requestData model.bundle
+                            res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
+                         in req <|> res
                     , value = Language.code
                     , label = pure . text . fromText . Text.toUpper . Language.code
                     }
