@@ -26,3 +26,9 @@ emptyAttr_ = Styles mempty
 
 emptyRefinement :: Refinement
 emptyRefinement = Refinement mempty
+
+cyclePred :: (Eq a, Enum a, Bounded a) => a -> a
+cyclePred x = if x == minBound then maxBound else pred x
+
+cycleSucc :: (Eq a, Enum a, Bounded a) => a -> a
+cycleSucc x = if x == maxBound then minBound else succ x

@@ -10,11 +10,13 @@ import Dashi.Components.Icon ()
 import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
 import Dashi.Components.Widget
+import Dashi.Style.Colour (LightDark, sameLightDark)
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Foldable (for_)
+import Data.Functor ((<&>))
 import Data.List qualified as List
 import Data.Maybe (fromJust)
 import Data.Semigroup (sconcat)
@@ -48,18 +50,14 @@ instance Token Background where
             ["button-background", tokenName appearance, tokenName state]
 
 instance ValueToken Background where
-    type ValueType Background = Color (Alpha OKLCH) Float
-    tokenValue (Background Default state) = ColorOKLCHA 0.2422 0.0735 260.41 $ case state of
-        DefaultState -> 0.05
-        HoveredState -> 0.1
-        ActiveState -> 0.15
-    tokenValue (Background Subtle DefaultState) = flip setAlpha 0 . tokenValue $ Background Default DefaultState
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Float)
+    tokenValue (Background Default state) = sameLightDark . ColorOKLCHA 0.2422 0.0735 260.41 $ 0.05 * (fromIntegral . succ . fromEnum) state
+    tokenValue (Background Subtle DefaultState) = flip setAlpha 0 <$> tokenValue (Background Default DefaultState)
     tokenValue (Background Subtle state) = tokenValue $ Background Default state
     tokenValue (Background appearance state) =
-        ColorOKLCHA l' c h 1
-      where
-        ColorOKLCHA l c h _ = tokenValue $ Colour.Text appearance
-        l' = l - (fromIntegral . fromEnum $ state) * 0.1
+        tokenValue (Colour.Text appearance) <&> \(ColorOKLCHA l c h _) ->
+            let l' = l - (fromIntegral . fromEnum $ state) * 0.1
+             in ColorOKLCHA l' c h 1
 
 data ButtonSize
     = DefaultSize

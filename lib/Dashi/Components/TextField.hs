@@ -4,10 +4,12 @@ module Dashi.Components.TextField where
 
 import Clay hiding (Background, Color, Number, fullWidth, label, name, span_, type_, value, var)
 import Dashi.Components.Widget
+import Dashi.Style.Colour (LightDark)
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
+import Data.Functor ((<&>))
 import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
 import Miso (MisoString)
@@ -26,13 +28,12 @@ instance Token Background where
     tokenAttr (Background state) = tokenAttr state
 
 instance ValueToken Background where
-    type ValueType Background = Color (Alpha OKLCH) Float
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Float)
     tokenValue (Background state) =
-        ColorOKLCHA l c h $ case state of
-            HoveredState -> 0.05
-            _ -> 0
-      where
-        ColorOKLCHA l c h _ = tokenValue $ Colour.Text Default
+        tokenValue (Colour.Text Default) <&> \(ColorOKLCHA l c h _) ->
+            ColorOKLCHA l c h $ case state of
+                HoveredState -> 0.05
+                _ -> 0
 
 data Type
     = Text

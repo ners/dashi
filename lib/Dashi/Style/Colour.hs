@@ -1,14 +1,38 @@
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Dashi.Style.Colour where
 
+import Clay ((@=))
 import Clay qualified
 import Dashi.Style.Tokens
+import Data.Functor ((<&>))
 import Data.List qualified as List
 import Data.String (fromString)
 import Graphics.Color.Space hiding (Primary)
 import Graphics.Color.Space.OKLAB.LCH
+import Miso.Property (textProp)
 import Prelude
+
+data Scheme = Light | Dark
+    deriving stock (Eq, Show, Bounded, Enum)
+
+instance Token Scheme where
+    tokenName Light = "light"
+    tokenName Dark = "dark"
+    tokenAttr = textProp "data-theme" . tokenName
+    byToken = ("data-theme" @=) . tokenName
+
+data LightDark c = LightDark {light :: c, dark :: c}
+
+sameLightDark :: Color (Alpha OKLCH) e -> LightDark (Color (Alpha OKLCH) e)
+sameLightDark c = LightDark c c
+
+complementaryLightDark :: (Num e) => Color (Alpha OKLCH) e -> LightDark (Color (Alpha OKLCH) e)
+complementaryLightDark light@(ColorOKLCHA l c h a) = LightDark light $ ColorOKLCHA (1 - l) c h a
+
+instance Functor LightDark where
+    f `fmap` LightDark{..} = LightDark{light = f light, dark = f dark}
 
 convertAlphaColor :: forall cs cs' i e. (ColorSpace cs' i e, ColorSpace cs i e) => Color (Alpha cs') e -> Color (Alpha cs) e
 convertAlphaColor c = addAlpha (convertColor . dropAlpha $ c) (getAlpha c)
@@ -41,6 +65,12 @@ instance (Elevator e) => Clay.Val (Color (Alpha OKLCH) e) where
     value :: Color (Alpha OKLCH) e -> Clay.Value
     value (ColorOKLCHA l c h a) = fn "oklch" $ [toShowS l, toShowS c, toShowS h] <> if a == 1 then [] else [showChar '/', toShowS a]
 
+instance (Clay.Val c, Eq c) => Clay.Val (LightDark c) where
+    value :: LightDark c -> Clay.Value
+    value LightDark{..}
+        | light == dark = Clay.value light
+        | otherwise = "light-dark(" <> Clay.value light <> "," <> Clay.value dark <> ")"
+
 toClayColor :: (Clay.Val (Color cs e)) => Color cs e -> Clay.Color
 toClayColor = Clay.Other . Clay.value
 
@@ -51,10 +81,10 @@ instance Token Text where
     tokenName (Text appearance) = "text-" <> tokenName appearance
 
 instance ValueToken Text where
-    type ValueType Text = Color (Alpha OKLCH) Float
-    tokenValue (Text Default) = ColorOKLCHA 0.197 0.008 264 1
-    tokenValue (Text Subtle) = setAlpha (tokenValue $ Text Default) 0.8
-    tokenValue (Text appearance) = ColorOKLCHA l c h 1
+    type ValueType Text = LightDark (Color (Alpha OKLCH) Float)
+    tokenValue (Text Default) = complementaryLightDark $ ColorOKLCHA 0.197 0.008 264 1
+    tokenValue (Text Subtle) = flip setAlpha 0.8 <$> tokenValue (Text Default)
+    tokenValue (Text appearance) = LightDark (ColorOKLCHA l c h 1) (ColorOKLCHA l c h 1)
       where
         l, c, h :: Float
         l =
@@ -77,8 +107,8 @@ instance Token InverseText where
     tokenName InverseText = "text-inverse"
 
 instance ValueToken InverseText where
-    type ValueType InverseText = Color (Alpha OKLCH) Float
-    tokenValue InverseText = setAlpha (tokenValue $ Background Default) 1
+    type ValueType InverseText = LightDark (Color (Alpha OKLCH) Float)
+    tokenValue InverseText = flip setAlpha 1 <$> tokenValue (Background Default)
 
 newtype Background = Background Appearance
     deriving newtype (Eq, Bounded, Enum)
@@ -87,12 +117,10 @@ instance Token Background where
     tokenName (Background appearance) = "background-" <> tokenName appearance
 
 instance ValueToken Background where
-    type ValueType Background = Color (Alpha OKLCH) Float
-    tokenValue (Background Default) = ColorOKLCHA 1 0 0 0
-    tokenValue (Background Subtle) = ColorOKLCHA 1 0 0 0
-    tokenValue (Background appearance) =
-        let ColorOKLCHA l c h _ = tokenValue $ Text appearance
-         in ColorOKLCHA l c h 0.15
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Float)
+    tokenValue (Background Default) = LightDark (ColorOKLCHA 0.932 0.004 256 1) (ColorOKLCHA 0.256 0.011 264 1)
+    tokenValue (Background Subtle) = flip setAlpha 0 <$> tokenValue (Background Default)
+    tokenValue (Background appearance) = tokenValue (Text appearance) <&> \(ColorOKLCHA l c h _) -> ColorOKLCHA l c h 0.15
 
 data Border
     = Border
@@ -106,7 +134,7 @@ instance Token Border where
     tokenName BorderDanger = "border-danger-color"
 
 instance ValueToken Border where
-    type ValueType Border = Color (Alpha OKLCH) Float
-    tokenValue Border = ColorOKLCHA 0.1733 0.0136 159.53 0.3
+    type ValueType Border = LightDark (Color (Alpha OKLCH) Float)
+    tokenValue Border = complementaryLightDark $ ColorOKLCHA 0.1733 0.0136 159.53 0.3
     tokenValue BorderFocused = tokenValue $ Text Primary
     tokenValue BorderDanger = tokenValue $ Text Danger

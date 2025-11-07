@@ -7,6 +7,7 @@
 module Main where
 
 import Control.Applicative ((<|>))
+import Control.Lens qualified as Lens
 import Control.Lens.Operators
 import Control.Monad (liftM2)
 import Dashi.Components.ActionBar (ActionBar (..))
@@ -28,6 +29,8 @@ import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
 import Dashi.Components.Widget
 import Dashi.Style qualified as Style
+import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Colour qualified as Colour.Scheme
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.Generics.Labels ()
@@ -79,6 +82,7 @@ responseData _ = Nothing
 
 data Model = Model
     { bundle :: RequestStatus Language Bundle
+    , colourScheme :: Colour.Scheme
     }
     deriving stock (Eq, Generic)
 
@@ -89,12 +93,14 @@ emptyModel :: Model
 emptyModel =
     Model
         { bundle = NotRequested
+        , colourScheme = Colour.Scheme.Light
         }
 
 data Action
     = Setup
     | SetLanguage Language
     | SetBundle (Either String Bundle)
+    | SetColourScheme Colour.Scheme
     | NoOp
     deriving stock (Show)
 
@@ -112,10 +118,24 @@ app = do
     initComponent :: Component ROOT Model Action
     initComponent = component emptyModel (liftM2 (>>) traceAction appUpdate) appView
 
+setSystemColourScheme :: JSM Action
+setSystemColourScheme =
+    JSaddle.jsg @String "window"
+        >>= Lens.view
+            ( JSaddle.js1 @String @String "matchMedia" "(prefers-color-scheme: dark)"
+                . JSaddle.js @_ @String "matches"
+            )
+        >>= JSaddle.valToBool
+        <&> SetColourScheme . \case
+            True -> Colour.Scheme.Dark
+            False -> Colour.Scheme.Light
+
 appUpdate :: Action -> Effect ROOT Model Action
 appUpdate Setup = do
     -- TODO take this from header / local storage / browser settings ...
     appUpdate $ SetLanguage Language.English
+    io setSystemColourScheme
+    -- TODO detect if we are in ghcid
     io_ do
         let createElement = JSaddle.js1 @String @String "createElement"
             setAttribute = JSaddle.js2 @String @String @String "setAttribute"
@@ -130,6 +150,11 @@ appUpdate Setup = do
         head ^. appendChild do
             e <- doc ^. createElement "meta"
             e ^. setAttribute "charset" "utf-8"
+            pure e
+        head ^. appendChild do
+            e <- doc ^. createElement "meta"
+            e ^. setAttribute "name" "color-scheme"
+            e ^. setAttribute "content" "dark light"
             pure e
         head ^. appendChild do
             e <- doc ^. createElement "meta"
@@ -168,6 +193,14 @@ appUpdate (SetLanguage lang) = do
     setBundle :: Response MisoString -> Action
     setBundle Response{body} = SetBundle . fmap (buildBundle [Language.code lang] . pure) . Resource.parse . fromMisoString $ body
 appUpdate (SetBundle b) = #bundle .= ResponseReceived b
+appUpdate (SetColourScheme scheme) = do
+    #colourScheme .= scheme
+    io_ do
+        doc <- JSaddle.jsg @String "document"
+        html <- doc ^. JSaddle.js @_ @String "documentElement"
+        Property name value <- pure $ tokenAttr scheme
+        html ^. JSaddle.js2 @String "setAttribute" name value
+        pure ()
 appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
@@ -192,11 +225,15 @@ appView model =
                     , label = pure . text . fromText . Text.toUpper . Language.code
                     }
             , widget' @(Button Model Action)
-                []
+                [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
                 Button
                     { size = Button.IconButton
                     , appearance = Subtle
-                    , label = [widget MdiWhiteBalanceSunny]
+                    , label =
+                        [ widget $ case model.colourScheme of
+                            Colour.Scheme.Light -> MdiWhiteBalanceSunny
+                            Colour.Scheme.Dark -> MdiWeatherNight
+                        ]
                     }
             ]
         , avatars

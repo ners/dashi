@@ -100,6 +100,9 @@ style = do
     html ? do
         overflowX hidden
         overflowY auto
+        for_ @[] @_ @Colour.Scheme allTokens \scheme ->
+            byToken scheme & ("color-scheme" -: tokenName scheme)
     body ? do
         font $ var @Value "font-body" ["normal " <> var "font-weight" [] <> " 14px/1.4 " <> var "font-family" []]
+        backgroundColor' $ Colour.Background Default
         color' $ Colour.Text Default

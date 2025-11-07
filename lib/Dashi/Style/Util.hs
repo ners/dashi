@@ -141,7 +141,6 @@ gridTemplateAreas areas = "grid-template-areas" ~: intercalate "\n    " ("" : (a
   where
     areaRow :: [Value] -> Value
     areaRow [] = ""
-    areaRow [x] = x
     areaRow xs = "'" <> intercalate " " xs <> "'"
 
 fontSize' :: SizeToken -> Css
