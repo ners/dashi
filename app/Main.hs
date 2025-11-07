@@ -48,6 +48,9 @@ import Miso.Html
 import Miso.Html.Property (class_, disabled_, href_, id_)
 import Web.Font.MDI
 import Prelude
+import Dashi.Layout.Page (Page(..))
+import PageId (PageId)
+import PageId qualified as PageId
 
 #ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
@@ -59,12 +62,10 @@ main = run (startApp app)
 instance Eq (a -> b) where
     (==) _ _ = True
 
-instance Show (a -> b) where
-    show _ = "<function>"
-
 deriving stock instance Eq Bundle
 
-deriving stock instance Show Bundle
+instance Show Bundle where
+    show Bundle{..} = "Bundle{locales=" <> show locales <> "}"
 
 data RequestStatus req res
     = NotRequested
@@ -83,6 +84,7 @@ responseData _ = Nothing
 data Model = Model
     { bundle :: RequestStatus Language Bundle
     , colourScheme :: Colour.Scheme
+    , pageId :: PageId
     }
     deriving stock (Eq, Generic)
 
@@ -94,6 +96,7 @@ emptyModel =
     Model
         { bundle = NotRequested
         , colourScheme = Colour.Scheme.Light
+        , pageId = PageId.Overview
         }
 
 data Action
@@ -205,45 +208,62 @@ appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
 appView model =
-    main_
-        []
-        [ header_
-            []
-            [ widget . Heading XLarge $ unsafeTranslate model "hello"
-            , widget' @(Select Language Model Action)
-                [ appearance_ Subtle
-                , onChange $ maybe NoOp SetLanguage . Language.fromCode
+    widget @(Page Model Action)
+      Page
+        { banner = Nothing
+        , topBar = Just
+                [ widget . Heading XLarge $ unsafeTranslate model "hello"
+                , widget' @(Select Language Model Action)
+                    [ appearance_ Subtle
+                    , onChange $ maybe NoOp SetLanguage . Language.fromCode
+                    ]
+                    Select
+                        { name = "language"
+                        , options = [minBound .. maxBound]
+                        , selectedOption =
+                            let req = requestData model.bundle
+                                res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
+                             in req <|> res
+                        , value = Language.code
+                        , label = pure . text . fromText . Text.toUpper . Language.code
+                        }
+                , widget' @(Button Model Action)
+                    [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
+                    Button
+                        { size = Button.IconButton
+                        , appearance = Subtle
+                        , label =
+                            [ widget $ case model.colourScheme of
+                                Colour.Scheme.Light -> MdiWhiteBalanceSunny
+                                Colour.Scheme.Dark -> MdiWeatherNight
+                            ]
+                        }
                 ]
-                Select
-                    { name = "language"
-                    , options = [minBound .. maxBound]
-                    , selectedOption =
-                        let req = requestData model.bundle
-                            res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
-                         in req <|> res
-                    , value = Language.code
-                    , label = pure . text . fromText . Text.toUpper . Language.code
-                    }
-            , widget' @(Button Model Action)
-                [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
-                Button
-                    { size = Button.IconButton
-                    , appearance = Subtle
-                    , label =
-                        [ widget $ case model.colourScheme of
-                            Colour.Scheme.Light -> MdiWhiteBalanceSunny
-                            Colour.Scheme.Dark -> MdiWeatherNight
-                        ]
-                    }
+        , sideNav = Just
+            [ ul_
+                []
+                [ li_ [] [a_ [href_ "#"] [text "Avatars"]]
+                , li_ [] [a_ [href_ "#"] [text "Buttons"]]
+                , li_ [] [a_ [href_ "#"] [text "Icons"]]
+                ]
             ]
-        , avatars
-        , buttons
-        , icons
-        , forms
-        , inlineMessages
-        , sectionMessages
-        , diagrams
-        ]
+        , main =
+            [
+                case model.pageId of
+                    PageId.Overview -> text "YOU DONKEY"
+                    PageId.Avatars -> avatars
+                    PageId.Buttons -> buttons
+                    PageId.Icons -> icons
+            --     avatars
+            -- , buttons
+            -- , icons
+            -- , forms
+            -- , inlineMessages
+            -- , sectionMessages
+            -- , diagrams
+            ]
+        , aside = Nothing
+        }
 
 avatars :: View model action
 avatars =

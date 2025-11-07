@@ -3,13 +3,16 @@ html, body {
   max-width: 100vw;
 }
 
+body > div {
+  width: 100%;
+  max-width: 50rem;
+  margin: auto;
+}
+
 main {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  width: 100%;
-  max-width: 50rem;
-  margin: auto;
   padding: var(--dashi-space-l);
 }
 
@@ -53,7 +56,7 @@ section, form {
   gap: var(--dashi-space-s);
 }
 
-div:has(canvas) {
+main div:has(> canvas) {
   max-width: 100%;
   overflow: auto;
 }

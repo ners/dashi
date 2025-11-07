@@ -21,11 +21,13 @@ import Data.String (IsString (fromString))
 import Data.Text.Lazy qualified as LazyText
 import Web.Font.MDI (MDI)
 import Prelude
+import Dashi.Layout.Page (Page)
 
 style :: forall value model action. (value ~ (), model ~ (), action ~ ()) => Css
 style = do
     Root.style
-    Page.style
+
+    Widget.style @(Page model action) @model @action
 
     Widget.style @Avatar @model @action
     Widget.style @AvatarItem @model @action

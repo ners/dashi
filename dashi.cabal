@@ -115,6 +115,7 @@ executable dashi
   main-is: Main.hs
   other-modules:
     Language
+    PageId
   build-depends:
     dashi,
     extra,
