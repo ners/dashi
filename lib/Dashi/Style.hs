@@ -15,13 +15,12 @@ import Dashi.Components.Select (Select)
 import Dashi.Components.TextArea (TextArea)
 import Dashi.Components.TextField (TextField)
 import Dashi.Components.Widget qualified as Widget
-import Dashi.Layout.Page qualified as Page
+import Dashi.Layout.Page (Page)
 import Dashi.Style.Root qualified as Root
 import Data.String (IsString (fromString))
 import Data.Text.Lazy qualified as LazyText
 import Web.Font.MDI (MDI)
 import Prelude
-import Dashi.Layout.Page (Page)
 
 style :: forall value model action. (value ~ (), model ~ (), action ~ ()) => Css
 style = do

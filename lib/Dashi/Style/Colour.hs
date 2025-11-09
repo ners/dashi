@@ -31,6 +31,13 @@ sameLightDark c = LightDark c c
 complementaryLightDark :: (Num e) => Color (Alpha OKLCH) e -> LightDark (Color (Alpha OKLCH) e)
 complementaryLightDark light@(ColorOKLCHA l c h a) = LightDark light $ ColorOKLCHA (1 - l) c h a
 
+flipLightDark :: LightDark c -> LightDark c
+flipLightDark LightDark{..} = LightDark{light = dark, dark = light}
+
+getLightDark :: Scheme -> LightDark c -> c
+getLightDark Light = light
+getLightDark Dark = dark
+
 instance Functor LightDark where
     f `fmap` LightDark{..} = LightDark{light = f light, dark = f dark}
 
@@ -81,12 +88,12 @@ instance Token Text where
     tokenName (Text appearance) = "text-" <> tokenName appearance
 
 instance ValueToken Text where
-    type ValueType Text = LightDark (Color (Alpha OKLCH) Float)
+    type ValueType Text = LightDark (Color (Alpha OKLCH) Double)
     tokenValue (Text Default) = complementaryLightDark $ ColorOKLCHA 0.197 0.008 264 1
-    tokenValue (Text Subtle) = flip setAlpha 0.8 <$> tokenValue (Text Default)
+    tokenValue (Text Subtle) = flip setAlpha 0.6 <$> tokenValue (Text Default)
     tokenValue (Text appearance) = LightDark (ColorOKLCHA l c h 1) (ColorOKLCHA l c h 1)
       where
-        l, c, h :: Float
+        l, c, h :: Double
         l =
             case appearance of
                 Warning -> 0.695
@@ -107,7 +114,7 @@ instance Token InverseText where
     tokenName InverseText = "text-inverse"
 
 instance ValueToken InverseText where
-    type ValueType InverseText = LightDark (Color (Alpha OKLCH) Float)
+    type ValueType InverseText = LightDark (Color (Alpha OKLCH) Double)
     tokenValue InverseText = flip setAlpha 1 <$> tokenValue (Background Default)
 
 newtype Background = Background Appearance
@@ -117,7 +124,7 @@ instance Token Background where
     tokenName (Background appearance) = "background-" <> tokenName appearance
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Float)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
     tokenValue (Background Default) = LightDark (ColorOKLCHA 0.932 0.004 256 1) (ColorOKLCHA 0.256 0.011 264 1)
     tokenValue (Background Subtle) = flip setAlpha 0 <$> tokenValue (Background Default)
     tokenValue (Background appearance) = tokenValue (Text appearance) <&> \(ColorOKLCHA l c h _) -> ColorOKLCHA l c h 0.15
@@ -134,7 +141,7 @@ instance Token Border where
     tokenName BorderDanger = "border-danger-color"
 
 instance ValueToken Border where
-    type ValueType Border = LightDark (Color (Alpha OKLCH) Float)
+    type ValueType Border = LightDark (Color (Alpha OKLCH) Double)
     tokenValue Border = complementaryLightDark $ ColorOKLCHA 0.1733 0.0136 159.53 0.3
     tokenValue BorderFocused = tokenValue $ Text Primary
     tokenValue BorderDanger = tokenValue $ Text Danger

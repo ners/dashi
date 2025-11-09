@@ -50,7 +50,7 @@ instance Token Background where
             ["button-background", tokenName appearance, tokenName state]
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Float)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
     tokenValue (Background Default state) = sameLightDark . ColorOKLCHA 0.2422 0.0735 260.41 $ 0.05 * (fromIntegral . succ . fromEnum) state
     tokenValue (Background Subtle DefaultState) = flip setAlpha 0 <$> tokenValue (Background Default DefaultState)
     tokenValue (Background Subtle state) = tokenValue $ Background Default state

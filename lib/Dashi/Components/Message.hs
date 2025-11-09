@@ -70,6 +70,7 @@ instance Widget Message model action where
             byToken SectionMessage & do
                 borderRadiusAll' Medium
                 paddingAll' Medium
+                paddingRight . tokenValue . Space $ Large
                 display flex
                 alignItems center
                 sconcat [has ".title", has ".secondary"] & do

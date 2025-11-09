@@ -45,6 +45,11 @@ instance (Widget w model action) => Widget (FormField w model action) model acti
 instance {-# OVERLAPPING #-} Widget (FormField () model action) model action where
     widget' = viewWithLegend
     style = do
+        form ? do
+            display flex
+            flexDirection column
+            gap' Small
+            paddingAll' XSmall
         ".form-field" ? do
             display flex
             flexDirection column

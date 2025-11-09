@@ -103,6 +103,7 @@ library
     JuicyPixels,
     aeson,
     base64,
+    colour,
     diagrams-lib,
     identicon,
     identicon-style-squares,
@@ -115,7 +116,14 @@ executable dashi
   main-is: Main.hs
   other-modules:
     Language
-    PageId
+    Section
+    Section.Avatar
+    Section.Button
+    Section.Diagram
+    Section.Form
+    Section.Icon
+    Section.Message
+    Section.Overview
   build-depends:
     dashi,
     extra,

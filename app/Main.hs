@@ -10,24 +10,13 @@ import Control.Applicative ((<|>))
 import Control.Lens qualified as Lens
 import Control.Lens.Operators
 import Control.Monad (liftM2)
-import Dashi.Components.ActionBar (ActionBar (..))
-import Dashi.Components.Avatar (Avatar (..), AvatarItem (..))
-import Dashi.Components.Avatar qualified as Avatar
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
-import Dashi.Components.Chart qualified as Chart
-import Dashi.Components.Checkbox (Checkbox (..))
-import Dashi.Components.Form (FormField (..))
 import Dashi.Components.Heading
-import Dashi.Components.Message (Message (Message), MessageSize (..))
-import Dashi.Components.Message qualified as Message
-import Dashi.Components.Radio (RadioGroup (..))
 import Dashi.Components.Select (Select (..))
-import Dashi.Components.TextArea (TextArea (..))
-import Dashi.Components.TextField (TextField (TextField))
-import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
 import Dashi.Components.Widget
+import Dashi.Layout.Page (Page (..))
 import Dashi.Style qualified as Style
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Colour qualified as Colour.Scheme
@@ -35,7 +24,6 @@ import Dashi.Style.Tokens
 import Dashi.Util
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
-import Data.Maybe (isJust)
 import Data.String (IsString (fromString))
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
@@ -45,12 +33,11 @@ import Language.Fluent.Syntax.Resource qualified as Resource
 import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
 import Miso.Html
-import Miso.Html.Property (class_, disabled_, href_, id_)
+import Miso.Html.Property (class_, href_, src_)
+import Section (SectionId)
+import Section qualified as Section
 import Web.Font.MDI
-import Prelude
-import Dashi.Layout.Page (Page(..))
-import PageId (PageId)
-import PageId qualified as PageId
+import Prelude hiding (init)
 
 #ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
@@ -84,7 +71,7 @@ responseData _ = Nothing
 data Model = Model
     { bundle :: RequestStatus Language Bundle
     , colourScheme :: Colour.Scheme
-    , pageId :: PageId
+    , section :: Section.Model
     }
     deriving stock (Eq, Generic)
 
@@ -96,7 +83,7 @@ emptyModel =
     Model
         { bundle = NotRequested
         , colourScheme = Colour.Scheme.Light
-        , pageId = PageId.Overview
+        , section = Section.initialModel
         }
 
 data Action
@@ -104,6 +91,7 @@ data Action
     | SetLanguage Language
     | SetBundle (Either String Bundle)
     | SetColourScheme Colour.Scheme
+    | SetCurrentSection SectionId
     | NoOp
     deriving stock (Show)
 
@@ -204,303 +192,53 @@ appUpdate (SetColourScheme scheme) = do
         Property name value <- pure $ tokenAttr scheme
         html ^. JSaddle.js2 @String "setAttribute" name value
         pure ()
+appUpdate (SetCurrentSection sectionId) = #section . #current .= sectionId
 appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
 appView model =
     widget @(Page Model Action)
-      Page
-        { banner = Nothing
-        , topBar = Just
-                [ widget . Heading XLarge $ unsafeTranslate model "hello"
-                , widget' @(Select Language Model Action)
-                    [ appearance_ Subtle
-                    , onChange $ maybe NoOp SetLanguage . Language.fromCode
-                    ]
-                    Select
-                        { name = "language"
-                        , options = [minBound .. maxBound]
-                        , selectedOption =
-                            let req = requestData model.bundle
-                                res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
-                             in req <|> res
-                        , value = Language.code
-                        , label = pure . text . fromText . Text.toUpper . Language.code
-                        }
-                , widget' @(Button Model Action)
-                    [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
-                    Button
-                        { size = Button.IconButton
-                        , appearance = Subtle
-                        , label =
-                            [ widget $ case model.colourScheme of
-                                Colour.Scheme.Light -> MdiWhiteBalanceSunny
-                                Colour.Scheme.Dark -> MdiWeatherNight
-                            ]
-                        }
-                ]
-        , sideNav = Just
-            [ ul_
-                []
-                [ li_ [] [a_ [href_ "#"] [text "Avatars"]]
-                , li_ [] [a_ [href_ "#"] [text "Buttons"]]
-                , li_ [] [a_ [href_ "#"] [text "Icons"]]
-                ]
-            ]
-        , main =
-            [
-                case model.pageId of
-                    PageId.Overview -> text "YOU DONKEY"
-                    PageId.Avatars -> avatars
-                    PageId.Buttons -> buttons
-                    PageId.Icons -> icons
-            --     avatars
-            -- , buttons
-            -- , icons
-            -- , forms
-            -- , inlineMessages
-            -- , sectionMessages
-            -- , diagrams
-            ]
-        , aside = Nothing
-        }
-
-avatars :: View model action
-avatars =
-    section_ [id_ "avatars"] $
-        [ widget $ Heading Large "Avatars"
-        , div_
-            [class_ "grid"]
-            [ widget AvatarItem{avatar = Avatar{size = Medium, ..}, ..}
-            | (username, name, initials) <-
-                [ ("ueli", "Ueli Wyss", "UW")
-                , ("heidi", "Heidi Müller", "HM")
-                ]
-            , content <- [Avatar.Identicon username, Avatar.Initials initials]
-            , primaryText <- [Just name]
-            , secondaryText <- [Nothing, Just username]
-            , shape <- allTokens
-            , isJust primaryText || isJust secondaryText
-            ]
-        ]
-
-buttons :: forall model action. View model action
-buttons =
-    section_ [id_ "buttons"] $
-        [ widget $ Heading Large "Buttons"
-        , div_
-            [class_ "grid"]
-            [ div_
-                []
-                [ widget' @(Button model action)
-                    [attr]
-                    Button
-                        { size = Button.DefaultSize
-                        , appearance
-                        , label = [widget (iconFor appearance) | hasIcon] <> [text . capitalise . tokenName $ appearance]
-                        }
-                ]
-            | hasIcon <- [False, True]
-            , attr <- [emptyAttr_, ariaBusy_ True, disabled_]
-            , appearance <- [minBound .. maxBound]
-            , let iconFor Default = MdiStar
-                  iconFor Primary = MdiSendVariant
-                  iconFor Subtle = MdiArrowLeft
-                  iconFor Success = MdiCheck
-                  iconFor Warning = MdiSecurity
-                  iconFor Danger = MdiTrashCan
-                  iconFor Discovery = MdiCreation
-            ]
-        ]
-
-icons :: View model action
-icons =
-    section_ [id_ "icons"] $
-        [ widget $ Heading Large "Icons"
-        , div_
-            [class_ "grid"]
-            [ widget @MDI mdi
-            | mdi <- take (28 * 4) [minBound .. maxBound]
-            ]
-        ]
-
-forms :: forall model action. View model action
-forms =
-    section_ [id_ "forms"] $
-        [ widget $ Heading Large "Forms"
-        , form
-            []
-            [ widget @(FormField _ model action) @model @action
-                FormField
-                    { legend = [text "Username"]
-                    , required = True
-                    , field =
-                        TextField
-                            { name = "username"
-                            , type' = TextField.Text
-                            , value = Nothing
-                            , isValid = True
-                            }
-                    , messages = []
-                    }
-            , widget' @(FormField _ model action) @model @action
-                [autocomplete_ "current-password"]
-                FormField
-                    { legend = [text "Password"]
-                    , required = True
-                    , field =
-                        TextField
-                            { name = "password"
-                            , type' = TextField.Password
-                            , value = Nothing
-                            , isValid = True
-                            }
-                    , messages = []
-                    }
-            , widget @(FormField _ model action) @model @action
-                FormField
-                    { legend = [text "What is the airspeed velocity of an unladen swallow?"]
-                    , required = True
-                    , field =
-                        TextArea
-                            { name = "swallow"
-                            , value = Nothing
-                            , isValid = True
-                            }
-                    , messages = []
-                    }
-            , widget @(FormField (RadioGroup _ model action) model action) @model @action
-                FormField
-                    { legend = [text "Do you like Haskell?"]
-                    , required = True
-                    , field =
-                        RadioGroup
-                            { name = "haskell"
-                            , options = [True, False]
-                            , label = \case
-                                True -> [text "Yeah!"]
-                                False -> [text "Getting there"]
-                            , selected = const False
-                            }
-                    , messages = []
-                    }
-            , widget @(FormField (Checkbox model action) model action) @model @action
-                FormField
-                    { legend = []
-                    , required = True
-                    , field =
-                        Checkbox
-                            { name = "terms"
-                            , label = [text "I have read and accept the ", a_ [href_ "#"] [text "terms and conditions"]]
-                            , selected = True
-                            }
-                    , messages = []
-                    }
-            , widget
-                ActionBar
-                    { left = []
-                    , centre = []
-                    , right =
-                        [ widget @(Button model action) @model @action
-                            Button
-                                { size = Button.DefaultSize
-                                , appearance = Subtle
-                                , label = [text "Cancel"]
-                                }
-                        , widget @(Button model action) @model @action
-                            Button
-                                { size = Button.DefaultSize
-                                , appearance = Primary
-                                , label = [text "Sign up"]
-                                }
+        Page
+            { banner = Nothing
+            , topBar =
+                Just
+                    [ img_ [src_ "/static/icon.svg"]
+                    , widget . Heading XLarge $ unsafeTranslate model "hello"
+                    , widget' @(Select Language Model Action)
+                        [ appearance_ Subtle
+                        , onChange $ maybe NoOp SetLanguage . Language.fromCode
                         ]
-                    }
-            ]
-        ]
-
-inlineMessages :: View model action
-inlineMessages =
-    section_ [id_ "inline-messages"] $
-        [ widget $ Heading Large "Inline messages"
-        , widget
-            Message
-                { size = InlineMessage
-                , appearance = Primary
-                , title = Just "Software update"
-                , secondary = Just "You've been upgraded to version 5.2"
-                }
-        , widget
-            Message
-                { size = InlineMessage
-                , appearance = Warning
-                , title = Nothing
-                , secondary = Just "Your bill may increase"
-                }
-        , widget
-            Message
-                { size = InlineMessage
-                , appearance = Danger
-                , title = Nothing
-                , secondary = Just "Username taken"
-                }
-        , widget
-            Message
-                { size = InlineMessage
-                , appearance = Success
-                , title = Nothing
-                , secondary = Just "Files have been added"
-                }
-        , widget
-            Message
-                { size = InlineMessage
-                , appearance = Discovery
-                , title = Nothing
-                , secondary = Nothing
-                }
-        ]
-
-sectionMessages :: View model action
-sectionMessages =
-    section_ [id_ "section-messages"] $
-        [ widget $ Heading Large "Section messages"
-        , widget
-            Message
-                { size = SectionMessage
-                , appearance = Primary
-                , title = Just "Editing is restricted"
-                , secondary = Just "You're not allowed to change these restrictions. It's either due to the restrictions on the page, or permission settings for this space."
-                }
-        , widget
-            Message
-                { size = SectionMessage
-                , appearance = Warning
-                , title = Just "Cannot connect to the database"
-                , secondary = Just "We're unable to save any progress at this time. Please try again later."
-                }
-        , widget
-            Message
-                { size = SectionMessage
-                , appearance = Success
-                , title = Nothing
-                , secondary = Just "The file has been uploaded."
-                }
-        , widget
-            Message
-                { size = SectionMessage
-                , appearance = Danger
-                , title = Just "This account has been permanently deleted"
-                , secondary = Just "The user `IanAtlas` no longer has access to Atlassian services."
-                }
-        ]
-
-diagrams :: View model action
-diagrams =
-    section_ [id_ "diagrams"] $
-        [ widget $ Heading Large "Diagrams"
-        , div_ [] . pure $ Chart.chart 740 300 do
-            Chart.plot (Chart.line "amplitude modulation" [signal [0, (0.5) .. 400]])
-            Chart.plot (Chart.points "points" (signal [0, 7 .. 400]))
-        ]
-  where
-    signal :: [Double] -> [(Double, Double)]
-    signal xs = [(x, (sin (x * pi / 45) + 1) / 2 * (sin (x * pi / 5))) | x <- xs]
+                        Select
+                            { name = "language"
+                            , options = [minBound .. maxBound]
+                            , selectedOption =
+                                let req = requestData model.bundle
+                                    res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
+                                 in req <|> res
+                            , value = Language.code
+                            , label = pure . text . fromText . Text.toUpper . Language.code
+                            }
+                    , widget' @(Button Model Action)
+                        [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
+                        Button
+                            { size = Button.IconButton
+                            , appearance = Subtle
+                            , label =
+                                [ widget $ case model.colourScheme of
+                                    Colour.Scheme.Light -> MdiWhiteBalanceSunny
+                                    Colour.Scheme.Dark -> MdiWeatherNight
+                                ]
+                            }
+                    ]
+            , sideNav =
+                Just
+                    [ ul_
+                        []
+                        [ li_ [class_ "current" | isCurrent] [a_ [href_ "#", onClick (SetCurrentSection sectionId)] [text . toMisoString . Text.show $ sectionId]]
+                        | sectionId <- [minBound .. maxBound]
+                        , let isCurrent = sectionId == model.section.current
+                        ]
+                    ]
+            , main_ = [Section.view model.section]
+            , aside = Nothing
+            }
