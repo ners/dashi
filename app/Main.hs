@@ -32,8 +32,9 @@ import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
 import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
-import Miso.Html
-import Miso.Html.Property (class_, src_)
+import Miso.Html.Element (a_, img_, li_, ul_)
+import Miso.Html.Event (onChange, onClick)
+import Miso.Html.Property (class_, hidden_, id_, src_)
 import Section (SectionId)
 import Section qualified as Section
 import Web.Font.MDI
@@ -72,6 +73,7 @@ data Model = Model
     { bundle :: RequestStatus Language Bundle
     , colourScheme :: Colour.Scheme
     , section :: Section.Model
+    , navOpen :: Bool
     }
     deriving stock (Eq, Generic)
 
@@ -84,10 +86,12 @@ emptyModel =
         { bundle = NotRequested
         , colourScheme = Colour.Scheme.Light
         , section = Section.initialModel
+        , navOpen = False
         }
 
 data Action
     = Setup
+    | SetNavOpen Bool
     | SetLanguage Language
     | SetBundle (Either String Bundle)
     | SetColourScheme Colour.Scheme
@@ -126,6 +130,7 @@ appUpdate Setup = do
     -- TODO take this from header / local storage / browser settings ...
     appUpdate $ SetLanguage Language.English
     io setSystemColourScheme
+    -- io setNavOpen
     -- TODO detect if we are in ghcid
     io_ do
         let createElement = JSaddle.js1 @String @String "createElement"
@@ -168,6 +173,7 @@ appUpdate Setup = do
             e ^. setAttribute "type" "image/svg+xml"
             pure e
         pure ()
+appUpdate (SetNavOpen navOpen) = #navOpen .= navOpen
 appUpdate (SetLanguage lang) = do
     #bundle .= RequestInProgress lang
     getText
@@ -202,7 +208,14 @@ appView model =
             { banner = Nothing
             , topBar =
                 Just
-                    [ img_ [src_ "/static/icon.svg"]
+                    [ widget' @(Button Model Action)
+                        [id_ "nav-toggle", onClick . SetNavOpen . not $ model.navOpen]
+                        Button
+                            { size = Button.IconButton
+                            , appearance = Subtle
+                            , label = [widget $ if model.navOpen then MdiMenuClose else MdiMenuOpen]
+                            }
+                    , img_ [src_ "/static/icon.svg"]
                     , widget . Heading XLarge $ unsafeTranslate model "hello"
                     , widget' @(Select Language Model Action)
                         [ appearance_ Subtle
@@ -233,7 +246,7 @@ appView model =
             , sideNav =
                 Just
                     [ ul_
-                        []
+                        [hidden_ $ not model.navOpen]
                         [ li_ [class_ "current" | isCurrent] [a_ [onClick (SetCurrentSection sectionId)] [text . capitalise . unpascal . misoShow $ sectionId]]
                         | sectionId <- [minBound .. maxBound]
                         , let isCurrent = sectionId == model.section.current

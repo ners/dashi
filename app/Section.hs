@@ -17,6 +17,7 @@ import Section.Icon qualified as Icon
 import Section.Link qualified as Link
 import Section.Message qualified as Message
 import Section.Overview qualified as Overview
+import Section.ProgressBar qualified as ProgressBar
 import Section.Radio qualified as Radio
 import Section.Spinner qualified as Spinner
 import Section.Switch qualified as Switch
@@ -33,6 +34,7 @@ data SectionId
     | Icon
     | Link
     | Message
+    | ProgressBar
     | Radio
     | Spinner
     | Switch
@@ -66,6 +68,7 @@ view Model{..} =
         Link -> wrapper +> Link.link
         Message -> wrapper +> Message.message
         Checkbox -> wrapper +> Checkbox.checkbox
+        ProgressBar -> wrapper +> ProgressBar.progressBar
         Radio -> wrapper +> Radio.radio
         Switch -> wrapper +> Switch.switch
         Spinner -> wrapper +> Spinner.spinner

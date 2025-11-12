@@ -28,6 +28,11 @@ class Token t where
     default allTokens :: (IsList l, Item l ~ t, Bounded t, Enum t) => l
     allTokens = fromList [minBound .. maxBound]
 
+nonDefaultTokenName :: (Token t, Eq t, IsString s, Semigroup s) => t -> Maybe s
+nonDefaultTokenName t
+    | Just t == defaultToken = Nothing
+    | otherwise = Just $ tokenName t
+
 class (Token t) => ValueToken t where
     type ValueType t
     tokenValue :: t -> ValueType t

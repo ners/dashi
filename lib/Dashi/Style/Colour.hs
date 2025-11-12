@@ -1,7 +1,13 @@
 {-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Dashi.Style.Colour where
+module Dashi.Style.Colour
+    ( module Dashi.Style.Colour
+    , module Graphics.Color.Space
+    , module Graphics.Color.Space.OKLAB.LCH
+    , module Graphics.Color.Space.RGB.SRGB
+    )
+where
 
 import Clay ((@=))
 import Clay qualified

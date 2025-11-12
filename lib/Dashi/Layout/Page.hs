@@ -33,29 +33,29 @@ instance Widget (Page model action) model action where
             ]
     style = do
         "#page" ? do
-            display grid
             minHeight $ vh 100
+            display grid
             gridTemplateAreas [["top-bar"], ["main"], ["aside"]]
-            "grid-template-rows" -: "auto auto 1fr auto"
-            "grid-template-columns" -: "minmax(0,1fr)"
+            "grid-template-rows" -: "auto 1fr auto"
             query all [minDeviceWidth $ rem 64] do
                 gridTemplateAreas
                     [ List.replicate 2 "top-bar"
                     , ["side-nav", "main"]
                     ]
-                "grid-template-rows" -: "auto auto 3fr"
-                "grid-template-columns" -: "auto minmax(0,1fr) auto"
+                "grid-template-rows" -: "auto 1fr"
+                "grid-template-columns" -: "auto 1fr"
                 has Clay.aside & do
                     gridTemplateAreas
                         [ List.replicate 3 "top-bar"
                         , ["side-nav", "main", "aside"]
                         ]
-                    "grid-template-rows" -: "auto auto 3fr"
-                    "grid-template-columns" -: "auto minmax(0,1fr) auto"
+                    "grid-template-columns" -: "auto 1fr auto"
+                nav ? do
+                    "grid-area" -: "side-nav"
             header ? do
                 "grid-area" -: "top-bar"
             nav ? do
-                "grid-area" -: "side-nav"
+                "grid-area" -: "main"
             Clay.main_ ? do
                 "grid-area" -: "main"
                 "isolation" -: "isolate"

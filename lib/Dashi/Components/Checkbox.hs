@@ -47,7 +47,7 @@ instance Widget (Checkbox model action) model action where
             flexDirection row
             alignItems center
             columnGap' XSmall
-            fullWidth
+            width maxContent
         input # ("type" @= "checkbox") ? do
             borderRadiusAll' XSmall
             before & content (iconContent MdiCheckboxBlankOutline)

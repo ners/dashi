@@ -83,6 +83,7 @@ library
     Dashi.Components.Icon
     Dashi.Components.Link
     Dashi.Components.Message
+    Dashi.Components.ProgressBar
     Dashi.Components.Radio
     Dashi.Components.Select
     Dashi.Components.Spinner
@@ -125,9 +126,10 @@ executable dashi
     Section.Diagram
     Section.Form
     Section.Icon
+    Section.Link
     Section.Message
     Section.Overview
-    Section.Link
+    Section.ProgressBar
     Section.Radio
     Section.Spinner
     Section.Switch

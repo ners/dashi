@@ -18,7 +18,7 @@ import Dashi.Style.Util
 import Data.Foldable (for_)
 import Data.Functor ((<&>))
 import Data.List qualified as List
-import Data.Maybe (fromJust)
+import Data.Maybe (catMaybes, fromJust)
 import Data.Semigroup (sconcat)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
@@ -46,8 +46,11 @@ instance Bounded Background where
 
 instance Token Background where
     tokenName (Background appearance state) =
-        fromString . List.intercalate "-" $
-            ["button-background", tokenName appearance, tokenName state]
+        fromString . List.intercalate "-" . catMaybes $
+            [ Just "button-background"
+            , nonDefaultTokenName appearance
+            , nonDefaultTokenName state
+            ]
 
 instance ValueToken Background where
     type ValueType Background = LightDark (Color (Alpha OKLCH) Double)

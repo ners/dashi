@@ -91,6 +91,8 @@ style = do
         "border" ~: none
         "background" ~: none
         "appearance" ~: none
+        "-webkit-appearance" ~: none
+        "-moz-appearance" ~: none
         ariaBusy True & do
             cursor cursorProgress
     let anyDisabledElement = self # disabled

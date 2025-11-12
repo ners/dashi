@@ -11,6 +11,7 @@ import Dashi.Components.Form (FormField)
 import Dashi.Components.Heading (Heading)
 import Dashi.Components.Link (Link)
 import Dashi.Components.Message (Message)
+import Dashi.Components.ProgressBar (ProgressBar)
 import Dashi.Components.Radio (Radio, RadioGroup)
 import Dashi.Components.Select (Select)
 import Dashi.Components.Switch (Switch)
@@ -44,6 +45,7 @@ style = do
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
+    Widget.style @ProgressBar @model @action
     Widget.style @TextField
 
 styleStr :: (IsString s) => s
