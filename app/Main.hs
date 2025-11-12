@@ -33,7 +33,7 @@ import Language.Fluent.Syntax.Resource qualified as Resource
 import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
 import Miso.Html
-import Miso.Html.Property (class_, href_, src_)
+import Miso.Html.Property (class_, src_)
 import Section (SectionId)
 import Section qualified as Section
 import Web.Font.MDI
@@ -234,7 +234,7 @@ appView model =
                 Just
                     [ ul_
                         []
-                        [ li_ [class_ "current" | isCurrent] [a_ [href_ "#", onClick (SetCurrentSection sectionId)] [text . toMisoString . Text.show $ sectionId]]
+                        [ li_ [class_ "current" | isCurrent] [a_ [onClick (SetCurrentSection sectionId)] [text . capitalise . unpascal . misoShow $ sectionId]]
                         | sectionId <- [minBound .. maxBound]
                         , let isCurrent = sectionId == model.section.current
                         ]

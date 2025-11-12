@@ -91,12 +91,13 @@ style = do
         "border" ~: none
         "background" ~: none
         "appearance" ~: none
-        disabled & do
-            important $ cursor notAllowed
-            opacity 0.3
-            "filter" -: "grayscale(100%)"
         ariaBusy True & do
             cursor cursorProgress
+    let anyDisabledElement = self # disabled
+    (self # disabled <> label # has anyDisabledElement) ? do
+        important $ cursor notAllowed
+        opacity 0.5
+        "filter" -: "grayscale(100%)"
     html ? do
         overflowX hidden
         overflowY auto

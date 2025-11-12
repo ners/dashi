@@ -81,11 +81,12 @@ library
     Dashi.Components.Form
     Dashi.Components.Heading
     Dashi.Components.Icon
+    Dashi.Components.Link
     Dashi.Components.Message
     Dashi.Components.Radio
     Dashi.Components.Select
     Dashi.Components.Spinner
-    Dashi.Components.TextArea
+    Dashi.Components.Switch
     Dashi.Components.TextField
     Dashi.Components.Util
     Dashi.Components.Widget
@@ -107,6 +108,7 @@ library
     diagrams-lib,
     identicon,
     identicon-style-squares,
+    jsaddle,
     miso-diagrams,
     pureMD5,
 
@@ -119,11 +121,17 @@ executable dashi
     Section
     Section.Avatar
     Section.Button
+    Section.Checkbox
     Section.Diagram
     Section.Form
     Section.Icon
     Section.Message
     Section.Overview
+    Section.Link
+    Section.Radio
+    Section.Spinner
+    Section.Switch
+    Section.TextField
   build-depends:
     dashi,
     extra,

@@ -10,7 +10,7 @@ import Dashi.Components.Icon ()
 import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
 import Dashi.Components.Widget
-import Dashi.Style.Colour (LightDark, sameLightDark)
+import Dashi.Style.Colour (LightDark, complementaryLightDark)
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
@@ -51,12 +51,12 @@ instance Token Background where
 
 instance ValueToken Background where
     type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
-    tokenValue (Background Default state) = sameLightDark . ColorOKLCHA 0.2422 0.0735 260.41 $ 0.05 * (fromIntegral . succ . fromEnum) state
+    tokenValue (Background Default state) = complementaryLightDark . ColorOKLCHA 0.2422 0.0735 260.41 $ 0.1 * (fromIntegral . succ . fromEnum) state
     tokenValue (Background Subtle DefaultState) = flip setAlpha 0 <$> tokenValue (Background Default DefaultState)
     tokenValue (Background Subtle state) = tokenValue $ Background Default state
     tokenValue (Background appearance state) =
         tokenValue (Colour.Text appearance) <&> \(ColorOKLCHA l c h _) ->
-            let l' = l - (fromIntegral . fromEnum $ state) * 0.1
+            let l' = l - (fromIntegral . fromEnum $ state) * 0.15
              in ColorOKLCHA l' c h 1
 
 data ButtonSize
@@ -94,7 +94,9 @@ instance Widget (Button model action) model action where
             position relative
             boxShadow . fromList $
                 [bsInset . bsColor (colorToken Colour.Border) $ shadowWithBlur nil nil (var "border-width" [])]
-            byToken Subtle & ("box-shadow" -: "none")
+            color' $ Colour.Text Subtle
+            byToken Subtle & do
+                "box-shadow" -: "none"
             borderRadiusAll' Small
             paddingYX' XSmall Medium
             byToken IconButton & do
@@ -109,9 +111,8 @@ instance Widget (Button model action) model action where
                     fullWidth
                     justifyContent spaceEvenly
             fontWeight $ weight 550
-            color' $ Colour.Text Subtle
             backgroundColor' $ Background Default DefaultState
-            transition "background" (sec 0.2) easeOut 0
+            transition "background" (sec 0.15) easeOut 0
             Clay.label ? do
                 display inlineFlex
                 alignItems baseline

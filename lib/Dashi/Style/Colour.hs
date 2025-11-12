@@ -9,8 +9,9 @@ import Dashi.Style.Tokens
 import Data.Functor ((<&>))
 import Data.List qualified as List
 import Data.String (fromString)
-import Graphics.Color.Space hiding (Primary)
+import Graphics.Color.Space (Alpha, ColorSpace, Elevator, addAlpha, convertColor, dropAlpha, getAlpha, setAlpha, toShowS)
 import Graphics.Color.Space.OKLAB.LCH
+import Graphics.Color.Space.RGB.SRGB
 import Miso.Property (textProp)
 import Prelude
 
@@ -90,7 +91,7 @@ instance Token Text where
 instance ValueToken Text where
     type ValueType Text = LightDark (Color (Alpha OKLCH) Double)
     tokenValue (Text Default) = complementaryLightDark $ ColorOKLCHA 0.197 0.008 264 1
-    tokenValue (Text Subtle) = flip setAlpha 0.6 <$> tokenValue (Text Default)
+    tokenValue (Text Subtle) = flip setAlpha 0.75 <$> tokenValue (Text Default)
     tokenValue (Text appearance) = LightDark (ColorOKLCHA l c h 1) (ColorOKLCHA l c h 1)
       where
         l, c, h :: Double
@@ -115,7 +116,7 @@ instance Token InverseText where
 
 instance ValueToken InverseText where
     type ValueType InverseText = LightDark (Color (Alpha OKLCH) Double)
-    tokenValue InverseText = flip setAlpha 1 <$> tokenValue (Background Default)
+    tokenValue InverseText = tokenValue (Text Default) <&> \(ColorOKLCHA _ c h a) -> ColorOKLCHA 1 c h a
 
 newtype Background = Background Appearance
     deriving newtype (Eq, Bounded, Enum)

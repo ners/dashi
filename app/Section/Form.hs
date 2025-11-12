@@ -8,8 +8,6 @@ import Dashi.Components.Button qualified as Button
 import Dashi.Components.Checkbox
 import Dashi.Components.Form
 import Dashi.Components.Heading
-import Dashi.Components.Radio
-import Dashi.Components.TextArea
 import Dashi.Components.TextField
 import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
@@ -17,9 +15,7 @@ import Dashi.Components.Widget
 import Dashi.Style.Tokens
 import GHC.Generics (Generic)
 import Miso hiding (update, view)
-import Miso.Html.Element (a_, p_, section_)
-import Miso.Html.Element qualified as Miso
-import Miso.Html.Property (href_)
+import Miso.Html.Element (form_, p_, section_)
 import Prelude
 
 data Model = Model
@@ -42,7 +38,7 @@ view Model =
         []
         [ widget $ Heading Large "Form"
         , p_ [] [text "A form allows users to input information."]
-        , Miso.form
+        , form_
             []
             [ widget @(FormField _ Model Action) @Model @Action
                 FormField
@@ -55,7 +51,7 @@ view Model =
                             , value = Nothing
                             , isValid = True
                             }
-                    , messages = []
+                    , messages = [(Subtle, "You can use letters, numbers, and periods")]
                     }
             , widget' @(FormField _ Model Action) @Model @Action
                 [autocomplete_ "current-password"]
@@ -71,33 +67,6 @@ view Model =
                             }
                     , messages = []
                     }
-            , widget @(FormField _ Model Action) @Model @Action
-                FormField
-                    { legend = [text "What is the airspeed velocity of an unladen swallow?"]
-                    , required = True
-                    , field =
-                        TextArea
-                            { name = "swallow"
-                            , value = Nothing
-                            , isValid = True
-                            }
-                    , messages = []
-                    }
-            , widget @(FormField (RadioGroup _ Model Action) Model Action) @Model @Action
-                FormField
-                    { legend = [text "Do you like Haskell?"]
-                    , required = True
-                    , field =
-                        RadioGroup
-                            { name = "haskell"
-                            , options = [True, False]
-                            , label = \case
-                                True -> [text "Yeah!"]
-                                False -> [text "Getting there"]
-                            , selected = const False
-                            }
-                    , messages = []
-                    }
             , widget @(FormField (Checkbox Model Action) Model Action) @Model @Action
                 FormField
                     { legend = []
@@ -105,7 +74,7 @@ view Model =
                     , field =
                         Checkbox
                             { name = "terms"
-                            , label = [text "I have read and accept the ", a_ [href_ "#"] [text "terms and conditions"]]
+                            , label = [text "Always sign in on this device"]
                             , selected = True
                             }
                     , messages = []

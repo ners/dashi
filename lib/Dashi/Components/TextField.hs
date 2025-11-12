@@ -10,10 +10,11 @@ import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Functor ((<&>))
+import Data.Maybe (maybeToList)
 import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
-import Miso (MisoString)
-import Miso.Html.Element (input_)
+import Miso
+import Miso.Html.Element (input_, textarea_)
 import Miso.Html.Property (name_, type_)
 import Prelude
 
@@ -40,13 +41,15 @@ data Type
     | Password
     | Number
     | Email
-    deriving stock (Eq, Ord, Bounded, Enum)
+    | MultiLine
+    deriving stock (Eq, Bounded, Enum)
 
 instance Token Type where
     tokenName Text = "text"
     tokenName Password = "password"
     tokenName Number = "number"
     tokenName Email = "email"
+    tokenName MultiLine = "multiline"
     tokenAttr = type_ . tokenName
     byToken = ("type" @=) . tokenName
 
@@ -58,7 +61,9 @@ data TextField = TextField
     }
 
 instance Widget TextField model action where
-    widget' attrs TextField{..} = input_ (tokenAttr type' : name_ name : attrs)
+    widget' attrs TextField{..}
+        | type' == MultiLine = textarea_ (name_ name : attrs) . fmap text . maybeToList $ value
+        | otherwise = input_ (tokenAttr type' : name_ name : attrs)
     style = do
         ":root" ? tokenDecl @Background
         (select <> textarea <> input # isOneOfAll' @Type) ? do
@@ -78,3 +83,6 @@ instance Widget TextField model action where
                 borderColor' Colour.BorderFocused
                 backgroundColor' $ Background ActiveState
             ":user-invalid" & ":not(:focus-visible)" & borderColor' Colour.BorderDanger
+        textarea ? do
+            "resize" -: "vertical"
+            minHeight $ em 10

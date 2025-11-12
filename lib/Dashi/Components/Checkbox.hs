@@ -48,8 +48,8 @@ instance Widget (Checkbox model action) model action where
             alignItems center
             columnGap' XSmall
             fullWidth
-            paddingLeft . token $ Space XSmall
         input # ("type" @= "checkbox") ? do
+            borderRadiusAll' XSmall
             before & content (iconContent MdiCheckboxBlankOutline)
             checked <> before & content (iconContent MdiCheckboxMarked)
 

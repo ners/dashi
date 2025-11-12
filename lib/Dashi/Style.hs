@@ -9,10 +9,11 @@ import Dashi.Components.Button (Button)
 import Dashi.Components.Checkbox (Checkbox, CheckboxGroup)
 import Dashi.Components.Form (FormField)
 import Dashi.Components.Heading (Heading)
+import Dashi.Components.Link (Link)
 import Dashi.Components.Message (Message)
 import Dashi.Components.Radio (Radio, RadioGroup)
 import Dashi.Components.Select (Select)
-import Dashi.Components.TextArea (TextArea)
+import Dashi.Components.Switch (Switch)
 import Dashi.Components.TextField (TextField)
 import Dashi.Components.Widget qualified as Widget
 import Dashi.Layout.Page (Page)
@@ -28,20 +29,21 @@ style = do
 
     Widget.style @(Page model action) @model @action
 
-    Widget.style @Avatar @model @action
-    Widget.style @AvatarItem @model @action
     Widget.style @(ActionBar model action) @model @action
     Widget.style @(Button model action) @model @action
     Widget.style @(Checkbox model action) @model @action
     Widget.style @(CheckboxGroup value model action) @model @action
     Widget.style @(FormField value model action) @model @action
+    Widget.style @(Link model action) @model @action
     Widget.style @(Radio model action) @model @action
     Widget.style @(RadioGroup value model action) @model @action
     Widget.style @(Select value model action) @model @action
+    Widget.style @(Switch model action) @model @action
+    Widget.style @Avatar @model @action
+    Widget.style @AvatarItem @model @action
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
-    Widget.style @TextArea
     Widget.style @TextField
 
 styleStr :: (IsString s) => s
