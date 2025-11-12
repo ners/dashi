@@ -13,6 +13,7 @@ import Dashi.Components.Link (Link)
 import Dashi.Components.Message (Message)
 import Dashi.Components.ProgressBar (ProgressBar)
 import Dashi.Components.Radio (Radio, RadioGroup)
+import Dashi.Components.Range (Range)
 import Dashi.Components.Select (Select)
 import Dashi.Components.Switch (Switch)
 import Dashi.Components.TextField (TextField)
@@ -46,6 +47,7 @@ style = do
     Widget.style @MDI
     Widget.style @Message
     Widget.style @ProgressBar @model @action
+    Widget.style @Range @model @action
     Widget.style @TextField
 
 styleStr :: (IsString s) => s

@@ -31,17 +31,15 @@ instance Widget (Switch model action) model action where
             display flex
             flexDirection row
             alignItems center
-            let heightEm = 1 :: Number
+            let heightEm = 0.9 :: Number
                 widthEm = 1.6 :: Number
-                paddingYEm = 0.1 :: Number
-                paddingXEm = 0.075 :: Number
-                knobSize = heightEm - 2 * paddingYEm
+                knobSize = heightEm
             width $ em widthEm
             height $ em heightEm
-            paddingYX (em paddingYEm) (em paddingXEm)
             backgroundColor' Colour.Border
+            border (em 0.1) solid transparent
             borderRadiusAll' XLarge
-            transition "background-color" (sec 0.15) easeInOut 0
+            transition "all" (sec 0.15) easeInOut 0
             before & do
                 important . content $ stringContent ""
                 backgroundColor' Colour.InverseText
@@ -53,4 +51,4 @@ instance Widget (Switch model action) model action where
             checked & do
                 backgroundColor' Colour.BorderFocused
                 before & do
-                    "margin-inline-start" ~:: em (widthEm - 2 * paddingXEm - knobSize)
+                    "margin-inline-start" ~:: em (widthEm - knobSize)

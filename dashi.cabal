@@ -59,10 +59,6 @@ common common
 
   build-depends:
     base,
-    bytestring,
-    clay,
-    containers,
-    generic-lens,
     lens,
     miso,
     text,
@@ -85,6 +81,7 @@ library
     Dashi.Components.Message
     Dashi.Components.ProgressBar
     Dashi.Components.Radio
+    Dashi.Components.Range
     Dashi.Components.Select
     Dashi.Components.Spinner
     Dashi.Components.Switch
@@ -105,7 +102,9 @@ library
     JuicyPixels,
     aeson,
     base64,
+    clay,
     colour,
+    containers,
     diagrams-lib,
     identicon,
     identicon-style-squares,
@@ -131,11 +130,13 @@ executable dashi
     Section.Overview
     Section.ProgressBar
     Section.Radio
+    Section.Range
     Section.Spinner
     Section.Switch
     Section.TextField
   build-depends:
     dashi,
+    generic-lens,
     extra,
     fluent-bundle,
     fluent-syntax,

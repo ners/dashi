@@ -19,6 +19,7 @@ import Section.Message qualified as Message
 import Section.Overview qualified as Overview
 import Section.ProgressBar qualified as ProgressBar
 import Section.Radio qualified as Radio
+import Section.Range qualified as Range
 import Section.Spinner qualified as Spinner
 import Section.Switch qualified as Switch
 import Section.TextField qualified as TextField
@@ -36,6 +37,7 @@ data SectionId
     | Message
     | ProgressBar
     | Radio
+    | Range
     | Spinner
     | Switch
     | TextField
@@ -70,6 +72,7 @@ view Model{..} =
         Checkbox -> wrapper +> Checkbox.checkbox
         ProgressBar -> wrapper +> ProgressBar.progressBar
         Radio -> wrapper +> Radio.radio
+        Range -> wrapper +> Range.range
         Switch -> wrapper +> Switch.switch
         Spinner -> wrapper +> Spinner.spinner
         TextField -> wrapper +> TextField.textField
