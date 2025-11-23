@@ -47,6 +47,7 @@ view Model =
                                 , type'
                                 , value = Nothing
                                 , isValid = True
+                                , onChange = const NoOp
                                 }
                        ]
                 | type' <- [minBound .. maxBound]

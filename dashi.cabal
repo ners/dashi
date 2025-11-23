@@ -79,12 +79,14 @@ library
     Dashi.Components.Icon
     Dashi.Components.Link
     Dashi.Components.Message
+    Dashi.Components.Plot
     Dashi.Components.ProgressBar
     Dashi.Components.Radio
     Dashi.Components.Range
     Dashi.Components.Select
     Dashi.Components.Spinner
     Dashi.Components.Switch
+    Dashi.Components.Tabs
     Dashi.Components.TextField
     Dashi.Components.Util
     Dashi.Components.Widget
@@ -110,6 +112,7 @@ library
     identicon-style-squares,
     jsaddle,
     miso-diagrams,
+    plots,
     pureMD5,
 
 executable dashi
@@ -122,17 +125,19 @@ executable dashi
     Section.Avatar
     Section.Button
     Section.Checkbox
-    Section.Diagram
     Section.Form
     Section.Icon
     Section.Link
     Section.Message
     Section.Overview
+    Section.Plot
     Section.ProgressBar
     Section.Radio
     Section.Range
+    Section.Select
     Section.Spinner
     Section.Switch
+    Section.Tabs
     Section.TextField
   build-depends:
     dashi,

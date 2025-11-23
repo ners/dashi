@@ -12,12 +12,14 @@ import Dashi.Components.Widget
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
+import Data.Coerce (coerce)
 import Data.Functor ((<&>))
 import Data.Semigroup (sconcat)
 import GHC.IsList (fromList)
-import Miso (MisoString, View)
+import Miso (Checked (Checked), MisoString, View)
 import Miso.Html.Element (fieldset_, input_, label_, span_)
-import Miso.Html.Property (name_, selected_, type_)
+import Miso.Html.Event qualified as Miso
+import Miso.Html.Property (checked_, name_, type_)
 import Web.Font.MDI (MDI (MdiCheckboxBlankOutline, MdiCheckboxMarked))
 import Prelude
 
@@ -25,13 +27,14 @@ data Checkbox model action = Checkbox
     { name :: MisoString
     , label :: [View model action]
     , selected :: Bool
+    , onChecked :: Bool -> action
     }
 
 instance Widget (Checkbox model action) model action where
     widget' attrs Checkbox{..} =
         label_
             []
-            [ input_ $ type_ "checkbox" : name_ name : selected_ selected : attrs
+            [ input_ $ type_ "checkbox" : name_ name : Miso.onChecked (onChecked . coerce) : checked_ selected : attrs
             , span_ [] label
             ]
     style = do
@@ -58,6 +61,7 @@ data CheckboxGroup o model action = CheckboxGroup
     , options :: [o]
     , label :: o -> [View model action]
     , selected :: o -> Bool
+    , onChecked :: o -> Bool -> action
     }
 
 instance (Eq a) => Widget (CheckboxGroup a model action) model action where
@@ -70,6 +74,7 @@ instance (Eq a) => Widget (CheckboxGroup a model action) model action where
                         { name
                         , label = label o
                         , selected = selected o
+                        , onChecked = onChecked o
                         }
 
     style = do

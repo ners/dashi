@@ -72,10 +72,10 @@ html, body {
         a:hover {
           text-decoration: underline;
         }
-        &:not(.current) {
+        &:not([aria-current]) {
           color: var(--dashi-text-subtle);
         }
-        &.current {
+        &[aria-current] {
           font-weight: 700;
         }
       }

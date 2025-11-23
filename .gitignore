@@ -4,7 +4,9 @@ dist-newstyle
 result
 result-*
 
+*.css
 *.ico
+*.js
 *.png
 *.woff2
 browser_wasi_shim

@@ -22,7 +22,7 @@ data Option model action = Option
 data Select o model action = Select
     { name :: MisoString
     , options :: [o]
-    , selectedOption :: Maybe o
+    , selected :: o -> Bool
     , value :: o -> MisoString
     , label :: o -> [View model action]
     }
@@ -39,7 +39,7 @@ instance (Eq o) => Widget (Select o model action) model action where
                 Option
                     { value = value o
                     , label = label o
-                    , selected = selectedOption == Just o
+                    , selected = selected o
                     }
             | o <- options
             ]

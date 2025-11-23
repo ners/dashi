@@ -45,7 +45,7 @@ marginAll :: Size a -> Css
 marginAll = ("margin" ~::)
 
 paddingYX :: Size a -> Size a -> Css
-paddingYX y x = "padding" ~:: intercalate " " [value y, value x]
+paddingYX y x = "padding" ~:: intercalate @Value " " [value y, value x]
 
 paddingAll :: Size a -> Css
 paddingAll = ("padding" ~::)
@@ -59,7 +59,7 @@ varName = ("--dashi-" <>)
 var :: (Val v, Other v) => Text -> [v] -> v
 var name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> ")"
   where
-    parts = (varName name') : (plain . unValue . value <$> defaults)
+    parts = varName name' : (plain . unValue . value <$> defaults)
 
 token :: (Token t, Val (ValueType t), Other (ValueType t)) => t -> ValueType t
 token t = var (tokenName t) []
@@ -71,7 +71,7 @@ colorToken t = var (tokenName t) []
 k ~: v = key (cast k) v
 
 (~::) :: (Val v) => Key Text -> v -> Css
-k ~:: v = k ~: (value v)
+k ~:: v = k ~: value v
 
 cast :: Key a -> Key b
 cast (Key k) = Key k
@@ -141,7 +141,7 @@ gridTemplateAreas areas = "grid-template-areas" ~: intercalate "\n    " ("" : (a
   where
     areaRow :: [Value] -> Value
     areaRow [] = ""
-    areaRow xs = "'" <> intercalate " " xs <> "'"
+    areaRow xs = "'" <> intercalate @Value " " xs <> "'"
 
 fontSize' :: SizeToken -> Css
 fontSize' = Clay.fontSize . token . FontSize

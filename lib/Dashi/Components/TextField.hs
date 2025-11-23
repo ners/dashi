@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-missing-poly-kind-signatures #-}
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Dashi.Components.TextField where
@@ -15,7 +17,8 @@ import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
 import Miso
 import Miso.Html.Element (input_, textarea_)
-import Miso.Html.Property (name_, type_)
+import Miso.Html.Event qualified as Miso
+import Miso.Html.Property (name_, type_, value_)
 import Prelude
 
 newtype Border = Border InputState
@@ -53,17 +56,20 @@ instance Token Type where
     tokenAttr = type_ . tokenName
     byToken = ("type" @=) . tokenName
 
-data TextField = TextField
+data TextField action = TextField
     { name :: MisoString
     , type' :: Type
     , value :: Maybe MisoString
     , isValid :: Bool
+    , onChange :: MisoString -> action
     }
 
-instance Widget TextField model action where
+instance Widget (TextField action) model action where
     widget' attrs TextField{..}
-        | type' == MultiLine = textarea_ (name_ name : attrs) . fmap text . maybeToList $ value
-        | otherwise = input_ (tokenAttr type' : name_ name : attrs)
+        | type' == MultiLine = textarea_ attrs' . fmap text . maybeToList $ value
+        | otherwise = input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
+      where
+        attrs' = name_ name : Miso.onInput onChange : attrs
     style = do
         ":root" ? tokenDecl @Background
         (select <> textarea <> input # isOneOfAll' @Type) ? do
@@ -77,7 +83,7 @@ instance Widget TextField model action where
             transition "background" (sec 0.2) easeOut 0
             backgroundColor' $ Background DefaultState
             hover <> Clay.not focusVisible & do
-                borderColor' $ Colour.Border
+                borderColor' Colour.Border
                 backgroundColor' $ Background HoveredState
             focusVisible & do
                 borderColor' Colour.BorderFocused

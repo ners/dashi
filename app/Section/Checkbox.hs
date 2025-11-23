@@ -39,6 +39,7 @@ view Model =
                     { name = "checkbox"
                     , label = [text "Default checkbox"]
                     , selected = False
+                    , onChecked = const NoOp
                     }
             ]
         , div_
@@ -49,6 +50,7 @@ view Model =
                     { name = "checkbox"
                     , label = [text "Disabled checkbox"]
                     , selected = False
+                    , onChecked = const NoOp
                     }
             ]
         ]

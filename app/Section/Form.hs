@@ -1,7 +1,10 @@
+{-# LANGUAGE ImpredicativeTypes #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Section.Form where
 
+import Control.Lens (Lens')
+import Control.Lens.Operators ((.=), (?=))
 import Dashi.Components.ActionBar
 import Dashi.Components.Button
 import Dashi.Components.Button qualified as Button
@@ -13,27 +16,47 @@ import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
 import Dashi.Components.Widget
 import Dashi.Style.Tokens
+import Data.Generics.Labels ()
 import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (form_, p_, section_)
 import Prelude
 
 data Model = Model
+    { username :: Maybe MisoString
+    , password :: Maybe MisoString
+    , staySignedIn :: Bool
+    }
     deriving stock (Generic, Eq, Show)
 
 initialModel :: Model
-initialModel = Model
+initialModel =
+    Model
+        { username = mempty
+        , password = mempty
+        , staySignedIn = False
+        }
 
-data Action = NoOp
+data Action
+    = NoOp
+    | SetUsername MisoString
+    | SetPassword MisoString
+    | SetStaySignedIn Bool
 
-form :: Component parent Model Action
-form = component initialModel update view
+form :: Lens' parent Model -> Model -> Component parent Model Action
+form l model =
+    (component model update view)
+        { bindings = [l <---> id]
+        }
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
+update (SetUsername t) = #username ?= t
+update (SetPassword t) = #password ?= t
+update (SetStaySignedIn b) = #staySignedIn .= b
 
 view :: Model -> View Model Action
-view Model =
+view Model{..} =
     section_
         []
         [ widget $ Heading Large "Form"
@@ -48,8 +71,9 @@ view Model =
                         TextField
                             { name = "username"
                             , type' = TextField.Text
-                            , value = Nothing
+                            , value = username
                             , isValid = True
+                            , onChange = SetUsername
                             }
                     , messages = [(Subtle, "You can use letters, numbers, and periods")]
                     }
@@ -62,8 +86,9 @@ view Model =
                         TextField
                             { name = "password"
                             , type' = TextField.Password
-                            , value = Nothing
+                            , value = password
                             , isValid = True
+                            , onChange = SetPassword
                             }
                     , messages = []
                     }
@@ -75,7 +100,8 @@ view Model =
                         Checkbox
                             { name = "terms"
                             , label = [text "Always sign in on this device"]
-                            , selected = True
+                            , selected = staySignedIn
+                            , onChecked = SetStaySignedIn
                             }
                     , messages = []
                     }

@@ -58,20 +58,49 @@
           root;
       };
       pname = "dashi";
-      browser_wasi_shim = pkgs: pkgs.buildNpmPackage (finalAttrs: {
+      browser_wasi_shim = pkgs: pkgs.buildNpmPackage {
         pname = "browser_wasi_shim";
         version = "0.4.2";
         src = pkgs.fetchFromGitHub {
           owner = "haskell-wasm";
           repo = "browser_wasi_shim";
-          rev = "6abe61658bea264cd4858ac43286b3105e6d36e5";
-          hash = "sha256-9L6fYoE60Yl/ASQ3Klrye2cKLBAutrVWD9H0pNGL0h0=";
+          rev = "d12b5b1b57b1e82e083dd06a49e837ae05b1afba";
+          hash = "sha256-ad/PuUqOS8j34ojbFU7hlFO8QqF7DoNK/gJmo/aJ/q0=";
         };
-        npmDepsHash = "sha256-+iNoeoVpXuJm7AN49LPp2IqHeDxAe9a9ozCFu5DChuU=";
+        npmDepsHash = "sha256-YZnt2YcD9Wo6+V+TS/WYhKnzJ7UdF1xbQjsbBCioIqs=";
         meta = {
           description = "A pure javascript shim for WASI";
           homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
           license = with lib.licenses; [ asl20 mit ];
+          maintainers = with lib.maintainers; [ ners ];
+        };
+      };
+      d3 = pkgs: pkgs.stdenv.mkDerivation (finalAttrs: {
+        pname = "d3";
+        version = "7.9.0";
+        src = pkgs.fetchFromGitHub {
+          owner = "d3";
+          repo = "d3";
+          tag = "v${finalAttrs.version}";
+          hash = "sha256-40lsWWUiZLBr9Sl1SqDv3aFrDXjFoaP1ScHZFDWUj9Q=";
+        };
+        yarnOfflineCache = pkgs.fetchYarnDeps {
+          yarnLock = "${finalAttrs.src}/yarn.lock";
+          hash = "sha256-Qw+T7in/EbBHHF+LXZadM22roI+ZV/AgGR8xFdG5tUQ=";
+        };
+
+        nativeBuildInputs = with pkgs; [
+          yarnConfigHook
+          yarnBuildHook
+          yarnInstallHook
+          # Needed for executing package.json scripts
+          nodejs_20
+        ];
+        yarnBuildScript = "prepublishOnly";
+        meta = {
+          description = "Bring data to life with SVG, Canvas and HTML.";
+          homepage = "https://d3js.org";
+          license = with lib.licenses; [ isc ];
           maintainers = with lib.maintainers; [ ners ];
         };
       });
@@ -150,7 +179,8 @@
               { };
           miso = hfinal.callCabal2nix "miso" inputs.miso { };
           miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
-          identicon-style-squares = doJailbreak hprev.identicon-style-squares;
+          identicon-style-squares = dontCheck (doJailbreak hprev.identicon-style-squares);
+          sandwich = dontCheck hprev.sandwich;
           polyvariadic = doJailbreak (unmarkBroken hprev.polyvariadic);
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           plots = doJailbreak (unmarkBroken hprev.plots);
@@ -181,7 +211,7 @@
     foreach inputs.nixpkgs.legacyPackages (system: pkgs':
       let
         pkgs = pkgs' // {
-          haskellPackages = pkgs'.haskellPackages.extend (haskell-overlay pkgs');
+          haskellPackages = pkgs'.haskell.packages.ghc912.extend (haskell-overlay pkgs');
         };
         wasmPkgs' = inputs.nix-wasm.legacyPackages.${system};
         wasmPkgs = wasmPkgs' // {

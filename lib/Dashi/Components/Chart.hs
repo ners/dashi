@@ -49,8 +49,8 @@ chart w h =
         . fst
         . Chart.runBackendR env
         . Chart.toRenderable
-        . (& layout_foreground .~ ColorOKLCHA 0.7 0 0 1 ^. chartColour)
-        . (& layout_background .~ solidFillStyle transparent)
+        . (layout_foreground .~ ColorOKLCHA 0.7 0 0 1 ^. chartColour)
+        . (layout_background .~ solidFillStyle transparent)
         . Chart.execEC
         . (Chart.liftCState (Chart.colors .= cycle chartColours) *>)
   where

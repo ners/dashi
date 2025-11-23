@@ -32,11 +32,11 @@ import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
 import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
-import Miso.Html.Element (a_, img_, li_, ul_)
+import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
 import Miso.Html.Event (onChange, onClick)
-import Miso.Html.Property (class_, hidden_, id_, src_)
+import Miso.Html.Property (aria_, hidden_, id_, src_)
 import Section (SectionId)
-import Section qualified as Section
+import Section qualified
 import Web.Font.MDI
 import Prelude hiding (init)
 
@@ -110,7 +110,7 @@ app = do
         , styles = [Style Style.styleStr, Href "/static/style.css"]
         }
   where
-    initComponent :: Component ROOT Model Action
+    initComponent :: Component parent Model Action
     initComponent = component emptyModel (liftM2 (>>) traceAction appUpdate) appView
 
 setSystemColourScheme :: JSM Action
@@ -125,7 +125,7 @@ setSystemColourScheme =
             True -> Colour.Scheme.Dark
             False -> Colour.Scheme.Light
 
-appUpdate :: Action -> Effect ROOT Model Action
+appUpdate :: Action -> Effect parent Model Action
 appUpdate Setup = do
     -- TODO take this from header / local storage / browser settings ...
     appUpdate $ SetLanguage Language.English
@@ -141,8 +141,8 @@ appUpdate Setup = do
         head <- doc ^. JSaddle.js @_ @String "head"
         head
             ^. JSaddle.js1 @String @String "getElementsByTagName" "title"
-            ^. JSaddle.js1 @String @Int "item" 0
-            ^. JSaddle.js0 @String "remove"
+                . JSaddle.js1 @String @Int "item" 0
+                . JSaddle.js0 @String "remove"
         head ^. appendChild do
             e <- doc ^. createElement "meta"
             e ^. setAttribute "charset" "utf-8"
@@ -224,10 +224,10 @@ appView model =
                         Select
                             { name = "language"
                             , options = [minBound .. maxBound]
-                            , selectedOption =
+                            , selected =
                                 let req = requestData model.bundle
                                     res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
-                                 in req <|> res
+                                 in maybe (const False) (==) $ req <|> res
                             , value = Language.code
                             , label = pure . text . fromText . Text.toUpper . Language.code
                             }
@@ -247,11 +247,18 @@ appView model =
                 Just
                     [ ul_
                         [hidden_ $ not model.navOpen]
-                        [ li_ [class_ "current" | isCurrent] [a_ [onClick (SetCurrentSection sectionId)] [text . capitalise . unpascal . misoShow $ sectionId]]
+                        [ li_
+                            [aria_ "current" "page" | sectionId == model.section.current]
+                            [ a_
+                                [onClick (SetCurrentSection sectionId)]
+                                [text . capitalise . unpascal . misoShow $ sectionId]
+                            ]
                         | sectionId <- [minBound .. maxBound]
-                        , let isCurrent = sectionId == model.section.current
                         ]
                     ]
-            , main_ = [Section.view model.section]
+            , main_ =
+                [ div_ [key_ . misoShow $ model.section.current] +> Section.section model.section
+                , dialog_ [textProp "closedby" "any"] [widget $ Heading Large "Dialog!"]
+                ]
             , aside = Nothing
             }

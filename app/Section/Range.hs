@@ -2,34 +2,39 @@
 
 module Section.Range where
 
+import Control.Lens.Operators ((.=))
 import Dashi.Components.Heading
 import Dashi.Components.Range
 import Dashi.Components.Widget
 import Dashi.Style.Tokens
+import Data.Generics.Labels ()
 import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (p_, section_)
 import Prelude
 
-data Model = Model
+newtype Model = Model {value :: Int}
     deriving stock (Generic, Eq, Show)
 
 initialModel :: Model
-initialModel = Model
+initialModel = Model{value = 110}
 
-data Action = NoOp
+data Action
+    = NoOp
+    | SetValue Int
 
 range :: Component parent Model Action
 range = component initialModel update view
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
+update (SetValue v) = #value .= v
 
 view :: Model -> View Model Action
-view Model =
+view Model{..} =
     section_
         []
         [ widget $ Heading Large "Range"
         , p_ [] [text "A range lets users choose an approximate value on a slider."]
-        , widget Range{value = 50, step = 1, min = 1, max = 100}
+        , widget Range{value, step = 10, min = 0, max = 200, onChange = SetValue}
         ]

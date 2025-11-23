@@ -16,6 +16,7 @@ import Dashi.Components.Radio (Radio, RadioGroup)
 import Dashi.Components.Range (Range)
 import Dashi.Components.Select (Select)
 import Dashi.Components.Switch (Switch)
+import Dashi.Components.Tabs (Tabs)
 import Dashi.Components.TextField (TextField)
 import Dashi.Components.Widget qualified as Widget
 import Dashi.Layout.Page (Page)
@@ -39,16 +40,17 @@ style = do
     Widget.style @(Link model action) @model @action
     Widget.style @(Radio model action) @model @action
     Widget.style @(RadioGroup value model action) @model @action
+    Widget.style @(Range action) @model @action
     Widget.style @(Select value model action) @model @action
     Widget.style @(Switch model action) @model @action
+    Widget.style @(TextField action) @model @action
+    Widget.style @(Tabs value model action) @model @action
     Widget.style @Avatar @model @action
     Widget.style @AvatarItem @model @action
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
     Widget.style @ProgressBar @model @action
-    Widget.style @Range @model @action
-    Widget.style @TextField
 
 styleStr :: (IsString s) => s
 styleStr = fromString . LazyText.unpack . renderWith pretty [] $ style
