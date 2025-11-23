@@ -222,7 +222,12 @@
       {
         packages.${system} = {
           default = pkgs.haskellPackages.${pname};
-          wasm = wasmPkgs.haskellPackages.${pname};
+          wasm = wasmPkgs.haskellPackages.${pname}.overrideAttrs (attrs: {
+            postFixup = ''
+              ${attrs.postFixup or ""}
+              rm -rf lib nix-support share
+            '';
+          });
           wasmServer = pkgs.writeShellApplication {
             name = "${pname}-wasm-server";
             runtimeInputs = with pkgs; [ http-server ];
