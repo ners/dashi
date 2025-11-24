@@ -64,10 +64,10 @@
         src = pkgs.fetchFromGitHub {
           owner = "haskell-wasm";
           repo = "browser_wasi_shim";
-          rev = "d12b5b1b57b1e82e083dd06a49e837ae05b1afba";
-          hash = "sha256-ad/PuUqOS8j34ojbFU7hlFO8QqF7DoNK/gJmo/aJ/q0=";
+          rev = "6854830d1aa5bbe9644175dad74b17466fb26164";
+          hash = "sha256-4dgY/maJ+VZaF8PY1J5IWImJm8uIJlOGHmmXQVvqp38=";
         };
-        npmDepsHash = "sha256-YZnt2YcD9Wo6+V+TS/WYhKnzJ7UdF1xbQjsbBCioIqs=";
+        npmDepsHash = "sha256-EJd+9+pqQaYHvmppw6o5cvV5EAldtx0SO+TuOIfyQuU=";
         meta = {
           description = "A pure javascript shim for WASI";
           homepage = "https://github.com/haskell-wasm/browser_wasi_shim";

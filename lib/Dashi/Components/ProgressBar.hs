@@ -83,6 +83,6 @@ instance Widget ProgressBar model action where
             "::-webkit-progress-value" & do
                 backgroundColor' $ Progress Default
             "::-moz-progress-bar" & do
-                backgroundColor' Background
+                backgroundColor' $ Progress Default
         sconcat (progress :| ((progress #) <$> ["::-webkit-progress-bar", "::-webkit-progress-value"]))
             ? borderRadiusAll' Large

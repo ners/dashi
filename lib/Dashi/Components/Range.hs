@@ -11,13 +11,14 @@ import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util (backgroundColor', borderRadiusAll', color', colorToken, (~:), (~::))
+import Data.Fixed (Milli)
 import Data.Functor ((<&>))
 import Data.Ord (clamp)
 import Miso
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (input_)
 import Miso.Html.Event qualified as Miso
-import Miso.Html.Property (max_, min_, step_, type_, value_)
+import Miso.Html.Property (defaultValue_, max_, min_, step_, type_, value_)
 import Prelude hiding (max)
 
 data Background = Background
@@ -65,6 +66,7 @@ instance Widget (Range action) model action where
                 : Miso.onInput (onChange . clamp (min, max) . fromMisoString)
                 : step_ (toMisoString step)
                 : value_ (toMisoString displayValue)
+                : defaultValue_ (toMisoString displayValue)
                 : min_ (toMisoString roundedDownMinValue)
                 : max_ (toMisoString roundedUpMaxValue)
                 : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
@@ -80,7 +82,7 @@ instance Widget (Range action) model action where
 
         displayValue =
             let maxSliderValue = (max `div` step) * step
-                minSliderValue = ceiling @Double (fromIntegral min / fromIntegral step) * step
+                minSliderValue = ceiling @Milli (fromIntegral min / fromIntegral step) * step
              in if value < minSliderValue
                     then roundedDownMinValue
                     else
@@ -88,13 +90,12 @@ instance Widget (Range action) model action where
                             then roundedUpMaxValue
                             else value
         roundedPercentage
-            | min >= max = 0 :: Double
+            | min >= max = 0 :: Milli
             | otherwise =
                 let range = roundedUpMaxValue - roundedDownMinValue
                     relativeValue = displayValue - roundedDownMinValue
-                    numSteps = round @Double $ fromIntegral relativeValue / fromIntegral step
-                    rounded = numSteps * step
-                 in fromIntegral rounded / fromIntegral range * 100
+                    numSteps = round @Milli $ fromIntegral relativeValue / fromIntegral step
+                 in fromIntegral (numSteps * step) / fromIntegral range * 100
     style = do
         ":root" ? do
             tokenDecl @Background
@@ -106,12 +107,20 @@ instance Widget (Range action) model action where
             "accent-color" ~:: colorToken Thumb
             height $ em 0.5
             color' Progress
+            cursor ewResize
             "background-image" -: "linear-gradient(to right, currentColor var(--progress), transparent var(--progress))"
             "::-webkit-slider-thumb" & do
                 "-webkit-appearance" ~: none
                 width $ em 1
                 height $ em 1
                 borderRadiusAll' Large
-                cursor ewResize
                 backgroundColor' Thumb
                 marginTop $ em 0.03
+            "::-moz-range-thumb" & do
+                "-moz-appearance" ~: none
+                width $ em 1
+                height $ em 1
+                borderRadiusAll' Large
+                backgroundColor' Thumb
+                marginTop $ em 0.03
+                borderWidth nil
