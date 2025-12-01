@@ -12,8 +12,7 @@ import Dashi.Style.Util
 import Miso
 import Miso.Html.Element (li_, ul_)
 import Miso.Html.Event (onClick)
-import Miso.Html.Property (aria_, class_)
-import Miso.Svg.Property (tabindex_)
+import Miso.Html.Property (aria_, class_, tabindex_)
 import Prelude
 
 data Tabs t model action = Tabs

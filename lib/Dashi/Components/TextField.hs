@@ -72,7 +72,7 @@ instance Widget (TextField action) model action where
         attrs' = name_ name : Miso.onInput onChange : attrs
     style = do
         ":root" ? tokenDecl @Background
-        (select <> textarea <> input # isOneOfAll' @Type) ? do
+        (Clay.select <> textarea <> input # isOneOfAll' @Type) ? do
             display block
             fullWidth
             focusable

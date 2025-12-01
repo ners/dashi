@@ -43,8 +43,8 @@ instance (Eq o) => Widget (Select o model action) model action where
                     }
             | o <- options
             ]
-    style = do
-        select ? do
+    style =
+        Clay.select ? do
             pressable
             after & do
                 display block

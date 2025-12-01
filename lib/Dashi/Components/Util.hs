@@ -10,8 +10,7 @@ import Dashi.Util (fromText)
 import Data.Aeson qualified as Aeson
 import Data.List qualified as List
 import Miso
-import Miso.Html.Property (aria_)
-import Miso.Svg.Property (tabindex_)
+import Miso.Html.Property (aria_, tabindex_)
 import Prelude
 
 makePrisms ''Attribute
