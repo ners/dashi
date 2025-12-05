@@ -64,10 +64,10 @@
         src = pkgs.fetchFromGitHub {
           owner = "haskell-wasm";
           repo = "browser_wasi_shim";
-          rev = "6854830d1aa5bbe9644175dad74b17466fb26164";
-          hash = "sha256-4dgY/maJ+VZaF8PY1J5IWImJm8uIJlOGHmmXQVvqp38=";
+          rev = "8af9f8bb730b33d3aee3d849bcf856e3a6b6685b";
+          hash = "sha256-EhFFL17oQu72Ij8J8cGBEBmZC2A6unf13RIBvO0tslA=";
         };
-        npmDepsHash = "sha256-EJd+9+pqQaYHvmppw6o5cvV5EAldtx0SO+TuOIfyQuU=";
+        npmDepsHash = "sha256-v41wBvAvfccFesadRncTtRNZOZEvj+HRqs9IPgPKFGc=";
         meta = {
           description = "A pure javascript shim for WASI";
           homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
@@ -75,35 +75,6 @@
           maintainers = with lib.maintainers; [ ners ];
         };
       };
-      d3 = pkgs: pkgs.stdenv.mkDerivation (finalAttrs: {
-        pname = "d3";
-        version = "7.9.0";
-        src = pkgs.fetchFromGitHub {
-          owner = "d3";
-          repo = "d3";
-          tag = "v${finalAttrs.version}";
-          hash = "sha256-40lsWWUiZLBr9Sl1SqDv3aFrDXjFoaP1ScHZFDWUj9Q=";
-        };
-        yarnOfflineCache = pkgs.fetchYarnDeps {
-          yarnLock = "${finalAttrs.src}/yarn.lock";
-          hash = "sha256-Qw+T7in/EbBHHF+LXZadM22roI+ZV/AgGR8xFdG5tUQ=";
-        };
-
-        nativeBuildInputs = with pkgs; [
-          yarnConfigHook
-          yarnBuildHook
-          yarnInstallHook
-          # Needed for executing package.json scripts
-          nodejs_20
-        ];
-        yarnBuildScript = "prepublishOnly";
-        meta = {
-          description = "Bring data to life with SVG, Canvas and HTML.";
-          homepage = "https://d3js.org";
-          license = with lib.licenses; [ isc ];
-          maintainers = with lib.maintainers; [ ners ];
-        };
-      });
       favicon = pkgs: pkgs.runCommand "favicon.ico"
         {
           nativeBuildInputs = with pkgs; [
@@ -146,13 +117,13 @@
         inputs.fluent-hs.overlays.haskell
         (inputs.web-font-mdi.overlays.haskell pkgs.haskell.lib)
         (hfinal: hprev: {
-          ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: {
+          ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: lib.optionalAttrs (isWasmPkgs hprev) {
             nativeBuildInputs = with pkgs; [
               binaryen
               nodejs
               wasm-tools
             ] ++ attrs.nativeBuildInputs or [ ];
-            postInstall = (attrs.postInstall or "") + lib.optionalString (isWasmPkgs hprev) ''
+            postInstall = (attrs.postInstall or "") + ''
               cd "$out"
               cp -r "${staticAssets pkgs}" static
               chmod -R +w static
@@ -239,6 +210,7 @@
         legacyPackages.${system} = {
           inherit (pkgs) haskellPackages;
           inherit wasmPkgs;
+          browser_wasi_shim = browser_wasi_shim pkgs;
         };
         devShells.${system} = {
           default = pkgs.haskellPackages.shellFor {
