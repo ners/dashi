@@ -15,12 +15,11 @@ import Data.Fixed (Milli)
 import Data.Functor ((<&>))
 import Data.Ord (clamp)
 import Miso
-import Miso.CSS (styleInline_)
-import Miso.CSS qualified as CSS
 import Miso.Html.Element (input_)
 import Miso.Html.Event qualified as Miso
-import Miso.Html.Property (defaultValue_, max_, min_, step_, type_)
+import Miso.Html.Property (max_, min_, step_, type_, value_)
 import Prelude hiding (max)
+import Miso.CSS (styleInline_)
 
 data Background = Background
     deriving stock (Eq, Bounded, Enum)
@@ -66,11 +65,10 @@ instance Widget (Range action) model action where
             type_ "range"
                 : Miso.onInput (onChange . clamp (min, max) . fromMisoString)
                 : step_ (toMisoString step)
-                : defaultValue_ (toMisoString displayValue)
                 : min_ (toMisoString roundedDownMinValue)
                 : max_ (toMisoString roundedUpMaxValue)
-                -- : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
-                : CSS.style_ ["--progress" =: (toMisoString roundedPercentage <> "%")]
+                : value_ (toMisoString displayValue)
+                : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
                 : attrs
       where
         roundedDownMinValue
@@ -110,15 +108,9 @@ instance Widget (Range action) model action where
             color' Progress
             cursor ewResize
             "background-image" -: "linear-gradient(to right, currentColor var(--progress), transparent var(--progress))"
-            "::-webkit-slider-thumb" & do
-                "-webkit-appearance" ~: none
-                width $ em 1
-                height $ em 1
-                borderRadiusAll' Large
-                backgroundColor' Thumb
-                marginTop $ em 0.03
-            "::-moz-range-thumb" & do
+            "::-moz-range-thumb" <> "::-webkit-slider-thumb" & do
                 "-moz-appearance" ~: none
+                "-webkit-appearance" ~: none
                 width $ em 1
                 height $ em 1
                 borderRadiusAll' Large
