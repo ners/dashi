@@ -14,11 +14,14 @@ import Dashi.Style.Colour ()
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Util
-import Data.String (IsString)
+import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Lazy qualified as LazyText
 import Prelude
+
+renderStyle :: (IsString s) => Css -> s
+renderStyle = fromString . LazyText.unpack . renderWith pretty []
 
 self :: Selector
 self = ""

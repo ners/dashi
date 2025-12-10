@@ -21,6 +21,7 @@ import Dashi.Style qualified as Style
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Colour qualified as Colour.Scheme
 import Dashi.Style.Tokens
+import Dashi.Style.Util (renderStyle)
 import Dashi.Util
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
@@ -107,7 +108,7 @@ app = do
     initComponent
         { events = defaultEvents <> keyboardEvents
         , initialAction = Just Setup
-        , styles = [Style Style.styleStr, Href "/static/style.css"]
+        , styles = [Style $ renderStyle Style.style, Href "/static/style.css"]
         }
   where
     initComponent :: Component parent Model Action

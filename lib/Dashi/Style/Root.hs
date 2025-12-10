@@ -69,7 +69,7 @@ style = do
         varDecl "border-radius" $ rem 0.25
         varDecl "border-width" $ rem 0.0625
         varDecl "outline-width" $ rem 0.125
-        varDecl "transition" $ ([value $ sec 0.2, value easeInOut] :: [Value])
+        varDecl "transition" ([value $ sec 0.2, value easeInOut] :: [Value])
         tokenDecl @Space
         tokenDecl @Radius
         tokenDecl @Colour.Text

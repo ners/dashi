@@ -1,4 +1,5 @@
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# OPTIONS_GHC -Wno-partial-fields #-}
@@ -10,16 +11,17 @@ import Dashi.Components.Widget
 import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
-import Dashi.Style.Util (backgroundColor', borderRadiusAll', color', colorToken, (~:), (~::))
+import Dashi.Style.Util
 import Data.Fixed (Milli)
 import Data.Functor ((<&>))
 import Data.Ord (clamp)
+import Data.Semigroup (sconcat)
 import Miso
+import Miso.CSS (styleInline_)
 import Miso.Html.Element (input_)
 import Miso.Html.Event qualified as Miso
 import Miso.Html.Property (max_, min_, step_, type_, value_)
 import Prelude hiding (max)
-import Miso.CSS (styleInline_)
 
 data Background = Background
     deriving stock (Eq, Bounded, Enum)
@@ -108,12 +110,12 @@ instance Widget (Range action) model action where
             color' Progress
             cursor ewResize
             "background-image" -: "linear-gradient(to right, currentColor var(--progress), transparent var(--progress))"
-            "::-moz-range-thumb" <> "::-webkit-slider-thumb" & do
-                "-moz-appearance" ~: none
-                "-webkit-appearance" ~: none
-                width $ em 1
-                height $ em 1
-                borderRadiusAll' Large
-                backgroundColor' Thumb
-                marginTop $ em 0.03
-                borderWidth nil
+        sconcat ((input # ("type" @= "range") #) <$> ["::-moz-range-thumb", "::-webkit-slider-thumb"]) ? do
+            "-moz-appearance" ~: none
+            "-webkit-appearance" ~: none
+            width $ em 1
+            height $ em 1
+            borderRadiusAll' Large
+            backgroundColor' Thumb
+            marginTop $ em 0.03
+            borderWidth nil
