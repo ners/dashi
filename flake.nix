@@ -6,6 +6,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
     ghc-wasm-meta = {
       url = "gitlab:ners/ghc-wasm-meta/fix-nix-hostPlatform?host=gitlab.haskell.org";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -39,6 +40,15 @@
       url = "github:ners/web-font-mdi";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.mdi.follows = "mdi";
+    };
+    flang-wasm = {
+      url = "github:r-wasm/flang-wasm";
+      inputs.nixpkgs.follows = "nixpkgs-old";
+    };
+    webr = {
+      url = "github:r-wasm/webr/v0.5.8";
+      inputs.nixpkgs.follows = "nixpkgs-old";
+      inputs.nixpkg-flang-wasm.follows = "flang-wasm";
     };
   };
 
@@ -156,6 +166,9 @@
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           plots = doJailbreak (unmarkBroken hprev.plots);
           pointfree-fancy = doJailbreak (unmarkBroken hprev.pointfree-fancy);
+          th-desugar = doJailbreak hprev.th-desugar;
+          singletons-th = doJailbreak hprev.singletons-th;
+          inline-r = doJailbreak (unmarkBroken hprev.inline-r);
         })
         (hfinal: hprev: lib.optionalAttrs (isWasmPkgs hprev) {
           zlib = addBuildDepend hprev.zlib-clib hprev.zlib;
@@ -169,6 +182,7 @@
               (haskell-overlay prev)
             ];
           };
+          webr = import ./webr.nix inputs prev.hostPlatform.system;
         })
       ];
     in
@@ -181,9 +195,9 @@
     //
     foreach inputs.nixpkgs.legacyPackages (system: pkgs':
       let
-        pkgs = pkgs' // {
-          haskellPackages = pkgs'.haskell.packages.ghc912.extend (haskell-overlay pkgs');
-        };
+        pkgs =
+          let pkgs = pkgs'.extend overlay;
+          in pkgs // { haskellPackages = pkgs.haskell.packages.ghc912; };
         wasmPkgs' = inputs.nix-wasm.legacyPackages.${system};
         wasmPkgs = wasmPkgs' // {
           haskellPackages = wasmPkgs'.haskellPackages.extend (haskell-overlay pkgs');
@@ -208,7 +222,7 @@
           };
         };
         legacyPackages.${system} = {
-          inherit (pkgs) haskellPackages;
+          inherit (pkgs) haskellPackages webr;
           inherit wasmPkgs;
           browser_wasi_shim = browser_wasi_shim pkgs;
         };

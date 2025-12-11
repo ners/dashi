@@ -146,3 +146,4 @@ executable dashi
     fluent-bundle,
     fluent-syntax,
     jsaddle,
+    inline-r,
