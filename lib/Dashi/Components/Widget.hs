@@ -3,8 +3,8 @@
 module Dashi.Components.Widget where
 
 import Clay (Css)
-import Control.Applicative (Applicative (pure))
 import Miso
+import Prelude
 
 class Widget w model action where
     widget' :: [Attribute action] -> w -> View model action
@@ -15,7 +15,7 @@ class Widget w model action where
 data SomeWidget = forall w model action. (Widget w model action) => SomeWidget w
 
 instance Widget () model action where
-    widget' _ () = VText ""
+    widget' _ () = VText Nothing ""
     style = pure ()
 
 instance Widget (View model action) model action where

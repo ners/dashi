@@ -63,7 +63,8 @@ view Model{..} =
         , p_ [] [text "A form allows users to input information."]
         , form_
             []
-            [ widget @(FormField _ Model Action) @Model @Action
+            [ widget' @(FormField _ Model Action) @Model @Action
+                [autocomplete_ "username"]
                 FormField
                     { legend = [text "Username"]
                     , required = True
@@ -95,7 +96,7 @@ view Model{..} =
             , widget @(FormField (Checkbox Model Action) Model Action) @Model @Action
                 FormField
                     { legend = []
-                    , required = True
+                    , required = False
                     , field =
                         Checkbox
                             { name = "terms"

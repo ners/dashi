@@ -66,29 +66,27 @@ data Action = NoOp
 
 view :: Model -> View Model Action
 view Model{..} =
-    case current of
-        Overview -> wrapper +> Overview.overview
-        Avatar -> wrapper +> Avatar.avatar
-        Button -> wrapper +> Button.button
-        Plot -> wrapper +> Plot.plot
-        Form -> wrapper +> Form.form #form form
-        Icon -> wrapper +> Icon.icon
-        Link -> wrapper +> Link.link
-        Message -> wrapper +> Message.message
-        Checkbox -> wrapper +> Checkbox.checkbox
-        ProgressBar -> wrapper +> ProgressBar.progressBar
-        Radio -> wrapper +> Radio.radio
-        Range -> wrapper +> Range.range
-        Select -> wrapper +> Select.select
-        Switch -> wrapper +> Switch.switch
-        Spinner -> wrapper +> Spinner.spinner
-        Tabs -> wrapper +> Tabs.tabs
-        TextField -> wrapper +> TextField.textField
+    div_ [key_ currentStr, id_ currentStr] . pure $ case current of
+        Overview -> mount Overview.overview
+        Avatar -> mount Avatar.avatar
+        Button -> mount Button.button
+        Plot -> mount Plot.plot
+        Form -> mount $ Form.form #form form
+        Icon -> mount Icon.icon
+        Link -> mount Link.link
+        Message -> mount Message.message
+        Checkbox -> mount Checkbox.checkbox
+        ProgressBar -> mount ProgressBar.progressBar
+        Radio -> mount Radio.radio
+        Range -> mount Range.range
+        Select -> mount Select.select
+        Switch -> mount Switch.switch
+        Spinner -> mount Spinner.spinner
+        Tabs -> mount Tabs.tabs
+        TextField -> mount TextField.textField
   where
     currentStr :: MisoString
     currentStr = toMisoString . Text.toLower . ishow $ current
-    wrapper :: [View Model Action] -> View Model Action
-    wrapper = div_ [key_ currentStr, id_ currentStr]
 
 section :: (HasField' "section" parent Model) => Model -> Component parent Model Action
 section model =

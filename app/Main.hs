@@ -33,7 +33,7 @@ import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
 import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
-import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
+import Miso.Html.Element (a_, dialog_, img_, li_, ul_, div_)
 import Miso.Html.Event (onChange, onClick)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
 import Section (SectionId)
@@ -258,7 +258,7 @@ appView model =
                         ]
                     ]
             , main_ =
-                [ div_ [key_ . misoShow $ model.section.current] +> Section.section model.section
+                [ div_ [key_ (misoShow model.section.current)] . pure . mount $ Section.section model.section
                 , dialog_ [textProp "closedby" "any"] [widget $ Heading Large "Dialog!"]
                 ]
             , aside = Nothing
