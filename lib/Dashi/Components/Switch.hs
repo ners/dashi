@@ -9,7 +9,7 @@ import Dashi.Components.Widget
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Miso
+import Miso hiding ((#))
 import Miso.Html.Element (input_, label_, span_)
 import Miso.Html.Property (name_, selected_, type_)
 import Prelude

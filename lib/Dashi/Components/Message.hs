@@ -13,7 +13,7 @@ import Dashi.Style.Util
 import Data.Foldable (for_)
 import Data.Maybe (catMaybes)
 import Data.Semigroup (sconcat)
-import Miso
+import Miso hiding ((#))
 import Miso.Html.Element (a_, div_, span_)
 import Miso.Html.Property (class_)
 import Web.Font.MDI (MDI (MdiAlert, MdiAlertRhombus, MdiCheckCircle, MdiHelpCircle, MdiInformation))
@@ -88,7 +88,7 @@ instance Widget Message model action where
                 gridTemplateColumns [em 1.5, auto]
                 columnGap' Small
                 ".title" ? do
-                    fontSize' $ Large
+                    fontSize' Large
                     fontWeight $ weight 700
             byToken FormMessage & do
                 fontSize' Small

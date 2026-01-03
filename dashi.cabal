@@ -18,13 +18,6 @@ source-repository head
   type: git
   location: https://github.com/ners/dashi
 
-common wasm
-  if arch(wasm32)
-    ghc-options:
-      -no-hs-main -optl-mexec-model=reactor "-optl-Wl,--export=hs_start"
-    cpp-options:
-      -DWASM
-
 common common
   default-language: GHC2021
   ghc-options:
@@ -110,16 +103,28 @@ library
     diagrams-lib,
     identicon,
     identicon-style-squares,
-    jsaddle,
     miso-diagrams,
     plots,
     pureMD5,
 
 executable dashi
-  import: wasm, common
+  import: common
+
+  if arch(wasm32)
+    ghc-options:
+      -no-hs-main
+      -optl-mexec-model=reactor
+      "-optl-Wl,--export=hs_start"
+    cpp-options:
+      -DWASM
+  if arch(javascript)
+     ld-options:
+       -sEXPORTED_RUNTIME_METHODS=HEAP8
+
   hs-source-dirs: app
   main-is: Main.hs
   other-modules:
+    DSL
     Language
     Section
     Section.Avatar
@@ -145,4 +150,3 @@ executable dashi
     extra,
     fluent-bundle,
     fluent-syntax,
-    jsaddle,

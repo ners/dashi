@@ -64,10 +64,10 @@
         src = pkgs.fetchFromGitHub {
           owner = "haskell-wasm";
           repo = "browser_wasi_shim";
-          rev = "8af9f8bb730b33d3aee3d849bcf856e3a6b6685b";
-          hash = "sha256-EhFFL17oQu72Ij8J8cGBEBmZC2A6unf13RIBvO0tslA=";
+          rev = "fce68df4ad2bc9cfe6581a234587a76981882186";
+          hash = "sha256-FFBG5VPFvONBz+eUD/YUR3SSy8gfAsuWB9Avi8S9yqQ=";
         };
-        npmDepsHash = "sha256-v41wBvAvfccFesadRncTtRNZOZEvj+HRqs9IPgPKFGc=";
+        npmDepsHash = "sha256-ErxU2EA+Enh5Bpbk3rsTrgeQnMktLjv9eNE0h5phntY=";
         meta = {
           description = "A pure javascript shim for WASI";
           homepage = "https://github.com/haskell-wasm/browser_wasi_shim";
@@ -117,7 +117,18 @@
         inputs.fluent-hs.overlays.haskell
         (inputs.web-font-mdi.overlays.haskell pkgs.haskell.lib)
         (hfinal: hprev: {
-          ${pname} = (hfinal.callCabal2nix pname (sourceFilter ./.) { }).overrideAttrs (attrs: lib.optionalAttrs (isWasmPkgs hprev) {
+          ${pname} = hfinal.callCabal2nix pname (sourceFilter ./.) { };
+          identicon-style-squares = dontCheck (doJailbreak hprev.identicon-style-squares);
+          jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
+          miso = hfinal.callCabal2nix "miso" inputs.miso { };
+          miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
+          plots = doJailbreak (unmarkBroken hprev.plots);
+          pointfree-fancy = doJailbreak (unmarkBroken hprev.pointfree-fancy);
+          polyvariadic = doJailbreak (unmarkBroken hprev.polyvariadic);
+          sandwich = dontCheck hprev.sandwich;
+        })
+        (hfinal: hprev: lib.optionalAttrs (isWasmPkgs hprev) {
+          ${pname} = (appendBuildFlag "--ghc-options=-DWASM" hprev.${pname}).overrideAttrs (attrs:  {
             nativeBuildInputs = with pkgs; [
               binaryen
               nodejs
@@ -140,22 +151,6 @@
               mv static/index.html static/favicon.ico static/apple-touch-icon.png .
             '';
           });
-          Color =
-            hfinal.callHackageDirect
-              {
-                pkg = "Color";
-                ver = "0.4.1";
-                sha256 = "sha256-ZPCgejtsH558h7cE5Y/wfKWYKKXK+rbKIG2ErDyyA6o=";
-              }
-              { };
-          miso = hfinal.callCabal2nix "miso" inputs.miso { };
-          miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
-          identicon-style-squares = dontCheck (doJailbreak hprev.identicon-style-squares);
-          sandwich = dontCheck hprev.sandwich;
-          polyvariadic = doJailbreak (unmarkBroken hprev.polyvariadic);
-          jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
-          plots = doJailbreak (unmarkBroken hprev.plots);
-          pointfree-fancy = doJailbreak (unmarkBroken hprev.pointfree-fancy);
         })
         (hfinal: hprev: lib.optionalAttrs (isWasmPkgs hprev) {
           zlib = addBuildDepend hprev.zlib-clib hprev.zlib;

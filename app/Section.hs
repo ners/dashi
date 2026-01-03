@@ -2,9 +2,9 @@
 
 module Section where
 
+import Control.Lens (Lens')
 import Dashi.Util
 import Data.Generics.Labels ()
-import Data.Generics.Product.Fields (HasField')
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
 import Miso
@@ -88,10 +88,10 @@ view Model{..} =
     currentStr :: MisoString
     currentStr = toMisoString . Text.toLower . ishow $ current
 
-section :: (HasField' "section" parent Model) => Model -> Component parent Model Action
-section model =
+section :: Lens' parent Model -> Model -> Component parent Model Action
+section l model =
     (component model Section.update Section.view)
-        { bindings = [#section <---> id]
+        { bindings = [l <---> id]
         }
 
 update :: Action -> Effect parent Model Action

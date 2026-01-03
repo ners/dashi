@@ -26,7 +26,7 @@ import Data.String (fromString)
 import GHC.IsList (IsList (fromList))
 import Graphics.Color.Model (Alpha, setAlpha)
 import Graphics.Color.Space.OKLAB.LCH
-import Miso hiding (view)
+import Miso hiding (view, (#))
 import Miso.Html.Element (button_, label_)
 import Prelude
 

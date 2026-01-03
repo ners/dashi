@@ -21,7 +21,7 @@ import Data.Semigroup (sconcat)
 import Graphics.Identicon (renderIdenticon)
 import Graphics.Identicon.Styles.Squares (Squares)
 import Graphics.Identicon.Styles.Squares qualified as Identicon
-import Miso hiding (Image)
+import Miso hiding (Image, (#))
 import Miso.Html.Element (div_, img_, span_)
 import Miso.Html.Property (class_, src_)
 import Web.Font.MDI (MDI)

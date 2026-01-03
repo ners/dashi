@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Dashi.Util where
@@ -8,8 +9,6 @@ import Control.Lens.Combinators
 import Control.Lens.Operators
 import Data.Char (isUpper, toLower, toUpper)
 import Data.Fixed (Fixed, HasResolution)
-import Data.JSString (JSString)
-import Data.JSString qualified as JSString
 import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -18,6 +17,10 @@ import Miso (Attribute (Styles), MisoString, fromMisoString, toMisoString)
 import Miso.String (FromMisoString, ToMisoString)
 import Numeric (fromRat)
 import Prelude
+#ifdef WASM
+import Miso.String (JSString)
+import Miso.String qualified as JSString
+#endif
 
 ishow :: (Show a, IsString s) => a -> s
 ishow = fromString . show
@@ -41,8 +44,10 @@ instance (HasResolution k) => ToMisoString (Fixed k) where
 instance ToMisoString Rational where
     toMisoString = toMisoString . formatFloat @Double . fromRat
 
+#ifdef WASM
 instance Cons JSString JSString Char Char where
     _Cons = prism' (uncurry JSString.cons) JSString.uncons
+#endif
 
 capitalise :: (Cons s s Char Char) => s -> s
 capitalise = _head %~ toUpper

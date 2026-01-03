@@ -15,7 +15,7 @@ import Diagrams.Prelude (V2 (..), dims2D, mkSizeSpec2D)
 import Diagrams.Prelude qualified as Diagrams
 import Graphics.Color.Space (Linearity (NonLinear))
 import Graphics.Rendering.Chart.Easy
-import Miso
+import Miso hiding ((!!))
 import Miso.Canvas qualified as Canvas
 import Miso.Canvas.Diagrams (Canvas)
 import Miso.Canvas.Diagrams qualified as Diagrams

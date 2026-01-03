@@ -15,7 +15,7 @@ import Data.Functor ((<&>))
 import Data.Maybe (maybeToList)
 import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
-import Miso
+import Miso hiding ((#))
 import Miso.Html.Element (input_, textarea_)
 import Miso.Html.Event qualified as Miso
 import Miso.Html.Property (name_, type_, value_)

@@ -16,7 +16,7 @@ import Data.Fixed (Milli)
 import Data.Functor ((<&>))
 import Data.Ord (clamp)
 import Data.Semigroup (sconcat)
-import Miso
+import Miso hiding ((#))
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (input_)
 import Miso.Html.Event qualified as Miso
@@ -65,12 +65,12 @@ instance Widget (Range action) model action where
     widget' attrs Range{..} =
         input_ $
             type_ "range"
-                : Miso.onInput (onChange . clamp (min, max) . fromMisoString)
-                : step_ (toMisoString step)
                 : min_ (toMisoString roundedDownMinValue)
                 : max_ (toMisoString roundedUpMaxValue)
+                : step_ (toMisoString step)
                 : value_ (toMisoString displayValue)
                 : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
+                : Miso.onInput (onChange . clamp (min, max) . fromMisoString)
                 : attrs
       where
         roundedDownMinValue

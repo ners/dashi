@@ -96,7 +96,7 @@ style = do
         ariaBusy True & do
             cursor cursorProgress
     let anyDisabledElement = self # disabled
-    (self # disabled <> label # has anyDisabledElement) ? do
+    (self # disabled <> label # has (self |> anyDisabledElement)) ? do
         important $ cursor notAllowed
         opacity 0.5
         "filter" -: "grayscale(100%)"

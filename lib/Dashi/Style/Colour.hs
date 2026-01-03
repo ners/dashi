@@ -11,7 +11,9 @@ where
 
 import Clay ((@=))
 import Clay qualified
+import Control.Lens (Iso', iso)
 import Dashi.Style.Tokens
+import Data.Bool (bool)
 import Data.Functor ((<&>))
 import Data.List qualified as List
 import Data.String (fromString)
@@ -23,6 +25,9 @@ import Prelude
 
 data Scheme = Light | Dark
     deriving stock (Eq, Show, Bounded, Enum)
+
+isDark :: Iso' Bool Scheme
+isDark = iso (bool Light Dark) (== Dark)
 
 instance Token Scheme where
     tokenName Light = "light"

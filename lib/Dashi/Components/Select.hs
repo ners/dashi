@@ -10,7 +10,7 @@ import Dashi.Components.Widget
 import Dashi.Style.Util
 import Miso
 import Miso.Html.Element (option_, select_)
-import Miso.Html.Property (name_, selected_, value_)
+import Miso.Html.Property (disabled_, name_, selected_, value_)
 import Prelude
 
 data Option model action = Option
@@ -33,19 +33,19 @@ instance Widget (Option model action) model action where
 
 instance (Eq o) => Widget (Select o model action) model action where
     widget' attrs Select{..} =
-        select_
-            (name_ name : attrs)
-            [ widget
-                Option
-                    { value = value o
-                    , label = label o
-                    , selected = selected o
-                    }
-            | o <- options
-            ]
+        select_ (name_ name : attrs) $
+            option_ [value_ "", disabled_, selected_ True] []
+                : [ widget
+                        Option
+                            { value = value o
+                            , label = label o
+                            , selected = selected o
+                            }
+                  | o <- options
+                  ]
     style =
         Clay.select ? do
             pressable
-            after & do
+            before & do
                 display block
-                content $ stringContent "chevron"
+                content $ stringContent "x"

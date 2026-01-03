@@ -7,9 +7,9 @@
 module Main where
 
 import Control.Applicative ((<|>))
-import Control.Lens qualified as Lens
-import Control.Lens.Operators
+import Control.Lens.Operators hiding ((#))
 import Control.Monad (liftM2)
+import DSL qualified
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
@@ -31,9 +31,8 @@ import GHC.Generics (Generic)
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
-import Language.Javascript.JSaddle qualified as JSaddle
 import Miso
-import Miso.Html.Element (a_, dialog_, img_, li_, ul_, div_)
+import Miso.Html.Element (a_, dialog_, img_, li_, ul_)
 import Miso.Html.Event (onChange, onClick)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
 import Section (SectionId)
@@ -114,66 +113,20 @@ app = do
     initComponent :: Component parent Model Action
     initComponent = component emptyModel (liftM2 (>>) traceAction appUpdate) appView
 
-setSystemColourScheme :: JSM Action
-setSystemColourScheme =
-    JSaddle.jsg @String "window"
-        >>= Lens.view
-            ( JSaddle.js1 @String @String "matchMedia" "(prefers-color-scheme: dark)"
-                . JSaddle.js @_ @String "matches"
-            )
-        >>= JSaddle.valToBool
-        <&> SetColourScheme . \case
-            True -> Colour.Scheme.Dark
-            False -> Colour.Scheme.Light
+getSystemColourScheme :: IO Colour.Scheme
+getSystemColourScheme =
+    DSL.window
+        >>= DSL.call' @MisoString "matchMedia" "(prefers-color-scheme: dark)"
+        >>= DSL.getProp "matches"
+        >>= DSL.fromJSVal
+        <&> maybe Colour.Scheme.Light (^. Colour.Scheme.isDark)
 
 appUpdate :: Action -> Effect parent Model Action
 appUpdate Setup = do
     -- TODO take this from header / local storage / browser settings ...
     appUpdate $ SetLanguage Language.English
-    io setSystemColourScheme
-    -- io setNavOpen
-    -- TODO detect if we are in ghcid
-    io_ do
-        let createElement = JSaddle.js1 @String @String "createElement"
-            setAttribute = JSaddle.js2 @String @String @String "setAttribute"
-            appendChild :: JSaddle.JSM JSaddle.JSVal -> JSaddle.JSF
-            appendChild = JSaddle.js1 @String "appendChild"
-        doc <- JSaddle.jsg @String "document"
-        head <- doc ^. JSaddle.js @_ @String "head"
-        head
-            ^. JSaddle.js1 @String @String "getElementsByTagName" "title"
-                . JSaddle.js1 @String @Int "item" 0
-                . JSaddle.js0 @String "remove"
-        head ^. appendChild do
-            e <- doc ^. createElement "meta"
-            e ^. setAttribute "charset" "utf-8"
-            pure e
-        head ^. appendChild do
-            e <- doc ^. createElement "meta"
-            e ^. setAttribute "name" "color-scheme"
-            e ^. setAttribute "content" "dark light"
-            pure e
-        head ^. appendChild do
-            e <- doc ^. createElement "meta"
-            e ^. setAttribute "name" "viewport"
-            e ^. setAttribute "content" "width=device-width, initial-scale=1, shrink-to-fit=no"
-            pure e
-        head ^. appendChild do
-            e <- doc ^. createElement "title"
-            e ^. JSaddle.jss @String @String "innerHTML" "Dashi"
-            pure e
-        head ^. appendChild do
-            e <- doc ^. createElement "link"
-            e ^. setAttribute "rel" "icon"
-            e ^. setAttribute "href" "/favicon.ico"
-            pure e
-        head ^. appendChild do
-            e <- doc ^. createElement "link"
-            e ^. setAttribute "rel" "icon"
-            e ^. setAttribute "href" "/static/icon.svg"
-            e ^. setAttribute "type" "image/svg+xml"
-            pure e
-        pure ()
+    io $ SetColourScheme <$> getSystemColourScheme
+-- io setNavOpen
 appUpdate (SetNavOpen navOpen) = #navOpen .= navOpen
 appUpdate (SetLanguage lang) = do
     #bundle .= RequestInProgress lang
@@ -183,9 +136,8 @@ appUpdate (SetLanguage lang) = do
         setBundle
         (SetBundle . Left . (.body))
     io_ do
-        doc <- JSaddle.jsg @String "document"
-        html <- doc ^. JSaddle.js @_ @String "documentElement"
-        html ^. JSaddle.js2 @String @String @String "setAttribute" "lang" (Language.code lang)
+        html <- getProp "documentElement" =<< DSL.document
+        html # "setAttribute" $ ("lang" :: MisoString, Language.code @MisoString lang)
         pure ()
   where
     setBundle :: Response MisoString -> Action
@@ -194,10 +146,9 @@ appUpdate (SetBundle b) = #bundle .= ResponseReceived b
 appUpdate (SetColourScheme scheme) = do
     #colourScheme .= scheme
     io_ do
-        doc <- JSaddle.jsg @String "document"
-        html <- doc ^. JSaddle.js @_ @String "documentElement"
+        html <- getProp "documentElement" =<< DSL.document
         Property name value <- pure $ tokenAttr scheme
-        html ^. JSaddle.js2 @String "setAttribute" name value
+        html # "setAttribute" $ (name, value)
         pure ()
 appUpdate (SetCurrentSection sectionId) = #section . #current .= sectionId
 appUpdate NoOp = pure ()
@@ -258,7 +209,7 @@ appView model =
                         ]
                     ]
             , main_ =
-                [ div_ [key_ (misoShow model.section.current)] . pure . mount $ Section.section model.section
+                [ mount $ Section.section #section model.section
                 , dialog_ [textProp "closedby" "any"] [widget $ Heading Large "Dialog!"]
                 ]
             , aside = Nothing
