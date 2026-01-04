@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedLists #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Section where
@@ -5,11 +6,16 @@ module Section where
 import Control.Lens (Lens')
 import Dashi.Util
 import Data.Generics.Labels ()
+import Data.List.Extra qualified as List
+import Data.Maybe (maybeToList, fromJust)
+import Data.Sequence (Seq)
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
-import Miso
+import Miso hiding (ComponentId)
 import Miso.Html.Element (div_)
 import Miso.Html.Property (id_)
+import Miso.Router (Router (..), Token (..))
+import Miso.Util.Parser (ParserT (..))
 import Section.Avatar qualified as Avatar
 import Section.Button qualified as Button
 import Section.Checkbox qualified as Checkbox
@@ -28,10 +34,37 @@ import Section.Switch qualified as Switch
 import Section.Tabs qualified as Tabs
 import Section.TextField qualified as TextField
 import Prelude hiding (init)
+import Data.Sequence qualified as Seq
 
 data SectionId
     = Overview
-    | Avatar
+    | Foundations FoundationId
+    | Components ComponentId
+    deriving stock (Eq, Show)
+
+allSections :: Seq SectionId
+allSections =
+    mconcat
+        [ pure Overview
+        , Foundations <$> [minBound .. maxBound]
+        , Components <$> [minBound .. maxBound]
+        ]
+
+instance Enum SectionId where
+    toEnum = Seq.index allSections
+    fromEnum = fromJust . flip Seq.elemIndexL allSections
+
+instance Bounded SectionId where
+    minBound = toEnum 0
+    maxBound = toEnum . pred $ Seq.length allSections
+
+data FoundationId
+    = Tokens
+    | Accessibility
+    deriving stock (Eq, Show, Bounded, Enum)
+
+data ComponentId
+    = Avatar
     | Button
     | Checkbox
     | Form
@@ -47,7 +80,12 @@ data SectionId
     | Switch
     | Tabs
     | TextField
-    deriving stock (Eq, Show, Bounded, Enum)
+    deriving stock (Generic, Eq, Show, Bounded, Enum)
+
+instance Router SectionId where
+    fromRoute = fmap (CaptureOrPathToken . toMisoString . Text.toLower . Text.strip) . breakAll (== ' ') . Text.show
+    routeParser = Parser \_ tokens ->
+        maybeToList $ List.firstJust (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens) [minBound .. maxBound]
 
 data Model = Model
     { current :: SectionId
@@ -68,22 +106,23 @@ view :: Model -> View Model Action
 view Model{..} =
     div_ [key_ currentStr, id_ currentStr] . pure $ case current of
         Overview -> mount Overview.overview
-        Avatar -> mount Avatar.avatar
-        Button -> mount Button.button
-        Plot -> mount Plot.plot
-        Form -> mount $ Form.form #form form
-        Icon -> mount Icon.icon
-        Link -> mount Link.link
-        Message -> mount Message.message
-        Checkbox -> mount Checkbox.checkbox
-        ProgressBar -> mount ProgressBar.progressBar
-        Radio -> mount Radio.radio
-        Range -> mount Range.range
-        Select -> mount Select.select
-        Switch -> mount Switch.switch
-        Spinner -> mount Spinner.spinner
-        Tabs -> mount Tabs.tabs
-        TextField -> mount TextField.textField
+        Foundations _ -> div_ [] [text "Not there yet"]
+        Components Avatar -> mount Avatar.avatar
+        Components Button -> mount Button.button
+        Components Plot -> mount Plot.plot
+        Components Form -> mount $ Form.form #form form
+        Components Icon -> mount Icon.icon
+        Components Link -> mount Link.link
+        Components Message -> mount Message.message
+        Components Checkbox -> mount Checkbox.checkbox
+        Components ProgressBar -> mount ProgressBar.progressBar
+        Components Radio -> mount Radio.radio
+        Components Range -> mount Range.range
+        Components Select -> mount Select.select
+        Components Switch -> mount Switch.switch
+        Components Spinner -> mount Spinner.spinner
+        Components Tabs -> mount Tabs.tabs
+        Components TextField -> mount TextField.textField
   where
     currentStr :: MisoString
     currentStr = toMisoString . Text.toLower . ishow $ current

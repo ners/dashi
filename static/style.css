@@ -54,7 +54,7 @@ html, body {
       padding: var(--dashi-space-m);
       background-color: light-dark(oklch(0.98 0.004 256), oklch(0.3 0.011 264));
       box-shadow: 0 8px 9pt #1e1f2126,0 0 1px #1e1f214f;
-      &:has(> ul[hidden]) {
+      &:has(> [hidden]) {
         display: none;
       }
     }
@@ -69,13 +69,11 @@ html, body {
       }
       li {
         font-weight: 500;
-        a:hover {
-          text-decoration: underline;
-        }
-        &:not([aria-current]) {
+        &:not([aria-current]) a {
           color: var(--dashi-text-subtle);
         }
-        &[aria-current] {
+        &[aria-current] a {
+          color: inherit;
           font-weight: 700;
         }
       }
@@ -92,6 +90,9 @@ html, body {
 @media (min-width: 64rem) {
 #nav-toggle {
   display: none;
+}
+#page > nav [hidden] {
+  display: initial;
 }
 }
 

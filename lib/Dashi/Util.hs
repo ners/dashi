@@ -13,7 +13,7 @@ import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Text qualified as Text
 import GHC.Float (FFFormat (..), formatRealFloat)
-import Miso (Attribute (Styles), MisoString, fromMisoString, toMisoString)
+import Miso (Attribute (Styles), MisoString, fromMisoString, toMisoString, View (VText))
 import Miso.String (FromMisoString, ToMisoString)
 import Numeric (fromRat)
 import Prelude
@@ -70,7 +70,10 @@ breakAll f t
     ls = [l | not $ Text.null l]
 
 unpascal :: MisoString -> MisoString
-unpascal = misoStringIso %~ Text.unwords . fmap uncapitalise . breakAll isUpper
+unpascal = misoStringIso %~ Text.unwords . fmap uncapitalise . view pascalWords
+
+emptyView_ :: View model action
+emptyView_ = VText Nothing mempty
 
 emptyAttr_ :: Attribute action
 emptyAttr_ = Styles mempty

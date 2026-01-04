@@ -52,6 +52,7 @@ common common
 
   build-depends:
     base,
+    containers,
     lens,
     miso,
     text,
@@ -99,7 +100,6 @@ library
     base64,
     clay,
     colour,
-    containers,
     diagrams-lib,
     identicon,
     identicon-style-squares,
