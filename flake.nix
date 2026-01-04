@@ -148,7 +148,7 @@
               wasm-tools strip -o app.wasm app.wasm
               sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
               cd ..
-              mv static/index.html static/favicon.ico static/apple-touch-icon.png .
+              mv static/{index.html,404.html,favicon.ico,apple-touch-icon.png} .
             '';
           });
         })

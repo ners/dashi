@@ -34,7 +34,7 @@ data Background = Background Appearance InputState
     deriving stock (Eq)
 
 allBackgrounds :: Seq Background
-allBackgrounds = Seq.fromList $ Background <$> [minBound .. maxBound] <*> [minBound .. maxBound]
+allBackgrounds = Background <$> [minBound .. maxBound] <*> [minBound .. maxBound]
 
 instance Enum Background where
     toEnum = Seq.index allBackgrounds

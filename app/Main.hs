@@ -9,6 +9,7 @@ module Main where
 import Control.Applicative ((<|>))
 import Control.Lens.Operators hiding ((#))
 import Control.Monad (liftM2)
+import Control.Monad.Extra (unlessM)
 import DSL qualified
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
@@ -20,21 +21,25 @@ import Dashi.Layout.Page (Page (..))
 import Dashi.Style qualified as Style
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Colour qualified as Colour.Scheme
-import Dashi.Style.Tokens
+import Dashi.Style.Tokens hiding (Token)
 import Dashi.Style.Util (renderStyle)
 import Dashi.Util
+import Data.Bifunctor (Bifunctor (second))
+import Data.Either.Extra (eitherToMaybe)
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
-import Data.String (IsString (fromString))
+import Data.Maybe (listToMaybe, maybeToList)
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
 import Miso
-import Miso.Html.Element (a_, dialog_, img_, li_, ul_)
-import Miso.Html.Event (onChange, onClick)
+import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
+import Miso.Html.Event (onChange, onClick, onClickPrevent)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
+import Miso.Router (Router (href_, route, toURI))
+import Miso.String qualified as Miso
 import Section (SectionId)
 import Section qualified
 import Web.Font.MDI
@@ -45,7 +50,18 @@ foreign export javascript "hs_start" main :: IO ()
 #endif
 
 main :: IO ()
-main = run (startApp app)
+main = do
+    uri <- getURI
+    let updateModel :: Action -> Effect parent Model Action
+        updateModel = liftM2 (>>) traceAction appUpdate
+        model = emptyModel & either (const id) (#section . #current .~) (route uri)
+    run . startApp $
+        (component model updateModel appView)
+            { events = defaultEvents <> keyboardEvents
+            , initialAction = Just Setup
+            , styles = [Style $ renderStyle Style.style, Href "/static/style.css"]
+            , subs = [routerSub $ either (const NoOp) SetCurrentSection]
+            }
 
 instance Eq (a -> b) where
     (==) _ _ = True
@@ -100,18 +116,7 @@ data Action
     deriving stock (Show)
 
 traceAction :: Action -> Effect parent model action
-traceAction = io_ . consoleLog . fromString . ("action: " <>) . show
-
-app :: App Model Action
-app = do
-    initComponent
-        { events = defaultEvents <> keyboardEvents
-        , initialAction = Just Setup
-        , styles = [Style $ renderStyle Style.style, Href "/static/style.css"]
-        }
-  where
-    initComponent :: Component parent Model Action
-    initComponent = component emptyModel (liftM2 (>>) traceAction appUpdate) appView
+traceAction = io_ . consoleLog . ("traceAction: " <>) . misoShow
 
 getSystemColourScheme :: IO Colour.Scheme
 getSystemColourScheme =
@@ -120,6 +125,9 @@ getSystemColourScheme =
         >>= DSL.getProp "matches"
         >>= DSL.fromJSVal
         <&> maybe Colour.Scheme.Light (^. Colour.Scheme.isDark)
+
+getCurrentSection :: IO (Maybe SectionId)
+getCurrentSection = eitherToMaybe . route <$> getURI
 
 appUpdate :: Action -> Effect parent Model Action
 appUpdate Setup = do
@@ -150,7 +158,9 @@ appUpdate (SetColourScheme scheme) = do
         Property name value <- pure $ tokenAttr scheme
         html # "setAttribute" $ (name, value)
         pure ()
-appUpdate (SetCurrentSection sectionId) = #section . #current .= sectionId
+appUpdate (SetCurrentSection sectionId) = do
+    io_ . unlessM ((Just sectionId ==) <$> getCurrentSection) . pushURI . toURI $ sectionId
+    #section . #current .= sectionId
 appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
@@ -197,16 +207,12 @@ appView model =
                     ]
             , sideNav =
                 Just
-                    [ ul_
-                        [hidden_ $ not model.navOpen]
-                        [ li_
-                            [aria_ "current" "page" | sectionId == model.section.current]
-                            [ a_
-                                [onClick (SetCurrentSection sectionId)]
-                                [text . capitalise . unpascal . misoShow $ sectionId]
+                    [ div_ [hidden_ $ not model.navOpen] . pure $
+                        routesToUl
+                            model.section.current
+                            [ (s, Miso.words . misoShow $ s)
+                            | s <- [minBound .. maxBound]
                             ]
-                        | sectionId <- [minBound .. maxBound]
-                        ]
                     ]
             , main_ =
                 [ mount $ Section.section #section model.section
@@ -214,3 +220,25 @@ appView model =
                 ]
             , aside = Nothing
             }
+
+routesToUl :: SectionId -> [(SectionId, [MisoString])] -> View Model Action
+routesToUl current routes = ul_ [] $ groupToLi <$> groups
+  where
+    groups = second (fmap . second $ drop 1) <$> List.groupOnKey (listToMaybe . snd) routes
+    textLabel :: MisoString -> View Model Action
+    textLabel = text . capitalise . unpascal
+    groupToLi :: (Maybe MisoString, [(SectionId, [MisoString])]) -> View Model Action
+    groupToLi (Just label, [(r, [])]) =
+        li_
+            [aria_ "current" "page" | r == current]
+            [ a_
+                [ href_ r
+                , onClickPrevent $ SetCurrentSection r
+                ]
+                [textLabel label]
+            ]
+    groupToLi (groupLabel, group) =
+        li_ [] . mconcat $
+            [ div_ [] . pure . textLabel <$> maybeToList groupLabel
+            , pure $ routesToUl current group
+            ]
