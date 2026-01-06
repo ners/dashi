@@ -96,7 +96,6 @@ library
     Chart-diagrams,
     Color,
     JuicyPixels,
-    aeson,
     base64,
     clay,
     colour,

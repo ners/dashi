@@ -6,24 +6,24 @@ import Control.Lens (makePrisms, toListOf)
 import Control.Monad ((>=>))
 import Dashi.Components.Widget ()
 import Dashi.Style.Tokens (Appearance, Token (..))
-import Dashi.Util (fromText)
-import Data.Aeson qualified as Aeson
 import Data.List qualified as List
 import Miso
 import Miso.Html.Property (aria_, tabindex_)
+import Miso.JSON qualified as Miso
+import Miso.String qualified as Miso
 import Prelude
 
 makePrisms ''Attribute
 
-props :: [Attribute action] -> [(MisoString, Aeson.Value)]
+props :: [Attribute action] -> [(MisoString, Miso.Value)]
 props = toListOf $ traverse . _Property
 
-findProp :: MisoString -> [Attribute action] -> Maybe Aeson.Value
+findProp :: MisoString -> [Attribute action] -> Maybe Miso.Value
 findProp k = List.lookup k . props
 
 isTrueProp :: MisoString -> Attribute action -> Bool
-isTrueProp k (Property ((k ==) -> True) (Aeson.Bool True)) = True
-isTrueProp k (Property ((k ==) -> True) (Aeson.String "true")) = True
+isTrueProp k (Property ((k ==) -> True) (Miso.Bool True)) = True
+isTrueProp k (Property ((k ==) -> True) (Miso.String (Miso.toLower -> "true"))) = True
 isTrueProp _ _ = False
 
 hasTrueProp :: MisoString -> [Attribute action] -> Bool
@@ -44,7 +44,7 @@ hasRequired = hasTrueProp "required"
 tryGetId :: [Attribute action] -> Maybe MisoString
 tryGetId =
     findProp "id" >=> \case
-        Aeson.String s -> Just (fromText s)
+        Miso.String s -> Just s
         _ -> Nothing
 
 ariaBusy_ :: Bool -> Attribute action
