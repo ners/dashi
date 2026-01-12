@@ -4,13 +4,11 @@ module Section.Checkbox where
 
 import Dashi.Components.Checkbox
 import Dashi.Components.Heading
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (disabled_)
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

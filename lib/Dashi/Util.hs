@@ -5,28 +5,19 @@ module Dashi.Util where
 
 import Clay (Refinement)
 import Clay.Selector (Refinement (Refinement))
-import Control.Lens.Combinators
-import Control.Lens.Operators
+import Dashi.Prelude
 import Data.Char (isUpper, toLower, toUpper)
 import Data.Fixed (Fixed, HasResolution)
-import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Text qualified as Text
 import GHC.Float (FFFormat (..), formatRealFloat)
-import Miso (Attribute (Styles), MisoString, View (VText), fromMisoString, toMisoString)
+import Miso (Attribute (Styles), View (VText))
 import Miso.String (FromMisoString, ToMisoString)
 import Miso.String qualified as MisoString
 import Numeric (fromRat)
-import Prelude
-
-ishow :: (Show a, IsString s) => a -> s
-ishow = fromString . show
 
 fromText :: (IsString s) => Text -> s
 fromText = fromString . Text.unpack
-
-misoShow :: (Show a) => a -> MisoString
-misoShow = toMisoString . show
 
 formatFloat :: (RealFloat a) => a -> String
 formatFloat v

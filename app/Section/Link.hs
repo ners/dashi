@@ -5,12 +5,10 @@ module Section.Link where
 import Dashi.Components.Heading
 import Dashi.Components.Link
 import Dashi.Components.Util (appearance_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

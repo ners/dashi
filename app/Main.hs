@@ -7,7 +7,6 @@
 module Main where
 
 import Control.Applicative ((<|>))
-import Control.Lens.Operators hiding ((#))
 import Control.Monad (liftM2)
 import Control.Monad.Extra (unlessM)
 import DSL qualified
@@ -16,8 +15,8 @@ import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
 import Dashi.Components.Select (Select (..))
 import Dashi.Components.Util
-import Dashi.Components.Widget
 import Dashi.Layout.Page (Page (..))
+import Dashi.Prelude hiding (init, (#))
 import Dashi.Style qualified as Style
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Colour qualified as Colour.Scheme
@@ -28,8 +27,6 @@ import Data.Bifunctor (Bifunctor (second))
 import Data.Either.Extra (eitherToMaybe)
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
-import Data.Maybe (listToMaybe, maybeToList)
-import GHC.Generics (Generic)
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
@@ -42,7 +39,6 @@ import Miso.String qualified as MisoString
 import Section (SectionId)
 import Section qualified
 import Web.Font.MDI
-import Prelude hiding (init)
 
 #ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
@@ -54,8 +50,9 @@ main = do
     let updateModel :: Action -> Effect parent Model Action
         updateModel = liftM2 (>>) traceAction appUpdate
         model = emptyModel & either (const id) (#section . #current .~) (route uri)
-    run . startApp $
-        (component model updateModel appView)
+    run
+        . startApp
+        $ (component model updateModel appView)
             { events = defaultEvents <> keyboardEvents
             , initialAction = Just Setup
             , styles = [Style $ renderStyle Style.style, Href "/static/style.css"]
@@ -206,8 +203,9 @@ appView model =
                     ]
             , sideNav =
                 Just
-                    [ div_ [hidden_ $ not model.navOpen] . pure $
-                        routesToUl
+                    [ div_ [hidden_ $ not model.navOpen]
+                        . pure
+                        $ routesToUl
                             model.section.current
                             [ (s, MisoString.words . misoShow $ s)
                             | s <- [minBound .. maxBound]
@@ -237,7 +235,8 @@ routesToUl current routes = ul_ [] $ groupToLi <$> groups
                 [textLabel label]
             ]
     groupToLi (groupLabel, group) =
-        li_ [] . mconcat $
-            [ div_ [] . pure . textLabel <$> maybeToList groupLabel
-            , pure $ routesToUl current group
-            ]
+        li_ []
+            . mconcat
+            $ [ div_ [] . pure . textLabel <$> maybeToList groupLabel
+              , pure $ routesToUl current group
+              ]

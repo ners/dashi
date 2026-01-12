@@ -5,14 +5,12 @@ module Section.Select where
 import Dashi.Components.Form (FormField (..))
 import Dashi.Components.Heading
 import Dashi.Components.Select
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
 import Dashi.Util (uncapitalise)
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.String qualified as MisoString
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

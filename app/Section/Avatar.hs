@@ -5,14 +5,11 @@ module Section.Avatar where
 import Dashi.Components.Avatar
 import Dashi.Components.Avatar qualified as Avatar
 import Dashi.Components.Heading
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
-import Data.Maybe (isJust)
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

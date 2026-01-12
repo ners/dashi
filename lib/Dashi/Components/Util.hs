@@ -2,16 +2,14 @@
 
 module Dashi.Components.Util where
 
-import Control.Lens (makePrisms, toListOf)
 import Control.Monad ((>=>))
-import Dashi.Components.Widget ()
+import Dashi.Prelude
 import Dashi.Style.Tokens (Appearance, Token (..))
 import Data.List qualified as List
 import Miso
 import Miso.Html.Property (aria_, tabindex_)
 import Miso.JSON qualified as JSON
 import Miso.String qualified as MisoString
-import Prelude
 
 makePrisms ''Attribute
 

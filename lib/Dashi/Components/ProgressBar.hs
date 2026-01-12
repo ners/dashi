@@ -5,20 +5,15 @@
 module Dashi.Components.ProgressBar where
 
 import Clay hiding (Background, Color, Value, action, fullWidth, max, size, value, var)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (max, (&))
 import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util (backgroundColor', borderRadiusAll', fullWidth, var, (~:))
-import Data.Foldable (for_)
-import Data.Functor ((<&>))
 import Data.List qualified as List
-import Data.Maybe (catMaybes)
-import Data.String (fromString)
 import Miso
 import Miso.Html.Element (progress_)
 import Miso.Html.Property (max_, value_)
-import Prelude hiding (max)
 
 data Background = Background
     deriving stock (Eq, Bounded, Enum)
@@ -35,11 +30,13 @@ newtype Progress = Progress Appearance
 
 instance Token Progress where
     tokenName (Progress appearance) =
-        fromString . List.intercalate "-" . catMaybes $
-            [ Just "progress"
-            , Just "color"
-            , nonDefaultTokenName appearance
-            ]
+        fromString
+            . List.intercalate "-"
+            . catMaybes
+            $ [ Just "progress"
+              , Just "color"
+              , nonDefaultTokenName appearance
+              ]
 
 instance ValueToken Progress where
     type ValueType Progress = LightDark (Color (Alpha OKLCH) Double)

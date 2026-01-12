@@ -5,14 +5,12 @@ module Section.TextField where
 import Dashi.Components.Heading
 import Dashi.Components.TextField
 import Dashi.Components.Util (appearance_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
 import Dashi.Util
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (form_, p_, section_)
 import Miso.Html.Property (placeholder_)
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

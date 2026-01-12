@@ -3,7 +3,7 @@
 module Dashi.Components.Link where
 
 import Clay hiding (Color, action, href, label)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding ((&))
 import Dashi.Style.Colour (LightDark)
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
@@ -11,10 +11,8 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util (color', pressable)
 import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
-import Miso
 import Miso.Html.Element (a_)
 import Miso.Html.Property (href_)
-import Prelude
 
 data Text = Text
     deriving stock (Eq, Bounded, Enum)

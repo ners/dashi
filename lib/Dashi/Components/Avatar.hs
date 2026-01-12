@@ -5,18 +5,13 @@ module Dashi.Components.Avatar where
 import Clay hiding (Content, action, content, img, shape, size, span_, transparent, url)
 import Clay qualified
 import Dashi.Components.Icon ()
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (has, rem, span, (#), (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Foldable (for_)
-import Data.Maybe (maybeToList)
-import Data.Semigroup (sconcat)
-import Miso hiding (Image, (#))
 import Miso.Html.Element (div_, img_, span_)
 import Miso.Html.Property (class_, src_)
 import Web.Font.MDI (MDI)
-import Prelude hiding (rem, span)
 
 data Shape
     = Circle

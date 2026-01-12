@@ -2,16 +2,13 @@
 
 module Section.Range where
 
-import Control.Lens.Operators ((.=))
 import Dashi.Components.Heading
 import Dashi.Components.Range
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
 import Data.Generics.Labels ()
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (p_, section_)
-import Prelude
 
 newtype Model = Model {value :: Int}
     deriving stock (Generic, Eq, Show)

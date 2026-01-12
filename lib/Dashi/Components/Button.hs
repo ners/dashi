@@ -9,26 +9,19 @@ import Control.Monad (when)
 import Dashi.Components.Icon ()
 import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (none, transform, (#), (&))
 import Dashi.Style.Colour (LightDark, complementaryLightDark)
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Foldable (for_)
-import Data.Functor ((<&>))
 import Data.List qualified as List
-import Data.Maybe (catMaybes, fromJust)
-import Data.Semigroup (sconcat)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
-import Data.String (fromString)
 import GHC.IsList (IsList (fromList))
 import Graphics.Color.Model (Alpha, setAlpha)
 import Graphics.Color.Space.OKLAB.LCH
-import Miso hiding (view, (#))
 import Miso.Html.Element (button_, label_)
-import Prelude
 
 data Background = Background Appearance InputState
     deriving stock (Eq)
@@ -46,11 +39,13 @@ instance Bounded Background where
 
 instance Token Background where
     tokenName (Background appearance state) =
-        fromString . List.intercalate "-" . catMaybes $
-            [ Just "button-background"
-            , nonDefaultTokenName appearance
-            , nonDefaultTokenName state
-            ]
+        fromString
+            . List.intercalate "-"
+            . catMaybes
+            $ [ Just "button-background"
+              , nonDefaultTokenName appearance
+              , nonDefaultTokenName state
+              ]
 
 instance ValueToken Background where
     type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
@@ -84,8 +79,9 @@ data Button model action = Button
 
 instance Widget (Button model action) model action where
     widget' attrs Button{..} =
-        button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy]) $
-            label_ [] label : [widget Spinner | isBusy]
+        button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy])
+            $ label_ [] label
+            : [widget Spinner | isBusy]
       where
         isBusy = hasAriaBusy attrs
 
@@ -95,8 +91,9 @@ instance Widget (Button model action) model action where
             pressable
             userSelect none
             position relative
-            boxShadow . fromList $
-                [bsInset . bsColor (colorToken Colour.Border) $ shadowWithBlur nil nil (var "border-width" [])]
+            boxShadow
+                . fromList
+                $ [bsInset . bsColor (colorToken Colour.Border) $ shadowWithBlur nil nil (var "border-width" [])]
             color' $ Colour.Text Subtle
             byToken Subtle & do
                 "box-shadow" -: "none"

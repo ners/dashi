@@ -2,17 +2,13 @@
 
 module Section.Tabs where
 
-import Control.Lens ((.=))
 import Dashi.Components.Heading
 import Dashi.Components.Tabs
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
-import Dashi.Util (misoShow)
 import Data.Generics.Labels ()
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
-import Prelude
 
 newtype Tab = Tab Int
     deriving stock (Eq, Show)

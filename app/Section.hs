@@ -3,14 +3,12 @@
 
 module Section where
 
-import Control.Lens (Lens')
+import Dashi.Prelude hiding (init)
 import Dashi.Util
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
-import Data.Maybe (fromJust, maybeToList)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
-import GHC.Generics (Generic)
 import Miso hiding (ComponentId)
 import Miso.Html.Element (div_)
 import Miso.Html.Property (id_)
@@ -35,7 +33,6 @@ import Section.Spinner qualified as Spinner
 import Section.Switch qualified as Switch
 import Section.Tabs qualified as Tabs
 import Section.TextField qualified as TextField
-import Prelude hiding (init)
 
 data SectionId
     = Overview

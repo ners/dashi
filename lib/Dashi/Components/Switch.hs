@@ -5,14 +5,12 @@ module Dashi.Components.Switch where
 
 import Clay hiding (label, name, selected, span_, type_)
 import Dashi.Components.Util (ariaRole_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding ((#), (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Miso hiding ((#))
 import Miso.Html.Element (input_, label_, span_)
 import Miso.Html.Property (name_, selected_, type_)
-import Prelude
 
 data Switch model action = Switch
     { name :: MisoString

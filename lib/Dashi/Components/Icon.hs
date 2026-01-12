@@ -3,15 +3,13 @@
 module Dashi.Components.Icon where
 
 import Clay hiding (action, span_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (none)
 import Dashi.Style.Util ((~:))
 import Data.Text qualified as Text
-import Miso
 import Miso.Html (span_)
 import Miso.Html.Property (class_)
 import Miso.String qualified as MisoString
 import Web.Font.MDI (MDI, mdiChar)
-import Prelude
 
 iconFont :: Css
 iconFont = "font" ~: "normal normal normal 1.5em/1 'Material Design Icons'"

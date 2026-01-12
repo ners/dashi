@@ -6,18 +6,13 @@ module Dashi.Components.Message where
 import Clay hiding (Background, icon, size, span_, title)
 import Dashi.Components.Icon (iconContent)
 import Dashi.Components.Util (selectable_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (has, none, (#), (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Foldable (for_)
-import Data.Maybe (catMaybes)
-import Data.Semigroup (sconcat)
-import Miso hiding ((#))
 import Miso.Html.Element (a_, div_, span_)
 import Miso.Html.Property (class_)
 import Web.Font.MDI (MDI (MdiAlert, MdiAlertRhombus, MdiCheckCircle, MdiHelpCircle, MdiInformation))
-import Prelude
 
 data MessageSize
     = InlineMessage
@@ -39,11 +34,12 @@ data Message = Message
 
 instance Widget Message model action where
     widget' attrs Message{..} =
-        tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs) . catMaybes $
-            [ pure $ span_ [class_ "mdi"] []
-            , span_ [class_ "title"] . pure . text <$> title
-            , span_ [class_ "secondary"] . pure . text <$> secondary
-            ]
+        tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs)
+            . catMaybes
+            $ [ pure $ span_ [class_ "mdi"] []
+              , span_ [class_ "title"] . pure . text <$> title
+              , span_ [class_ "secondary"] . pure . text <$> secondary
+              ]
       where
         tag
             | size == InlineMessage = a_ . (selectable_ :)

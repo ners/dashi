@@ -53,6 +53,7 @@ common common
   build-depends:
     base,
     containers,
+    generic-lens,
     lens,
     miso,
     web-font-mdi,
@@ -140,7 +141,6 @@ executable dashi
     Section.TextField
   build-depends:
     dashi,
-    generic-lens,
     extra,
     fluent-bundle,
     fluent-syntax,

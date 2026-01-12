@@ -4,14 +4,12 @@ module Section.ProgressBar where
 
 import Dashi.Components.Heading
 import Dashi.Components.ProgressBar
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.String qualified as MisoString
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

@@ -4,14 +4,10 @@ module Dashi.Components.Heading where
 
 import Clay hiding (element, size)
 import Dashi.Components.Icon ()
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (element)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Foldable (for_)
-import Data.Semigroup (Semigroup (sconcat))
-import Miso
 import Miso.Html.Element (h1_, h2_, h3_, h4_, h5_)
-import Prelude
 
 selector :: SizeToken -> Selector
 selector XSmall = h5

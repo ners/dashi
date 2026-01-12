@@ -1,10 +1,9 @@
 module Dashi.Components.Spinner where
 
-import Dashi.Components.Widget
+import Dashi.Prelude
 import Miso.Html.Property
 import Miso.Svg.Element
 import Miso.Svg.Property
-import Prelude
 
 data Spinner = Spinner
 

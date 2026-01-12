@@ -1,9 +1,8 @@
 module DSL (module DSL, module Miso.DSL) where
 
-import Data.Foldable (for_)
+import Dashi.Prelude hiding (head, (#))
 import Miso.DSL
 import Miso.Types
-import Prelude hiding (head)
 
 call' :: (ToArgs args, ToObject obj) => MisoString -> args -> obj -> IO JSVal
 call' f a o = o # f $ a

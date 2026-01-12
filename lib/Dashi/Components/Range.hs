@@ -7,21 +7,17 @@
 module Dashi.Components.Range where
 
 import Clay hiding (Background, Color, Value, action, clamp, div, fullWidth, max, rem, round, size, type_, value, var)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (max, none, (#))
 import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Fixed (Milli)
-import Data.Functor ((<&>))
 import Data.Ord (clamp)
-import Data.Semigroup (sconcat)
-import Miso hiding ((#))
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (input_)
 import Miso.Html.Event qualified as Html
 import Miso.Html.Property (max_, min_, step_, type_, value_)
-import Prelude hiding (max)
 
 data Background = Background
     deriving stock (Eq, Bounded, Enum)
@@ -63,15 +59,15 @@ data Range action = Range
 
 instance Widget (Range action) model action where
     widget' attrs Range{..} =
-        input_ $
-            type_ "range"
-                : min_ (toMisoString roundedDownMinValue)
-                : max_ (toMisoString roundedUpMaxValue)
-                : step_ (toMisoString step)
-                : value_ (toMisoString displayValue)
-                : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
-                : Html.onInput (onChange . clamp (min, max) . fromMisoString)
-                : attrs
+        input_
+            $ type_ "range"
+            : min_ (toMisoString roundedDownMinValue)
+            : max_ (toMisoString roundedUpMaxValue)
+            : step_ (toMisoString step)
+            : value_ (toMisoString displayValue)
+            : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
+            : Html.onInput (onChange . clamp (min, max) . fromMisoString)
+            : attrs
       where
         roundedDownMinValue
             | min `rem` step == 0 = min

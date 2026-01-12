@@ -6,15 +6,13 @@ import Dashi.Components.Button
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
 import Dashi.Components.Util
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
 import Dashi.Util
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_, disabled_)
 import Web.Font.MDI
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)
@@ -32,30 +30,31 @@ update NoOp = pure ()
 
 view :: Model -> View Model Action
 view Model =
-    section_ [] . mconcat $
-        [ pure . widget $ Heading Large "Button"
-        , pure . p_ [] . pure . text $ "A button triggers an event or action. They let users know what will happen next."
-        , mconcat
-            [ [widget . Heading Medium $ appearanceStr]
-                <> description appearance
-                <> [ div_
-                        [class_ "grid"]
-                        [ div_ [] . pure $ widget' @(Button Model Action) [attr] Button{size = Button.DefaultSize, appearance, label = [widget (iconFor appearance) | hasIcon] <> [text appearanceStr]}
-                        | attr <- [emptyAttr_, ariaBusy_ True, disabled_]
-                        , hasIcon <- [False, True]
-                        ]
-                   ]
-            | appearance <- [minBound .. maxBound]
-            , let appearanceStr = capitalise . tokenName $ appearance
-                  iconFor Default = MdiStar
-                  iconFor Primary = MdiSendVariant
-                  iconFor Subtle = MdiArrowLeft
-                  iconFor Success = MdiCheck
-                  iconFor Warning = MdiSecurity
-                  iconFor Danger = MdiTrashCan
-                  iconFor Discovery = MdiCreation
-            ]
-        ]
+    section_ []
+        . mconcat
+        $ [ pure . widget $ Heading Large "Button"
+          , pure . p_ [] . pure . text $ "A button triggers an event or action. They let users know what will happen next."
+          , mconcat
+                [ [widget . Heading Medium $ appearanceStr]
+                    <> description appearance
+                    <> [ div_
+                            [class_ "grid"]
+                            [ div_ [] . pure $ widget' @(Button Model Action) [attr] Button{size = Button.DefaultSize, appearance, label = [widget (iconFor appearance) | hasIcon] <> [text appearanceStr]}
+                            | attr <- [emptyAttr_, ariaBusy_ True, disabled_]
+                            , hasIcon <- [False, True]
+                            ]
+                       ]
+                | appearance <- [minBound .. maxBound]
+                , let appearanceStr = capitalise . tokenName $ appearance
+                      iconFor Default = MdiStar
+                      iconFor Primary = MdiSendVariant
+                      iconFor Subtle = MdiArrowLeft
+                      iconFor Success = MdiCheck
+                      iconFor Warning = MdiSecurity
+                      iconFor Danger = MdiTrashCan
+                      iconFor Discovery = MdiCreation
+                ]
+          ]
 
 description :: Appearance -> [View Model Action]
 description =

@@ -7,14 +7,11 @@ module Dashi.Components.Radio where
 import Clay hiding (fullWidth, label, legend, name, option, selected, span_, type_)
 import Dashi.Components.Icon (iconContent)
 import Dashi.Components.Util (ariaRole_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding ((#), (&))
 import Dashi.Style.Util
-import Data.Functor ((<&>))
-import Miso (MisoString, View)
 import Miso.Html.Element (fieldset_, input_, label_, span_)
 import Miso.Html.Property (name_, selected_, type_)
 import Web.Font.MDI (MDI (MdiRadioboxBlank, MdiRadioboxMarked))
-import Prelude
 
 data Radio model action = Radio
     { name :: MisoString
@@ -45,8 +42,9 @@ data RadioGroup o model action = RadioGroup
 
 instance (Eq a) => Widget (RadioGroup a model action) model action where
     widget' attrs RadioGroup{..} =
-        fieldset_ [ariaRole_ "radiogroup"] $
-            options <&> \o ->
+        fieldset_ [ariaRole_ "radiogroup"]
+            $ options
+            <&> \o ->
                 widget'
                     attrs
                     Radio

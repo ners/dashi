@@ -4,12 +4,10 @@ module Section.Spinner where
 
 import Dashi.Components.Heading
 import Dashi.Components.Spinner
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
-import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (p_, section_)
-import Prelude
 
 data Model = Model
     deriving stock (Generic, Eq, Show)

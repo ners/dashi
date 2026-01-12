@@ -5,15 +5,13 @@ module Dashi.Components.Tabs where
 
 import Clay hiding (label, name, selected, span_, type_)
 import Dashi.Components.Util (ariaRole_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (none, (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Miso
 import Miso.Html.Element (li_, ul_)
 import Miso.Html.Event (onClick)
 import Miso.Html.Property (aria_, class_, tabindex_)
-import Prelude
 
 data Tabs t model action = Tabs
     { tabs :: [t]

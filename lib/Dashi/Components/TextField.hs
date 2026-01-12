@@ -5,21 +5,17 @@
 module Dashi.Components.TextField where
 
 import Clay hiding (Background, Color, Number, fullWidth, label, name, span_, type_, value, var)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding ((#), (&))
 import Dashi.Style.Colour (LightDark)
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Functor ((<&>))
-import Data.Maybe (maybeToList)
 import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
-import Miso hiding ((#))
 import Miso.Html.Element (input_, textarea_)
 import Miso.Html.Event qualified as Html
 import Miso.Html.Property (name_, type_, value_)
-import Prelude
 
 newtype Border = Border InputState
     deriving newtype (Eq, Bounded, Enum)

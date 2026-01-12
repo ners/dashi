@@ -8,14 +8,12 @@ import Clay qualified hiding (not)
 import Dashi.Components.Checkbox (CheckboxGroup)
 import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
 import Dashi.Components.Radio (RadioGroup)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (has, (#), (&), (**))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Miso (Attribute, MisoString, View)
 import Miso.Html.Element (fieldset_, label_, legend_, span_)
 import Miso.Html.Property (class_, required_)
-import Prelude hiding ((**))
 
 data FormField w model action = FormField
     { legend :: [View model action]
@@ -29,14 +27,16 @@ viewMessage (appearance, Just -> secondary) = widget Message{size = FormMessage,
 
 viewWithLegend :: (Widget w model action) => [Attribute action] -> FormField w model action -> View model action
 viewWithLegend attrs FormField{..} =
-    fieldset_ [class_ "form-field"] $
-        [legend_ [] legend | not . null $ legend] <> [widget' ([required_ True | required] <> attrs) field] <> (viewMessage <$> messages)
+    fieldset_ [class_ "form-field"]
+        $ [legend_ [] legend | not . null $ legend]
+        <> [widget' ([required_ True | required] <> attrs) field]
+        <> (viewMessage <$> messages)
 
 viewWithLabel :: (Widget w model action) => [Attribute action] -> FormField w model action -> View model action
 viewWithLabel attrs FormField{..} =
-    fieldset_ [class_ "form-field"] $
-        label_ [] ([span_ [class_ "legend"] legend | not . null $ legend] <> [widget' ([required_ True | required] <> attrs) field])
-            : (viewMessage <$> messages)
+    fieldset_ [class_ "form-field"]
+        $ label_ [] ([span_ [class_ "legend"] legend | not . null $ legend] <> [widget' ([required_ True | required] <> attrs) field])
+        : (viewMessage <$> messages)
 
 instance (Widget w model action) => Widget (FormField w model action) model action where
     widget' = viewWithLabel

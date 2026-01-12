@@ -8,20 +8,17 @@ import Clay hiding (Color, fullWidth, label, legend, name, option, selected, spa
 import Clay qualified
 import Dashi.Components.Icon (iconContent, iconFont)
 import Dashi.Components.Util (ariaRole_)
-import Dashi.Components.Widget
+import Dashi.Prelude hiding (has, (#), (&), (|>))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Coerce (coerce)
-import Data.Functor ((<&>))
-import Data.Semigroup (sconcat)
 import GHC.IsList (fromList)
-import Miso (Checked (Checked), MisoString, View)
+import Miso (Checked (Checked))
 import Miso.Html.Element (fieldset_, input_, label_, span_)
 import Miso.Html.Event qualified as Html
 import Miso.Html.Property (checked_, name_, type_)
 import Web.Font.MDI (MDI (MdiCheckboxBlankOutline, MdiCheckboxMarked))
-import Prelude
 
 data Checkbox model action = Checkbox
     { name :: MisoString
@@ -66,8 +63,9 @@ data CheckboxGroup o model action = CheckboxGroup
 
 instance (Eq a) => Widget (CheckboxGroup a model action) model action where
     widget' attrs CheckboxGroup{..} =
-        fieldset_ [ariaRole_ "group"] $
-            options <&> \o ->
+        fieldset_ [ariaRole_ "group"]
+            $ options
+            <&> \o ->
                 widget'
                     attrs
                     Checkbox
