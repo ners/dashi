@@ -130,11 +130,11 @@
     "miso": {
       "flake": false,
       "locked": {
-        "lastModified": 1768179489,
-        "narHash": "sha256-ni6+c8kwW/tRTrBCJux9YjLylR8gbFZKQF5xUcTLCvM=",
+        "lastModified": 1768238857,
+        "narHash": "sha256-p+ja2U95SRQQ4VAkbZK0SfOiDwSCNj0NUTK977q1Hd4=",
         "owner": "haskell-miso",
         "repo": "miso",
-        "rev": "ce25345272437110aea40d348f92929bbcd3ea4d",
+        "rev": "2d285b096061c5291155dee0b3a7d4e3cebd96d3",
         "type": "github"
       },
       "original": {
@@ -282,11 +282,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1768154603,
-        "narHash": "sha256-1r+qA5AkkjE9jmc6U+/LzJ6Dx2YrQbBnOSyxHhqK2ZE=",
+        "lastModified": 1768292899,
+        "narHash": "sha256-7ZVUVRWn1Uvq51dEIItnUIIhAevQjqB5PRwXitEfKIk=",
         "owner": "ners",
         "repo": "web-font-mdi",
-        "rev": "b7c8a6542946c624d34b62d65359643c612d0c89",
+        "rev": "7cb587ca67f1ccbf77153a986ca2a44331b0e779",
         "type": "github"
       },
       "original": {

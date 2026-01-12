@@ -24,7 +24,7 @@ import Data.Semigroup (Semigroup (sconcat))
 import Data.String (IsString (fromString))
 import GHC.Generics (Generic)
 import Miso.String (MisoString, fromMisoString, fromMisoStringEither, toMisoString)
-import Miso.Types (Attribute, View, text)
+import Miso.Types (Attribute, View, text, textRaw)
 import Prelude
 
 ishow :: (Show a, IsString s) => a -> s
