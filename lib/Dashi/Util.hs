@@ -15,12 +15,9 @@ import Data.Text qualified as Text
 import GHC.Float (FFFormat (..), formatRealFloat)
 import Miso (Attribute (Styles), MisoString, View (VText), fromMisoString, toMisoString)
 import Miso.String (FromMisoString, ToMisoString)
+import Miso.String qualified as MisoString
 import Numeric (fromRat)
 import Prelude
-#ifdef WASM
-import Miso.String (JSString)
-import Miso.String qualified as JSString
-#endif
 
 ishow :: (Show a, IsString s) => a -> s
 ishow = fromString . show
@@ -29,7 +26,7 @@ fromText :: (IsString s) => Text -> s
 fromText = fromString . Text.unpack
 
 misoShow :: (Show a) => a -> MisoString
-misoShow = toMisoString . Text.show
+misoShow = toMisoString . show
 
 formatFloat :: (RealFloat a) => a -> String
 formatFloat v
@@ -44,9 +41,9 @@ instance (HasResolution k) => ToMisoString (Fixed k) where
 instance ToMisoString Rational where
     toMisoString = toMisoString . formatFloat @Double . fromRat
 
-#ifdef WASM
-instance Cons JSString JSString Char Char where
-    _Cons = prism' (uncurry JSString.cons) JSString.uncons
+#if defined(GHCJS_BROWSER) || defined(WASM)
+instance Cons MisoString MisoString Char Char where
+    _Cons = prism' (uncurry MisoString.cons) MisoString.uncons
 #endif
 
 capitalise :: (Cons s s Char Char) => s -> s
@@ -58,19 +55,19 @@ uncapitalise = _head %~ toLower
 misoStringIso :: (FromMisoString a, ToMisoString a) => Iso' MisoString a
 misoStringIso = iso fromMisoString toMisoString
 
-pascalWords :: Iso' Text [Text]
+pascalWords :: Iso' MisoString [MisoString]
 pascalWords = iso (breakAll isUpper) (mconcat . fmap capitalise)
 
-breakAll :: (Char -> Bool) -> Text -> [Text]
+breakAll :: (Char -> Bool) -> MisoString -> [MisoString]
 breakAll f t
-    | Just (c, cs) <- Text.uncons r = ls <> (breakAll f cs & _head %~ Text.cons c)
+    | Just (c, cs) <- MisoString.uncons r = ls <> (breakAll f cs & _head %~ MisoString.cons c)
     | otherwise = ls
   where
-    (l, r) = Text.break f t
-    ls = [l | not $ Text.null l]
+    (l, r) = MisoString.break f t
+    ls = [l | not $ MisoString.null l]
 
 unpascal :: MisoString -> MisoString
-unpascal = misoStringIso %~ Text.unwords . fmap uncapitalise . view pascalWords
+unpascal = MisoString.unwords . fmap uncapitalise . view pascalWords
 
 emptyView_ :: View model action
 emptyView_ = VText Nothing mempty

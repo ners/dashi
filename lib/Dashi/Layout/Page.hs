@@ -11,7 +11,7 @@ import Data.List qualified as List
 import Data.Maybe (catMaybes)
 import Miso (View)
 import Miso.Html.Element (aside_, div_, header_, nav_)
-import Miso.Html.Element qualified as Miso
+import Miso.Html.Element qualified as Html
 import Miso.Html.Property (id_)
 import Prelude hiding (all, rem)
 
@@ -28,7 +28,7 @@ instance Widget (Page model action) model action where
         div_ (id_ "page" : attrs) . catMaybes $
             [ header_ [] <$> topBar
             , nav_ [] <$> sideNav
-            , pure $ Miso.main_ [] main_
+            , pure $ Html.main_ [] main_
             , aside_ [] <$> aside
             ]
     style = do

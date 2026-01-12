@@ -17,11 +17,11 @@ jobs:
           cache: haskell
           token: ${{ secrets.ATTIC_TOKEN }}
       - name: Nix build
-        run: nix build --accept-flake-config .#wasm
+        run: nix build --accept-flake-config .
       - uses: actions/upload-pages-artifact@v4
         id: upload
         with:
-          path: result/
+          path: result/dashi-wasm-dist/
   publish:
     needs: build
     permissions:

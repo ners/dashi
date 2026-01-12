@@ -19,7 +19,7 @@ import Data.Semigroup (sconcat)
 import Miso hiding ((#))
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (input_)
-import Miso.Html.Event qualified as Miso
+import Miso.Html.Event qualified as Html
 import Miso.Html.Property (max_, min_, step_, type_, value_)
 import Prelude hiding (max)
 
@@ -70,7 +70,7 @@ instance Widget (Range action) model action where
                 : step_ (toMisoString step)
                 : value_ (toMisoString displayValue)
                 : styleInline_ ("--progress:" <> toMisoString roundedPercentage <> "%")
-                : Miso.onInput (onChange . clamp (min, max) . fromMisoString)
+                : Html.onInput (onChange . clamp (min, max) . fromMisoString)
                 : attrs
       where
         roundedDownMinValue

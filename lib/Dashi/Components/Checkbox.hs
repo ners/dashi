@@ -18,7 +18,7 @@ import Data.Semigroup (sconcat)
 import GHC.IsList (fromList)
 import Miso (Checked (Checked), MisoString, View)
 import Miso.Html.Element (fieldset_, input_, label_, span_)
-import Miso.Html.Event qualified as Miso
+import Miso.Html.Event qualified as Html
 import Miso.Html.Property (checked_, name_, type_)
 import Web.Font.MDI (MDI (MdiCheckboxBlankOutline, MdiCheckboxMarked))
 import Prelude
@@ -34,7 +34,7 @@ instance Widget (Checkbox model action) model action where
     widget' attrs Checkbox{..} =
         label_
             []
-            [ input_ $ type_ "checkbox" : name_ name : Miso.onChecked (onChecked . coerce) : checked_ selected : attrs
+            [ input_ $ type_ "checkbox" : name_ name : Html.onChecked (onChecked . coerce) : checked_ selected : attrs
             , span_ [] label
             ]
     style = do

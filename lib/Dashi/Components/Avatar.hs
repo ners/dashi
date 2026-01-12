@@ -4,23 +4,14 @@ module Dashi.Components.Avatar where
 
 import Clay hiding (Content, action, content, img, shape, size, span_, transparent, url)
 import Clay qualified
-import Codec.Picture qualified as Juicy
-import Codec.Picture.Types qualified as Juicy
 import Dashi.Components.Icon ()
 import Dashi.Components.Widget
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Base64.Types qualified as Base64
-import Data.ByteString.Lazy.Base64 qualified as LazyByteString
-import Data.Digest.Pure.MD5 (md5, md5DigestBytes)
 import Data.Foldable (for_)
-import Data.Maybe (fromMaybe, maybeToList)
-import Data.Proxy (Proxy (Proxy))
+import Data.Maybe (maybeToList)
 import Data.Semigroup (sconcat)
-import Graphics.Identicon (renderIdenticon)
-import Graphics.Identicon.Styles.Squares (Squares)
-import Graphics.Identicon.Styles.Squares qualified as Identicon
 import Miso hiding (Image, (#))
 import Miso.Html.Element (div_, img_, span_)
 import Miso.Html.Property (class_, src_)
@@ -40,7 +31,6 @@ instance Token Shape where
 
 data Content
     = Image MisoString
-    | Identicon MisoString
     | Icon MDI
     | Initials MisoString
 
@@ -56,45 +46,12 @@ instance Widget Avatar model action where
             (class_ "avatar" : tokenAttr shape : tokenAttr size : attrs)
             [ case content of
                 Image url -> image url
-                Identicon identity -> identicon identity
                 Icon mdi -> widget mdi
                 Initials str -> text str
             ]
       where
         image :: MisoString -> View model action
         image = img_ . pure . src_
-        identicon :: MisoString -> View model action
-        identicon =
-            let
-                w, h, pad :: Int
-                w = 100
-                h = 100
-                pad = 25
-                unpad = flip (-) pad
-                transparent = Juicy.PixelRGBA8 0 0 0 0
-             in
-                image
-                    . toMisoString
-                    . ("data:image/png;base64," <>)
-                    . Base64.extractBase64
-                    . LazyByteString.encodeBase64
-                    . Juicy.encodePng
-                    . ( \img ->
-                            Juicy.generateImage
-                                ( \(unpad -> x) (unpad -> y) ->
-                                    case Juicy.pixelAt img x y of
-                                        _ | x < 0 || x >= w || y < 0 || y >= h -> transparent
-                                        Juicy.PixelRGB8 255 255 255 -> transparent
-                                        pixel -> Juicy.promotePixel pixel
-                                )
-                                (w + 2 * pad)
-                                (h + 2 * pad)
-                      )
-                    . fromMaybe (Juicy.generateImage (\_ _ -> Juicy.PixelRGB8 255 0 0) w h)
-                    . renderIdenticon (Proxy @(Squares 2)) (Identicon.squares (Proxy @2)) w h
-                    . md5DigestBytes
-                    . md5
-                    . fromMisoString
     style =
         ".avatar" ? do
             "image-rendering" -: "pixelated"

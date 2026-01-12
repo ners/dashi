@@ -2,17 +2,16 @@
 
 module Section.Select where
 
-import Control.Lens.Operators ((%~))
 import Dashi.Components.Form (FormField (..))
 import Dashi.Components.Heading
 import Dashi.Components.Select
 import Dashi.Components.Widget
 import Dashi.Style.Tokens
-import Dashi.Util (misoStringIso, uncapitalise)
-import Data.Text qualified as Text
+import Dashi.Util (uncapitalise)
 import GHC.Generics (Generic)
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
+import Miso.String qualified as MisoString
 import Prelude
 
 data Model = Model
@@ -46,7 +45,7 @@ view Model =
                             { name = "select"
                             , options = ["Africa", "Asia", "Europe", "North America", "South America", "Antarctica", "Australia"]
                             , selected = const False
-                            , value = misoStringIso %~ Text.intercalate "-" . fmap uncapitalise . Text.words
+                            , value = MisoString.intercalate "-" . fmap uncapitalise . MisoString.words
                             , label = pure . text
                             }
                     , messages = []

@@ -55,7 +55,6 @@ common common
     containers,
     lens,
     miso,
-    text,
     web-font-mdi,
 
 library
@@ -66,14 +65,12 @@ library
     Dashi.Components.ActionBar
     Dashi.Components.Avatar
     Dashi.Components.Button
-    Dashi.Components.Chart
     Dashi.Components.Checkbox
     Dashi.Components.Form
     Dashi.Components.Heading
     Dashi.Components.Icon
     Dashi.Components.Link
     Dashi.Components.Message
-    Dashi.Components.Plot
     Dashi.Components.ProgressBar
     Dashi.Components.Radio
     Dashi.Components.Range
@@ -85,6 +82,7 @@ library
     Dashi.Components.Util
     Dashi.Components.Widget
     Dashi.Layout.Page
+    Dashi.Prelude
     Dashi.Style
     Dashi.Style.Colour
     Dashi.Style.Root
@@ -92,33 +90,29 @@ library
     Dashi.Style.Util
     Dashi.Util
   build-depends:
-    Chart,
-    Chart-diagrams,
     Color,
-    JuicyPixels,
-    base64,
     clay,
-    colour,
-    diagrams-lib,
-    identicon,
-    identicon-style-squares,
-    miso-diagrams,
-    plots,
-    pureMD5,
+    text,
 
 executable dashi
   import: common
+  cpp-options: -O2
 
-  if arch(wasm32)
+  if impl(ghcjs) || arch(javascript)
+    cpp-options:
+      -DGHCJS_BROWSER
+    ld-options:
+      -sEXPORTED_RUNTIME_METHODS=HEAP8
+  elif arch(wasm32)
+    cpp-options:
+      -DWASM
     ghc-options:
       -no-hs-main
       -optl-mexec-model=reactor
       "-optl-Wl,--export=hs_start"
+  else
     cpp-options:
-      -DWASM
-  if arch(javascript)
-     ld-options:
-       -sEXPORTED_RUNTIME_METHODS=HEAP8
+      -DVANILLA
 
   hs-source-dirs: app
   main-is: Main.hs
@@ -136,7 +130,6 @@ executable dashi
     Section.Link
     Section.Message
     Section.Overview
-    Section.Plot
     Section.ProgressBar
     Section.Radio
     Section.Range

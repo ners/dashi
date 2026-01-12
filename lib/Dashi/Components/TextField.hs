@@ -17,7 +17,7 @@ import Graphics.Color.Space (Alpha)
 import Graphics.Color.Space.OKLAB.LCH
 import Miso hiding ((#))
 import Miso.Html.Element (input_, textarea_)
-import Miso.Html.Event qualified as Miso
+import Miso.Html.Event qualified as Html
 import Miso.Html.Property (name_, type_, value_)
 import Prelude
 
@@ -69,7 +69,7 @@ instance Widget (TextField action) model action where
         | type' == MultiLine = textarea_ attrs' . fmap text . maybeToList $ value
         | otherwise = input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
       where
-        attrs' = name_ name : Miso.onInput onChange : attrs
+        attrs' = name_ name : Html.onInput onChange : attrs
     style = do
         ":root" ? tokenDecl @Background
         (Clay.select <> textarea <> input # isOneOfAll' @Type) ? do

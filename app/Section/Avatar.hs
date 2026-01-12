@@ -41,10 +41,10 @@ view Model =
                 [ ("ueli", "Ueli Wyss", "UW")
                 , ("heidi", "Heidi Müller", "HM")
                 ]
-            , content <- [Avatar.Identicon username, Avatar.Initials initials]
+            , content <- [Avatar.Initials initials]
             , primaryText <- [Just name]
             , secondaryText <- [Nothing, Just username]
-            , shape <- allTokens
             , isJust primaryText || isJust secondaryText
+            , shape <- allTokens
             ]
         ]

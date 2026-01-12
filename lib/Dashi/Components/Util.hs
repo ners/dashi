@@ -9,21 +9,21 @@ import Dashi.Style.Tokens (Appearance, Token (..))
 import Data.List qualified as List
 import Miso
 import Miso.Html.Property (aria_, tabindex_)
-import Miso.JSON qualified as Miso
-import Miso.String qualified as Miso
+import Miso.JSON qualified as JSON
+import Miso.String qualified as MisoString
 import Prelude
 
 makePrisms ''Attribute
 
-props :: [Attribute action] -> [(MisoString, Miso.Value)]
+props :: [Attribute action] -> [(MisoString, JSON.Value)]
 props = toListOf $ traverse . _Property
 
-findProp :: MisoString -> [Attribute action] -> Maybe Miso.Value
+findProp :: MisoString -> [Attribute action] -> Maybe JSON.Value
 findProp k = List.lookup k . props
 
 isTrueProp :: MisoString -> Attribute action -> Bool
-isTrueProp k (Property ((k ==) -> True) (Miso.Bool True)) = True
-isTrueProp k (Property ((k ==) -> True) (Miso.String (Miso.toLower -> "true"))) = True
+isTrueProp k (Property ((k ==) -> True) (JSON.Bool True)) = True
+isTrueProp k (Property ((k ==) -> True) (JSON.String (MisoString.toLower -> "true"))) = True
 isTrueProp _ _ = False
 
 hasTrueProp :: MisoString -> [Attribute action] -> Bool
@@ -44,7 +44,7 @@ hasRequired = hasTrueProp "required"
 tryGetId :: [Attribute action] -> Maybe MisoString
 tryGetId =
     findProp "id" >=> \case
-        Miso.String s -> Just s
+        JSON.String s -> Just s
         _ -> Nothing
 
 ariaBusy_ :: Bool -> Attribute action

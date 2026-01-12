@@ -2,7 +2,7 @@
 
 module Section.Tabs where
 
-import Control.Lens.Operators ((.=))
+import Control.Lens ((.=))
 import Dashi.Components.Heading
 import Dashi.Components.Tabs
 import Dashi.Components.Widget

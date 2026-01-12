@@ -29,7 +29,6 @@ import Data.Either.Extra (eitherToMaybe)
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
 import Data.Maybe (listToMaybe, maybeToList)
-import Data.Text qualified as Text
 import GHC.Generics (Generic)
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
@@ -39,7 +38,7 @@ import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
 import Miso.Html.Event (onChange, onClick, onClickPrevent)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
 import Miso.Router (Router (href_, route, toURI))
-import Miso.String qualified as Miso
+import Miso.String qualified as MisoString
 import Section (SectionId)
 import Section qualified
 import Web.Font.MDI
@@ -191,7 +190,7 @@ appView model =
                                     res = List.firstJust Language.fromLocale . (.locales) =<< responseData model.bundle
                                  in maybe (const False) (==) $ req <|> res
                             , value = Language.code
-                            , label = pure . text . fromText . Text.toUpper . Language.code
+                            , label = pure . text . MisoString.toUpper . Language.code
                             }
                     , widget' @(Button Model Action)
                         [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
@@ -210,7 +209,7 @@ appView model =
                     [ div_ [hidden_ $ not model.navOpen] . pure $
                         routesToUl
                             model.section.current
-                            [ (s, Miso.words . misoShow $ s)
+                            [ (s, MisoString.words . misoShow $ s)
                             | s <- [minBound .. maxBound]
                             ]
                     ]

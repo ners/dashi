@@ -10,12 +10,12 @@ import Data.List.Extra qualified as List
 import Data.Maybe (fromJust, maybeToList)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
-import Data.Text qualified as Text
 import GHC.Generics (Generic)
 import Miso hiding (ComponentId)
 import Miso.Html.Element (div_)
 import Miso.Html.Property (id_)
 import Miso.Router (Router (..), Token (..))
+import Miso.String qualified as MisoString
 import Miso.Util.Parser (ParserT (..))
 import Section.Accessibility qualified as Accessibility
 import Section.Avatar qualified as Avatar
@@ -27,7 +27,6 @@ import Section.Icon qualified as Icon
 import Section.Link qualified as Link
 import Section.Message qualified as Message
 import Section.Overview qualified as Overview
-import Section.Plot qualified as Plot
 import Section.ProgressBar qualified as ProgressBar
 import Section.Radio qualified as Radio
 import Section.Range qualified as Range
@@ -73,7 +72,6 @@ data ComponentId
     | Icon
     | Link
     | Message
-    | Plot
     | ProgressBar
     | Radio
     | Range
@@ -85,7 +83,7 @@ data ComponentId
     deriving stock (Generic, Eq, Show, Bounded, Enum)
 
 instance Router SectionId where
-    fromRoute = fmap (CaptureOrPathToken . toMisoString . Text.toLower . Text.strip) . breakAll (== ' ') . Text.show
+    fromRoute = fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip) . breakAll (== ' ') . misoShow
     routeParser = Parser \_ tokens ->
         maybeToList $ List.firstJust (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens) [minBound .. maxBound]
 
@@ -112,7 +110,6 @@ view Model{..} =
         Foundations DesignTokens -> mount DesignTokens.tokens
         Components Avatar -> mount Avatar.avatar
         Components Button -> mount Button.button
-        Components Plot -> mount Plot.plot
         Components Form -> mount $ Form.form #form form
         Components Icon -> mount Icon.icon
         Components Link -> mount Link.link
@@ -128,7 +125,7 @@ view Model{..} =
         Components TextField -> mount TextField.textField
   where
     currentStr :: MisoString
-    currentStr = toMisoString . Text.replace " " "-" . Text.toLower . Text.show $ current
+    currentStr = toMisoString . MisoString.replace " " "-" . MisoString.toLower . misoShow $ current
 
 section :: Lens' parent Model -> Model -> Component parent Model Action
 section l model =
