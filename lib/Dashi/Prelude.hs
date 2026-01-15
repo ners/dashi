@@ -23,7 +23,7 @@ import Data.Maybe
 import Data.Semigroup (Semigroup (sconcat))
 import Data.String (IsString (fromString))
 import GHC.Generics (Generic)
-import Miso.String (MisoString, ToMisoString, FromMisoString, fromMisoString, fromMisoStringEither, toMisoString)
+import Miso.String (FromMisoString, MisoString, ToMisoString, fromMisoString, fromMisoStringEither, toMisoString)
 import Miso.Types (Attribute, View, text, textRaw)
 import Prelude
 

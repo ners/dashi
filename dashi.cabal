@@ -147,3 +147,11 @@ executable dashi
     dashi,
     fluent-bundle,
     fluent-syntax,
+
+executable dashi-style
+  import: common
+  hs-source-dirs: style
+  main-is: Main.hs
+  build-depends:
+    dashi,
+    text,

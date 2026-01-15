@@ -126,6 +126,31 @@ html, body {
   grid-template-rows: masonry;
 }
 
+#components-plot .controls {
+  display: flex;
+  margin-top: var(--dashi-space-s);
+
+  @media (max-width: calc(32rem - 1px)) {
+    flex-direction: column;
+    gap: var(--dashi-space-s);
+  }
+  @media (min-width: 32rem) {
+    flex-direction: row;
+    gap: var(--dashi-space-m);
+  }
+
+  div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 1;
+    gap: var(--dashi-space-s);
+  }
+  input[type=range] {
+    flex: 1;
+  }
+}
+
 section {
   display: flex;
   flex-direction: column;

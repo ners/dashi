@@ -63,6 +63,7 @@ instance Widget Message model action where
                 flexDirection row
                 alignItems center
                 gap' XSmall
+                ".mdi" ? fontSize' Large
             byToken SectionMessage & do
                 borderRadiusAll' Medium
                 paddingAll' Medium

@@ -36,7 +36,8 @@ view Model =
                 Switch
                     { name = "radio"
                     , label = [text "Default switch"]
-                    , selected = False
+                    , checked = False
+                    , onChange = const NoOp
                     }
             ]
         , div_
@@ -46,7 +47,8 @@ view Model =
                 Switch
                     { name = "radio"
                     , label = [text "Disabled switch"]
-                    , selected = False
+                    , checked = False
+                    , onChange = const NoOp
                     }
             ]
         ]

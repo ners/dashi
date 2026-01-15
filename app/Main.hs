@@ -17,11 +17,9 @@ import Dashi.Components.Select (Select (..))
 import Dashi.Components.Util
 import Dashi.Layout.Page (Page (..))
 import Dashi.Prelude hiding (init, (#))
-import Dashi.Style qualified as Style
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Colour qualified as Colour.Scheme
 import Dashi.Style.Tokens hiding (Token)
-import Dashi.Style.Util (renderStyle)
 import Dashi.Util
 import Data.Bifunctor (Bifunctor (second))
 import Data.Either.Extra (eitherToMaybe)
@@ -55,7 +53,6 @@ main = do
         $ (component model updateModel appView)
             { events = defaultEvents <> keyboardEvents
             , initialAction = Just Setup
-            , styles = [Style $ renderStyle Style.style, Href "/static/style.css"]
             , subs = [routerSub $ either (const NoOp) SetCurrentSection]
             }
 

@@ -3,19 +3,24 @@
 
 module Dashi.Components.Switch where
 
-import Clay hiding (label, name, selected, span_, type_)
+import Clay hiding (checked, label, name, selected, span_, type_)
+import Clay qualified
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Prelude hiding ((#), (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
+import Data.Coerce (coerce)
+import Miso.Event.Types (Checked (..))
 import Miso.Html.Element (input_, label_, span_)
-import Miso.Html.Property (name_, selected_, type_)
+import Miso.Html.Event (onChecked)
+import Miso.Html.Property (checked_, name_, type_)
 
 data Switch model action = Switch
     { name :: MisoString
     , label :: [View model action]
-    , selected :: Bool
+    , checked :: Bool
+    , onChange :: Bool -> action
     }
 
 instance Widget (Switch model action) model action where
@@ -23,7 +28,14 @@ instance Widget (Switch model action) model action where
         | null label = inputEl
         | otherwise = label_ [] [inputEl, span_ [] label]
       where
-        inputEl = input_ $ type_ "checkbox" : ariaRole_ "switch" : name_ name : selected_ selected : attrs
+        inputEl =
+            input_
+                $ type_ "checkbox"
+                : ariaRole_ "switch"
+                : name_ name
+                : checked_ checked
+                : onChecked (onChange . coerce @Checked)
+                : attrs
     style =
         input # ariaRole "switch" ? do
             display flex
@@ -46,7 +58,7 @@ instance Widget (Switch model action) model action where
                 height $ pct 100
                 borderRadiusAll' XLarge
                 transition "margin" (sec 0.075) easeInOut 0
-            checked & do
+            Clay.checked & do
                 backgroundColor' Colour.BorderFocused
                 before & do
                     "margin-inline-start" ~:: em (widthEm - knobSize)

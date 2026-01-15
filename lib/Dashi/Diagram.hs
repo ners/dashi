@@ -1,6 +1,6 @@
 {-# LANGUAGE FunctionalDependencies #-}
-{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 
 module Dashi.Diagram where
 
@@ -21,11 +21,11 @@ class Shape s num | s -> num where
 class (Shape s num) => ToSVG s num | s -> num where
     toSVG :: [Attribute action] -> s -> [View model action]
 
-instance {-# OVERLAPS #-} (Ord num, Shape s num, Foldable f, Functor f) => Shape (f s) num where
+instance {-# OVERLAPS #-} (Num num, Ord num, Shape s num, Foldable f, Functor f) => Shape (f s) num where
     boundingBox = boundingBoxOfRects . fmap boundingBox
     transform = fmap . transform
 
-instance {-# OVERLAPS #-} (Ord num, ToSVG s num, Foldable f, Functor f) => ToSVG (f s) num where
+instance {-# OVERLAPS #-} (Num num, Ord num, ToSVG s num, Foldable f, Functor f) => ToSVG (f s) num where
     toSVG = concatMap . toSVG
 
 --------------------------------------------------------------------------
@@ -40,7 +40,8 @@ instance Shape (Point num) num where
 offsetPoint :: (num -> num) -> (num -> num) -> Point num -> Point num
 offsetPoint fx fy = (#x %~ fx) . (#y %~ fy)
 
-boundingBoxOfPoints :: (Foldable f, Functor f, Ord num) => f (Point num) -> Rect num
+boundingBoxOfPoints :: forall f num. (Foldable f, Functor f, Num num, Ord num) => f (Point num) -> Rect num
+boundingBoxOfPoints (null -> True) = Rect (Point 0 0) (Point 0 0)
 boundingBoxOfPoints points =
     Rect
         { topLeft =
@@ -82,7 +83,7 @@ instance (Num num, ToMisoString num) => ToSVG (Rect num) num where
       where
         (width, height) = rectSize r
 
-boundingBoxOfRects :: (Foldable f, Ord num) => f (Rect num) -> Rect num
+boundingBoxOfRects :: (Foldable f, Num num, Ord num) => f (Rect num) -> Rect num
 boundingBoxOfRects = boundingBoxOfPoints . concatMap \Rect{..} -> [topLeft, bottomRight]
 
 --------------------------------------------------------------------------
@@ -112,11 +113,11 @@ instance (Num num, ToMisoString num) => ToSVG (Circle num) num where
 data Line num = Line (Point num) (Point num)
     deriving stock (Generic)
 
-instance (Ord num) => Shape (Line num) num where
+instance (Num num, Ord num) => Shape (Line num) num where
     boundingBox (Line p1 p2) = boundingBoxOfPoints [p1, p2]
     transform f = #Line %~ (_1 %~ transform f) . (_2 %~ transform f)
 
-instance (Ord num, ToMisoString num) => ToSVG (Line num) num where
+instance (Num num, Ord num, ToMisoString num) => ToSVG (Line num) num where
     toSVG attrs (Line Point{x = x1, y = y1} Point{x = x2, y = y2}) =
         pure
             . Miso.Svg.line_
@@ -131,11 +132,11 @@ instance (Ord num, ToMisoString num) => ToSVG (Line num) num where
 newtype Path num = Path [Point num]
     deriving stock (Generic)
 
-instance (Ord num) => Shape (Path num) num where
+instance (Num num, Ord num) => Shape (Path num) num where
     boundingBox (Path points) = boundingBoxOfPoints points
     transform f = #Path %~ fmap f
 
-instance (Ord num, ToMisoString num) => ToSVG (Path num) num where
+instance (Num num, Ord num, ToMisoString num) => ToSVG (Path num) num where
     toSVG attrs (Path points) =
         pure
             . Miso.Svg.path_
@@ -193,7 +194,7 @@ instance Shape (SomeShape num) num where
 instance ToSVG (SomeShape num) num where
     toSVG attrs (Shape s) = toSVG attrs s
 
-boundingBoxOfShapes :: (Foldable f, Functor f, Ord num) => f (SomeShape num) -> Rect num
+boundingBoxOfShapes :: (Foldable f, Functor f, Num num, Ord num) => f (SomeShape num) -> Rect num
 boundingBoxOfShapes = boundingBoxOfRects . fmap boundingBox
 
 --------------------------------------------------------------------------

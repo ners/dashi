@@ -8,7 +8,6 @@ import Language.Fluent.Bundle (Bundle)
 import Language.Fluent.Bundle qualified as Fluent
 import Language.Fluent.Locale (Locale (Locale))
 import Language.Fluent.Message qualified as Fluent
-import Miso
 
 data Language
     = English
