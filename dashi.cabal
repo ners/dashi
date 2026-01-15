@@ -53,6 +53,7 @@ common common
   build-depends:
     base,
     containers,
+    extra,
     generic-lens,
     lens,
     miso,
@@ -83,6 +84,7 @@ library
     Dashi.Components.TextField
     Dashi.Components.Util
     Dashi.Components.Widget
+    Dashi.Diagram
     Dashi.Layout.Page
     Dashi.Prelude
     Dashi.Style
@@ -143,6 +145,5 @@ executable dashi
     Section.TextField
   build-depends:
     dashi,
-    extra,
     fluent-bundle,
     fluent-syntax,

@@ -4,14 +4,14 @@ module Dashi.Components.Plot where
 
 import Clay ((-:), (?))
 import Clay qualified
-import Dashi.Prelude hiding (none, (&))
+import Dashi.Diagram
+import Dashi.Prelude hiding (none, transform, (&))
 import Dashi.Style.Colour (Alpha)
 import Dashi.Util (formatFloat)
-import Data.List qualified as List
+import Data.Function ((&))
 import Graphics.Color.Space.OKLAB.LCH
 import Miso.Html.Property qualified as Svg
 import Miso.String qualified as MisoString
-import Miso.Svg qualified
 import Miso.Svg qualified as Svg
 import Miso.Svg.Property qualified as Svg
 
@@ -28,8 +28,8 @@ data PaddingAmount
     = Relative Double
     | Absolute Int
 
-absolutePadding :: Double -> PaddingAmount -> Double
-absolutePadding total (Relative r) = total * r
+absolutePadding :: (Fractional num) => num -> PaddingAmount -> num
+absolutePadding total (Relative r) = total * realToFrac r
 absolutePadding _ (Absolute a) = fromIntegral a
 
 data Padding
@@ -59,7 +59,7 @@ instance Widget Plot model action where
         Svg.svg_
             ( Svg.width_ (toMisoString width)
                 : Svg.height_ (toMisoString height)
-                : Svg.viewBox_ (MisoString.unwords . fmap toMisoString $ [0, 0, width, height])
+                : Svg.viewBox_ (MisoString.unwords . fmap toMisoString $ [viewBox.topLeft.x, viewBox.topLeft.y, width, height])
                 : Svg.className "plot"
                 : attrs
             )
@@ -69,7 +69,18 @@ instance Widget Plot model action where
               , plotElements
               ]
       where
-        resolvePadding :: Double -> Double -> Maybe Padding -> (Double, Double, Double, Double)
+        width', height' :: (Num num) => num
+        width' = fromIntegral width
+        height' = fromIntegral height
+
+        viewBox :: forall num. (Num num) => Rect num
+        viewBox =
+            Rect
+                { topLeft = Point{x = 0, y = 0}
+                , bottomRight = Point{x = width', y = height'}
+                }
+
+        resolvePadding :: (Fractional num) => num -> num -> Maybe Padding -> (num, num, num, num)
         resolvePadding _ _ Nothing = (0, 0, 0, 0)
         resolvePadding dX dY (Just SymmetricPadding{..}) =
             let
@@ -84,51 +95,95 @@ instance Widget Plot model action where
              in
                 (absY topPadding, absX rightPadding, absY bottomPadding, absX leftPadding)
         (paddingTop, paddingRight, paddingBottom, paddingLeft) = resolvePadding width' height' padding
-        width' = fromIntegral width
-        height' = fromIntegral height
 
-        (domainX, domainY) = ((xMin, xMax), (yMin, yMaxBuffer))
+        paddedViewBox =
+            viewBox
+                & #topLeft %~ offsetPoint (+ paddingLeft) (+ paddingTop)
+                & #bottomRight %~ offsetPoint (subtract paddingRight) (subtract paddingBottom)
+
+        gridElements :: [View model action]
+        gridElements =
+            toSVG [Svg.stroke_ (axisColour 0.5), Svg.strokeWidth_ "1"]
+                . translateDomain paddedViewBox domain
+                $ vertLines
+                <> horizLines
           where
-            allPoints = concatMap values series
-            (xs, ys) = unzip allPoints
-            rawXMin = minimum xs
-            rawXMax = maximum xs
+            Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} = domain
+            vertLines =
+                case plotType of
+                    BarPlot -> []
+                    LinePlot -> [Shape $ Line Point{x, y = top} Point{x, y = bottom} | x <- ticksX]
+            horizLines = [Shape $ Line Point{x = left, y} Point{x = right, y} | y <- ticksY]
 
-            -- Bar Chart Adjustment:
-            -- If we have bars at x=0, we want the axis to go from -0.5 to make room.
-            (xMin, xMax) = case plotType of
-                BarPlot -> (rawXMin - 0.5, rawXMax + 0.5)
-                LinePlot -> (rawXMin, rawXMax)
+        axisElements :: [View model action]
+        axisElements =
+            mconcat
+                . mconcat
+                $ [ mkAxis <$> inViewBox [yAxis, xAxis]
+                  , mkTickX <$> ticksX
+                  , mkTickY <$> ticksY
+                  ]
+          where
+            Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} = domain
+            mkAxis :: (ToSVG s num) => s -> [View model action]
+            mkAxis = toSVG [Svg.stroke_ (axisColour 1), Svg.strokeWidth_ "1"]
+            xAxis, yAxis :: Line Double
+            xAxis = Line Point{x = left, y = bottom} Point{x = right, y = bottom}
+            yAxis = Line Point{x = left, y = top} Point{x = left, y = bottom}
+            inViewBox :: (Shape s Double) => s -> s
+            inViewBox = translateDomain paddedViewBox domain
 
-            yMin = minimum (0 : ys)
-            yMax = maximum ys
-            -- Add a tiny buffer to Y max so lines don't clip at the very top
-            yMaxBuffer = if yMax == 0 then 1 else yMax * 1.05
+            mkTickX x =
+                let
+                    p = inViewBox Point{x, y = bottom}
+                 in
+                    mconcat
+                        [ mkAxis $ Line p (offsetPoint id (+ 5) p)
+                        , toSVG
+                            [Svg.dominantBaseline_ "hanging"]
+                            Text
+                                { position = offsetPoint id (+ 8) p
+                                , anchor = Middle
+                                , content = formatFloat x
+                                }
+                        ]
 
-        scale :: (Double, Double) -> (Double, Double) -> Double -> Double
-        scale (dMin, dMax) (rMin, rMax) x
-            | dMax == dMin = rMin -- Avoid division by zero
-            | otherwise = rMin + (x - dMin) * (rMax - rMin) / (dMax - dMin)
+            mkTickY y =
+                let
+                    p = inViewBox Point{x = left, y}
+                 in
+                    mconcat
+                        [ mkAxis $ Line (offsetPoint (subtract 5) id p) p
+                        , toSVG
+                            [Svg.dominantBaseline_ "middle"]
+                            Text
+                                { position = offsetPoint (subtract 8) id p
+                                , anchor = End
+                                , content = formatFloat y
+                                }
+                        ]
 
-        scaleX = scale domainX (paddingLeft, width' - paddingRight)
-        scaleY = scale domainY (height' - paddingBottom, paddingTop)
+        plotElements = mconcat $ case plotType of
+            LinePlot ->
+                [ toSVG [Svg.stroke_ (toMisoString colour), Svg.strokeWidth_ "2"]
+                    . translateDomain paddedViewBox domain
+                    $ Path [Point{..} | (x, y) <- values]
+                | Series{..} <- series
+                ]
+            BarPlot -> []
 
-        ticksX =
-            case plotType of
-                LinePlot -> calculateTicks domainX $ width `div` 100
-                BarPlot -> List.nub . List.sort $ fst <$> concatMap values series
-        ticksY = calculateTicks domainY $ height `div` 100
-
-        plotElements = case plotType of
-            LinePlot -> renderLine <$> series
-            BarPlot -> renderBars
+        domain :: Rect Double
+        domain = boundingBox . fmap (uncurry Point) $ concatMap values series
 
         axisColour :: Double -> MisoString
         axisColour = toMisoString . ColorOKLCHA 0.7 0 0
 
+        ticksX = calculateTicks x $ width `div` 100
+        ticksY = calculateTicks y $ height `div` 100
+
         -- "Nice Numbers" algorithm to find human-readable tick values
-        calculateTicks :: (Double, Double) -> Int -> [Double]
-        calculateTicks (dMin, dMax) targetCount
+        calculateTicks :: (Point Double -> Double) -> Int -> [Double]
+        calculateTicks dim targetCount
             | dMin >= dMax = [dMin]
             | otherwise =
                 let range = dMax - dMin
@@ -152,126 +207,11 @@ instance Widget Plot model action where
                     startIdx = ceiling $ dMin / niceStep
                     endIdx = floor $ dMax / niceStep
                  in (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
-
-        renderLine :: Series -> View model action
-        renderLine Series{..} =
-            let
-                mkPoint :: (Double, Double) -> MisoString
-                mkPoint (x, y) = MisoString.unwords . fmap formatFloat $ [scaleX x, scaleY y]
-                dAttr = case values of
-                    [] -> ""
-                    (p : ps) -> mconcat $ "M " : mkPoint p : ((" L " <>) . mkPoint <$> ps)
-             in
-                Miso.Svg.path_
-                    [ Svg.d_ dAttr
-                    , Svg.fill_ "none"
-                    , Svg.stroke_ $ toMisoString colour
-                    , Svg.strokeWidth_ "2"
-                    , Svg.strokeLinecap_ "round"
-                    ]
-
-        renderBars :: [View model action]
-        renderBars = concatMap drawSeries (zip [0 ..] series)
           where
-            -- For overlaid time series in bar charts, we often render them side-by-side (grouped)
-            -- or strictly overlaid with opacity. Here we implement "Side by Side" grouping for clarity.
+            (dMin, dMax) = minMax dim domain
 
-            nSeries = fromIntegral (length series)
-            (dXMin, dXMax) = domainX
-            dataSpan = dXMax - dXMin
-            -- Calculate width of one logical "slot" on the X axis
-            -- We assume data points are integers 0, 1, 2... for bars usually.
-            -- If they aren't, this width calc might need adjustment.
-            slotWidth = width' / (if dataSpan == 0 then 1 else dataSpan + 1)
-            barWidth = (slotWidth * 0.8) / nSeries
-
-            drawSeries :: (Int, Series) -> [View model action]
-            drawSeries (idx, s) =
-                [ Svg.rect_
-                    [ Svg.x_ (toMisoString $ scaleX x - (slotWidth * 0.4) + (barWidth * fromIntegral idx))
-                    , Svg.y_ (toMisoString $ scaleY y)
-                    , Svg.width_ (toMisoString barWidth)
-                    , Svg.height_ (toMisoString $ abs (scaleY 0 - scaleY y)) -- Height is distance from Y=0 to Y=Value
-                    , Svg.fill_ (toMisoString $ colour s)
-                    ]
-                | (x, y) <- values s
-                ]
-
-        gridElements :: [View model action]
-        gridElements = vertLines <> horizLines
-          where
-            vertLines =
-                case plotType of
-                    BarPlot -> []
-                    LinePlot -> ticksX <&> \(scaleX -> tickX) -> gridLine (tickX, paddingTop) (tickX, height' - paddingBottom)
-            horizLines = ticksY <&> \(scaleY -> tickY) -> gridLine (paddingLeft, tickY) (width' - paddingRight, tickY)
-            gridLine :: (Double, Double) -> (Double, Double) -> View model action
-            gridLine (x1, y1) (x2, y2) =
-                Svg.line_
-                    [ Svg.x1_ $ toMisoString x1
-                    , Svg.y1_ $ toMisoString y1
-                    , Svg.x2_ $ toMisoString x2
-                    , Svg.y2_ $ toMisoString y2
-                    , Svg.stroke_ $ axisColour 0.5
-                    , Svg.strokeWidth_ "1"
-                    ]
-
-        axisElements :: [View model action]
-        axisElements = [yAxis, xAxis] <> concatMap mkTickX ticksX <> concatMap mkTickY ticksY
-          where
-            yAxis =
-                Svg.line_
-                    [ Svg.x1_ $ toMisoString paddingLeft
-                    , Svg.y1_ $ toMisoString paddingTop
-                    , Svg.x2_ $ toMisoString paddingLeft
-                    , Svg.y2_ $ toMisoString (height' - paddingBottom)
-                    , Svg.stroke_ $ axisColour 1
-                    , Svg.strokeWidth_ "1"
-                    ]
-
-            xAxis =
-                Svg.line_
-                    [ Svg.x1_ $ toMisoString paddingLeft
-                    , Svg.y1_ $ toMisoString (height' - paddingBottom)
-                    , Svg.x2_ $ toMisoString (width' - paddingRight)
-                    , Svg.y2_ $ toMisoString (height' - paddingBottom)
-                    , Svg.stroke_ $ axisColour 1
-                    , Svg.strokeWidth_ "1"
-                    ]
-
-            mkTickX val =
-                let pos = scaleX val
-                 in [ Svg.line_
-                        [ Svg.x1_ $ toMisoString pos
-                        , Svg.y1_ $ toMisoString (height' - paddingBottom)
-                        , Svg.x2_ $ toMisoString pos
-                        , Svg.y2_ $ toMisoString (height' - paddingBottom + 5)
-                        , Svg.stroke_ $ axisColour 0.5
-                        ]
-                    , Svg.text_
-                        [ Svg.x_ $ toMisoString pos
-                        , Svg.y_ $ toMisoString (height' - paddingBottom + 15)
-                        , Svg.textAnchor_ "middle"
-                        ]
-                        [text $ formatFloat val]
-                    ]
-
-            mkTickY val =
-                let pos = scaleY val
-                 in [ Svg.line_
-                        [ Svg.x1_ $ toMisoString (paddingLeft - 5)
-                        , Svg.y1_ $ toMisoString pos
-                        , Svg.x2_ $ toMisoString paddingLeft
-                        , Svg.y2_ $ toMisoString pos
-                        , Svg.stroke_ $ axisColour 1
-                        ]
-                    , Svg.text_
-                        [ Svg.x_ $ toMisoString (paddingLeft - 8)
-                        , Svg.y_ $ toMisoString (pos + 3)
-                        , Svg.textAnchor_ "end"
-                        ]
-                        [text (formatFloat val)]
-                    ]
+        minMax :: (Point num -> num) -> Rect num -> (num, num)
+        minMax dim rect = (dim . topLeft $ rect, dim . bottomRight $ rect)
 
     style =
         ".plot" ? do
