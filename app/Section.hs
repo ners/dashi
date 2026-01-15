@@ -25,6 +25,7 @@ import Section.Icon qualified as Icon
 import Section.Link qualified as Link
 import Section.Message qualified as Message
 import Section.Overview qualified as Overview
+import Section.Plot qualified as Plot
 import Section.ProgressBar qualified as ProgressBar
 import Section.Radio qualified as Radio
 import Section.Range qualified as Range
@@ -69,6 +70,7 @@ data ComponentId
     | Icon
     | Link
     | Message
+    | Plot
     | ProgressBar
     | Radio
     | Range
@@ -112,6 +114,7 @@ view Model{..} =
         Components Link -> mount Link.link
         Components Message -> mount Message.message
         Components Checkbox -> mount Checkbox.checkbox
+        Components Plot -> mount Plot.plot
         Components ProgressBar -> mount ProgressBar.progressBar
         Components Radio -> mount Radio.radio
         Components Range -> mount Range.range

@@ -16,12 +16,17 @@ import Dashi.Style.Tokens
 import Data.Bool (bool)
 import Data.Functor ((<&>))
 import Data.List qualified as List
-import Data.String (fromString)
+import Data.String (IsString, fromString)
 import Graphics.Color.Space (Alpha, ColorSpace, Elevator, addAlpha, convertColor, dropAlpha, getAlpha, setAlpha, toShowS)
 import Graphics.Color.Space.OKLAB.LCH
 import Graphics.Color.Space.RGB.SRGB
 import Miso.Property (textProp)
+import Miso.String (MisoString, ToMisoString (..))
 import Prelude
+
+type Colour = Color OKLCH
+
+type AlphaColour = Color (Alpha OKLCH)
 
 data Scheme = Light | Dark
     deriving stock (Eq, Show, Bounded, Enum)
@@ -37,7 +42,7 @@ instance Token Scheme where
 
 data LightDark c = LightDark {light :: c, dark :: c}
 
-sameLightDark :: Color (Alpha OKLCH) e -> LightDark (Color (Alpha OKLCH) e)
+sameLightDark :: c -> LightDark c
 sameLightDark c = LightDark c c
 
 complementaryLightDark :: (Num e) => Color (Alpha OKLCH) e -> LightDark (Color (Alpha OKLCH) e)
@@ -56,7 +61,7 @@ instance Functor LightDark where
 convertAlphaColor :: forall cs cs' i e. (ColorSpace cs' i e, ColorSpace cs i e) => Color (Alpha cs') e -> Color (Alpha cs) e
 convertAlphaColor c = addAlpha (convertColor . dropAlpha $ c) (getAlpha c)
 
-fn :: String -> [ShowS] -> Clay.Value
+fn :: (IsString s) => String -> [ShowS] -> s
 fn name args = fromString . mconcat $ [name, "(", unwords (showMilli <$> args), ")"]
   where
     showMilli :: ShowS -> String
@@ -89,6 +94,30 @@ instance (Clay.Val c, Eq c) => Clay.Val (LightDark c) where
     value LightDark{..}
         | light == dark = Clay.value light
         | otherwise = "light-dark(" <> Clay.value light <> "," <> Clay.value dark <> ")"
+
+instance (Num e, Elevator e) => ToMisoString (Color (SRGB l) e) where
+    toMisoString :: Color (SRGB l) e -> MisoString
+    toMisoString (ColorSRGB ((255 *) -> r) ((255 *) -> g) ((255 *) -> b)) =
+        fn "rgb" [toShowS r, toShowS g, toShowS b]
+
+instance (Num e, Elevator e) => ToMisoString (Color (Alpha (SRGB l)) e) where
+    toMisoString :: Color (Alpha (SRGB l)) e -> MisoString
+    toMisoString (ColorSRGBA ((255 *) -> r) ((255 *) -> g) ((255 *) -> b) a) =
+        fn "rgb" $ [toShowS r, toShowS g, toShowS b] <> if a == 1 then [] else [showChar '/', toShowS a]
+
+instance (Elevator e) => ToMisoString (Color OKLCH e) where
+    toMisoString :: Color OKLCH e -> MisoString
+    toMisoString (ColorOKLCH l c h) = fn "oklch" [toShowS l, toShowS c, toShowS h]
+
+instance (Elevator e) => ToMisoString (Color (Alpha OKLCH) e) where
+    toMisoString :: Color (Alpha OKLCH) e -> MisoString
+    toMisoString (ColorOKLCHA l c h a) = fn "oklch" $ [toShowS l, toShowS c, toShowS h] <> if a == 1 then [] else [showChar '/', toShowS a]
+
+instance (ToMisoString c, Eq c) => ToMisoString (LightDark c) where
+    toMisoString :: LightDark c -> MisoString
+    toMisoString LightDark{..}
+        | light == dark = toMisoString light
+        | otherwise = "light-dark(" <> toMisoString light <> "," <> toMisoString dark <> ")"
 
 toClayColor :: (Clay.Val (Color cs e)) => Color cs e -> Clay.Color
 toClayColor = Clay.Other . Clay.value

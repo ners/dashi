@@ -19,18 +19,18 @@ import Numeric (fromRat)
 fromText :: (IsString s) => Text -> s
 fromText = fromString . Text.unpack
 
-formatFloat :: (RealFloat a) => a -> String
+formatFloat :: (RealFloat a, IsString s) => a -> s
 formatFloat v
     | v == 0 = "0"
-    | abs v < 1e-5 || abs v > 1e10 = formatRealFloat FFExponent Nothing v
-    | v - fromIntegral @Int (floor v) == 0 = formatRealFloat FFFixed (Just 0) v
-    | otherwise = formatRealFloat FFGeneric Nothing v
+    | abs v < 1e-5 || abs v > 1e10 = fromString $ formatRealFloat FFExponent Nothing v
+    | v - fromIntegral @Int (floor v) == 0 = fromString $ formatRealFloat FFFixed (Just 0) v
+    | otherwise = fromString $ formatRealFloat FFGeneric Nothing v
 
 instance (HasResolution k) => ToMisoString (Fixed k) where
-    toMisoString = toMisoString . formatFloat @Double . realToFrac
+    toMisoString = formatFloat @Double . realToFrac
 
 instance ToMisoString Rational where
-    toMisoString = toMisoString . formatFloat @Double . fromRat
+    toMisoString = formatFloat @Double . fromRat
 
 #if defined(GHCJS_BROWSER) || defined(WASM)
 instance Cons MisoString MisoString Char Char where

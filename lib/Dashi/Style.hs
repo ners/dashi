@@ -11,6 +11,7 @@ import Dashi.Components.Form (FormField)
 import Dashi.Components.Heading (Heading)
 import Dashi.Components.Link (Link)
 import Dashi.Components.Message (Message)
+import Dashi.Components.Plot (Plot)
 import Dashi.Components.ProgressBar (ProgressBar)
 import Dashi.Components.Radio (Radio, RadioGroup)
 import Dashi.Components.Range (Range)
@@ -41,11 +42,12 @@ style = do
     Widget.style @(Range action) @model @action
     Widget.style @(Select value model action) @model @action
     Widget.style @(Switch model action) @model @action
-    Widget.style @(TextField action) @model @action
     Widget.style @(Tabs value model action) @model @action
+    Widget.style @(TextField action) @model @action
     Widget.style @Avatar @model @action
     Widget.style @AvatarItem @model @action
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
+    Widget.style @Plot @model @action
     Widget.style @ProgressBar @model @action
