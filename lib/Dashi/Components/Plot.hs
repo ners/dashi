@@ -28,50 +28,69 @@ data Series = Series
     , plotType :: PlotType
     }
 
-data PaddingAmount
-    = Relative Double
-    | Absolute Double
+data PaddingAmount num
+    = Relative num
+    | Absolute num
 
-absolutePadding :: (Fractional num) => num -> PaddingAmount -> num
-absolutePadding total (Relative r) = total * realToFrac r
-absolutePadding _ (Absolute a) = realToFrac a
+absolutePadding :: (Num num) => num -> PaddingAmount num -> num
+absolutePadding total (Relative r) = total * r
+absolutePadding _ (Absolute a) = a
 
-resolvePadding :: (Fractional num) => num -> num -> Maybe Padding -> (num, num, num, num)
-resolvePadding _ _ Nothing = (0, 0, 0, 0)
-resolvePadding dX dY (Just SymmetricPadding{..}) =
-    let
-        pX = absolutePadding dX xPadding
-        pY = absolutePadding dY yPadding
-     in
-        (pY, pX, pY, pX)
-resolvePadding dX dY (Just Padding{..}) =
-    let
-        absX = absolutePadding dX
-        absY = absolutePadding dY
-     in
-        (absY topPadding, absX rightPadding, absY bottomPadding, absX leftPadding)
-
-data Padding
+data Padding num
     = SymmetricPadding
-        { yPadding :: PaddingAmount
-        , xPadding :: PaddingAmount
+        { yPadding :: PaddingAmount num
+        , xPadding :: PaddingAmount num
         }
     | Padding
-        { topPadding :: PaddingAmount
-        , rightPadding :: PaddingAmount
-        , bottomPadding :: PaddingAmount
-        , leftPadding :: PaddingAmount
+        { topPadding :: PaddingAmount num
+        , rightPadding :: PaddingAmount num
+        , bottomPadding :: PaddingAmount num
+        , leftPadding :: PaddingAmount num
         }
+
+expand :: (Num num) => Padding num -> Rect num -> Rect num
+expand SymmetricPadding{..} r =
+    expand
+        Padding
+            { topPadding = yPadding
+            , rightPadding = xPadding
+            , bottomPadding = yPadding
+            , leftPadding = xPadding
+            }
+        r
+expand Padding{..} r =
+    r
+        & #topLeft %~ offsetPoint (subtract $ padX leftPadding) (subtract $ padY topPadding)
+        & #bottomRight %~ offsetPoint (+ padX rightPadding) (+ padY bottomPadding)
+  where
+    (absolutePadding -> padX, absolutePadding -> padY) = rectSize r
+
+contract :: (Num num) => Padding num -> Rect num -> Rect num
+contract SymmetricPadding{..} r =
+    contract
+        Padding
+            { topPadding = yPadding
+            , rightPadding = xPadding
+            , bottomPadding = yPadding
+            , leftPadding = xPadding
+            }
+        r
+contract Padding{..} r =
+    r
+        & #topLeft %~ offsetPoint (+ padX leftPadding) (+ padY topPadding)
+        & #bottomRight %~ offsetPoint (subtract $ padX rightPadding) (subtract $ padY bottomPadding)
+  where
+    (absolutePadding -> padX, absolutePadding -> padY) = rectSize r
 
 data Plot = Plot
     { width :: Int
     -- ^ The overall width of the canvas, including padding and plot area
     , height :: Int
     -- ^ The overall height of the canvas, including padding and plot area
-    , padding :: Maybe Padding
+    , padding :: Maybe (Padding Double)
     -- ^ The space from the edge of the canvas to the plot area
-    , domainPadding :: Maybe Padding
-    -- ^ The space from the edge of the plot area to the series min/max
+    , domainTransform :: Rect Double -> Rect Double
+    -- ^ The transformation of the domain, e.g. padding or forcing a 0 baseline.
     , showAxes :: Bool
     {- ^ Whether to render plot axes
     TODO: separate X and Y
@@ -114,19 +133,23 @@ instance Widget Plot model action where
                 , bottomRight = Point{x = width', y = height'}
                 }
 
-        paddedViewBox =
-            viewBox
-                & #topLeft %~ offsetPoint (+ paddingLeft) (const $ viewBox.bottomRight.y - paddingBottom)
-                & #bottomRight %~ offsetPoint (subtract paddingRight) (const $ viewBox.topLeft.y + paddingTop)
-          where
-            (paddingTop, paddingRight, paddingBottom, paddingLeft) = resolvePadding width' height' padding
+        swap :: Lens' s a -> Lens' s a -> s -> s
+        swap a b x = x & a .~ (x ^. b) & b .~ (x ^. a)
+
+        (<~>) :: Lens' s a -> Lens' s a -> s -> s
+        (<~>) = swap
+
+        swapY :: Rect num -> Rect num
+        swapY = (#topLeft . #y) <~> (#bottomRight . #y)
+
+        paddedViewBox = viewBox & maybe id contract padding & swapY
 
         gridElements :: [View model action]
         gridElements =
             toSVG [Svg.stroke_ (axisColour 0.5), Svg.strokeWidth_ "1"]
                 . translateDomain paddedViewBox domain
                 $ [Shape $ Line Point{x, y = top} Point{x, y = bottom} | hasNonBarPlots, x <- ticksX]
-                    <> [Shape $ Line Point{x = left, y} Point{x = right, y} | y <- ticksY]
+                <> [Shape $ Line Point{x = left, y} Point{x = right, y} | y <- ticksY]
           where
             Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} = domain
 
@@ -198,10 +221,11 @@ instance Widget Plot model action where
 
         renderLinePlot :: Series -> Rect Double -> [View model action]
         renderLinePlot Series{..} Rect{..} =
-            mconcat . catMaybes $
-                [ line <$> strokeColour
-                , area <$> fillColour
-                ]
+            mconcat
+                . catMaybes
+                $ [ line <$> strokeColour
+                  , area <$> fillColour
+                  ]
           where
             points = uncurry Point <$> values
             bottomRight' = bottomRight{y = domain.topLeft.y}
@@ -245,20 +269,11 @@ instance Widget Plot model action where
         seriesBoundingBoxes = boundingBox . fmap (uncurry Point) . values <$> series
 
         domain :: Rect Double
-        domain =
-            d
-                & #topLeft %~ offsetPoint (subtract paddingLeft) (subtract paddingBottom)
-                & #bottomRight %~ offsetPoint (+ paddingRight) (+ paddingTop)
-          where
-            d = boundingBox $ seriesBoundingBoxes <> [dummyZero | hasBarPlots]
-            dummyZero :: Rect Double
-            dummyZero = head seriesBoundingBoxes & #topLeft . #y .~ 0
-            (paddingTop, paddingRight, paddingBottom, paddingLeft) = (uncurry resolvePadding $ rectSize d) domainPadding
+        domain = swapY . domainTransform . swapY $ boundingBox seriesBoundingBoxes
 
         axisColour :: Double -> MisoString
         axisColour = toMisoString . ColorOKLCHA 0.7 0 0
 
-        hasBarPlots = any (isBarPlot . plotType) series
         hasNonBarPlots = not $ all (isBarPlot . plotType) series
 
         ticksX =

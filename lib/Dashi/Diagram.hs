@@ -73,7 +73,7 @@ rectSize Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right,
     (right - left, bottom - top)
 
 instance (Ord num) => Shape (Rect num) num where
-    boundingBox = id
+    boundingBox = boundingBoxOfRects1 . Identity
     transform f Rect{..} = boundingBoxOfPoints1 [transform f topLeft, transform f bottomRight]
 
 instance (Num num, Ord num, ToMisoString num) => ToSVG (Rect num) num where

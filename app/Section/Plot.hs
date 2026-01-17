@@ -132,12 +132,15 @@ view Model{..} =
                             { yPadding = Absolute $ bool 1 20 showAxes
                             , xPadding = Absolute $ bool 1 25 showAxes
                             }
-                , domainPadding =
-                    Just
-                        SymmetricPadding
-                            { yPadding = Relative 0.025
-                            , xPadding = Absolute 0
-                            }
+                , domainTransform =
+                    (#bottomRight . #y .~ 0)
+                        . expand
+                            Padding
+                                { topPadding = Relative 0.25
+                                , rightPadding = Absolute 0
+                                , bottomPadding = Absolute 0
+                                , leftPadding = Absolute 0
+                                }
                 , series =
                     [ Series
                         { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 1
@@ -163,14 +166,15 @@ view Model{..} =
                             , bottomPadding = Absolute $ bool 0 25 showAxes
                             , leftPadding = Absolute $ bool 0 50 showAxes
                             }
-                , domainPadding =
-                    Just
-                        Padding
-                            { topPadding = Relative 0.1
-                            , rightPadding = Absolute 0.5
-                            , bottomPadding = Absolute 0
-                            , leftPadding = Absolute 0.5
-                            }
+                , domainTransform =
+                    (#bottomRight . #y .~ 0)
+                        . expand
+                            Padding
+                                { topPadding = Relative 0.1
+                                , rightPadding = Absolute 0.5
+                                , bottomPadding = Absolute 0
+                                , leftPadding = Absolute 0.5
+                                }
                 , series =
                     [ -- Nixpkgs stable 25.11
                       Series
