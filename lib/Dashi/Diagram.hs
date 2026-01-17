@@ -69,8 +69,19 @@ data Rect num = Rect {topLeft :: Point num, bottomRight :: Point num}
     deriving stock (Generic)
 
 rectSize :: (Num num) => Rect num -> (num, num)
-rectSize Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} =
-    (right - left, bottom - top)
+rectSize Rect{topLeft = Point{x = l, y = t}, bottomRight = Point{x = r, y = b}} = (r - l, b - t)
+
+top :: Lens' (Rect num) num
+top = #topLeft . #y
+
+left :: Lens' (Rect num) num
+left = #topLeft . #x
+
+bottom :: Lens' (Rect num) num
+bottom = #bottomRight . #y
+
+right :: Lens' (Rect num) num
+right = #bottomRight . #x
 
 instance (Ord num) => Shape (Rect num) num where
     boundingBox = boundingBoxOfRects1 . Identity

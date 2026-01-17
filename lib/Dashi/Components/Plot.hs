@@ -148,10 +148,10 @@ instance Widget Plot model action where
         gridElements =
             toSVG [Svg.stroke_ (axisColour 0.5), Svg.strokeWidth_ "1"]
                 . translateDomain paddedViewBox domain
-                $ [Shape $ Line Point{x, y = top} Point{x, y = bottom} | hasNonBarPlots, x <- ticksX]
-                <> [Shape $ Line Point{x = left, y} Point{x = right, y} | y <- ticksY]
+                $ [Shape $ Line Point{x, y = t} Point{x, y = b} | hasNonBarPlots, x <- ticksX]
+                <> [Shape $ Line Point{x = l, y} Point{x = r, y} | y <- ticksY]
           where
-            Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} = domain
+            Rect{topLeft = Point{x = l, y = t}, bottomRight = Point{x = r, y = b}} = domain
 
         axisElements :: [View model action]
         axisElements =
@@ -162,15 +162,18 @@ instance Widget Plot model action where
                   , concatMap mkTickY ticksY
                   ]
           where
-            Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} = domain
+            Rect{..} = domain
+            topRight = Point{x = bottomRight.x, y = topLeft.y}
+            bottomLeft = Point{x = topLeft.x, y = bottomRight.y}
             mkAxis :: (ToSVG s num) => s -> [View model action]
             mkAxis = toSVG [Svg.stroke_ (axisColour 1), Svg.strokeWidth_ "1"]
             xAxis, yAxis :: Line Double
-            xAxis = Line Point{x = left, y = top} Point{x = right, y = top}
-            yAxis = Line Point{x = left, y = top} Point{x = left, y = bottom}
+            xAxis = Line topLeft topRight
+            yAxis = Line topLeft bottomLeft
             inViewBox :: (Shape s Double) => s -> s
             inViewBox = translateDomain paddedViewBox domain
 
+            mkTickX, mkTickY :: Double -> [[View model action]]
             mkTickX x =
                 [ mkAxis $ Line p (offsetPoint id (+ 5) p)
                 , toSVG
@@ -182,7 +185,7 @@ instance Widget Plot model action where
                         }
                 ]
               where
-                p = inViewBox Point{x, y = top}
+                p = inViewBox Point{x, y = topLeft.y}
 
             mkTickY y =
                 [ mkAxis $ Line (offsetPoint (subtract 5) id p) p
@@ -195,7 +198,7 @@ instance Widget Plot model action where
                         }
                 ]
               where
-                p = inViewBox Point{x = left, y}
+                p = inViewBox Point{x = topLeft.x, y}
 
         isBarPlot :: PlotType -> Bool
         isBarPlot BarPlot{} = True
@@ -252,8 +255,8 @@ instance Widget Plot model action where
         renderBarPlot leftOffset Series{..} =
             flip concatMap values \(x, y) ->
                 let
-                    left = x + leftOffset - totalBarPlotWidth / 2
-                    right = left + barPlotWidth plotType
+                    l = x + leftOffset - totalBarPlotWidth / 2
+                    r = l + barPlotWidth plotType
                  in
                     toSVG
                         [ Svg.fill_ $ maybe "none" toMisoString fillColour
@@ -261,8 +264,8 @@ instance Widget Plot model action where
                         ]
                         . translateDomain paddedViewBox domain
                         $ boundingBoxOfPoints1
-                            [ Point{x = left, y}
-                            , Point{x = right, y = 0}
+                            [ Point{x = l, y}
+                            , Point{x = r, y = 0}
                             ]
 
         seriesBoundingBoxes :: [Rect Double]
@@ -276,11 +279,12 @@ instance Widget Plot model action where
 
         hasNonBarPlots = not $ all (isBarPlot . plotType) series
 
+        ticksX, ticksY :: [Double]
         ticksX =
             if hasNonBarPlots
                 then calculateTicks x $ width `div` 100
                 else List.sort . List.nubOrd $ concatMap (toList . fmap fst . values) series
-        ticksY = calculateTicks y $ height `div` 100
+        ticksY = calculateTicks y $ height `div` 80
 
         -- "Nice Numbers" algorithm to find human-readable tick values
         calculateTicks :: (Point Double -> Double) -> Int -> [Double]

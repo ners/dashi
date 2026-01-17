@@ -8,6 +8,7 @@ import Dashi.Components.Heading
 import Dashi.Components.Plot
 import Dashi.Components.Range
 import Dashi.Components.Switch
+import Dashi.Diagram (bottom, top)
 import Dashi.Prelude hiding (view)
 import Dashi.Style.Colour
 import Dashi.Style.Tokens
@@ -132,15 +133,7 @@ view Model{..} =
                             { yPadding = Absolute $ bool 1 20 showAxes
                             , xPadding = Absolute $ bool 1 25 showAxes
                             }
-                , domainTransform =
-                    (#bottomRight . #y .~ 0)
-                        . expand
-                            Padding
-                                { topPadding = Relative 0.25
-                                , rightPadding = Absolute 0
-                                , bottomPadding = Absolute 0
-                                , leftPadding = Absolute 0
-                                }
+                , domainTransform = (top .~ 120) . (bottom .~ 0)
                 , series =
                     [ Series
                         { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 1
