@@ -87,11 +87,12 @@ update Tick = do
         threadDelay $ 1_000_000 `div` hz
         sink Tick
 update UpdateWidth = do
-    withSink \sink -> getPlotWidth >>= \case
-        0 -> do
-            threadDelay 100_000
-            sink UpdateWidth
-        w -> sink (SetWidth w)
+    withSink \sink ->
+        getPlotWidth >>= \case
+            0 -> do
+                threadDelay 100_000
+                sink UpdateWidth
+            w -> sink (SetWidth w)
 update (SetWidth w) = #width .= w
 update (SetHz hz) = #hz .= hz
 update (SetShowAxes b) = #showAxes .= b
@@ -144,7 +145,11 @@ view Model{..} =
                             , xPadding = Absolute 0
                             }
                 , series =
-                    [ Series (ColorOKLCHA 0.7 0.16 250 1) $ toList values
+                    [ Series
+                        { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 1
+                        , fillColour = Just $ ColorOKLCHA 0.7 0.16 250 0.3
+                        , values = toList values
+                        }
                     ]
                 }
         ]

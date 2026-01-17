@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-missing-role-annotations #-}
@@ -65,10 +66,13 @@ data Rect num = Rect {topLeft :: Point num, bottomRight :: Point num}
     deriving stock (Generic)
 
 rectSize :: (Num num) => Rect num -> (num, num)
-rectSize Rect{..} = (bottomRight.x - topLeft.x, bottomRight.y - topLeft.y)
+rectSize Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} =
+    (right - left, bottom - top)
 
 instance Shape (Rect num) num where
     boundingBox = id
+
+    -- TODO: re-sort top-left and top-right
     transform f = (#topLeft %~ transform f) . (#bottomRight %~ transform f)
 
 instance (Num num, ToMisoString num) => ToSVG (Rect num) num where
@@ -129,22 +133,41 @@ instance (Num num, Ord num, ToMisoString num) => ToSVG (Line num) num where
 
 --------------------------------------------------------------------------
 
-newtype Path num = Path [Point num]
+newtype Polyline num = Polyline {points :: [Point num]}
     deriving stock (Generic)
 
-instance (Num num, Ord num) => Shape (Path num) num where
-    boundingBox (Path points) = boundingBoxOfPoints points
-    transform f = #Path %~ fmap f
+instance (Num num, Ord num) => Shape (Polyline num) num where
+    boundingBox (Polyline points) = boundingBoxOfPoints points
+    transform f = #Polyline %~ fmap f
 
-instance (Num num, Ord num, ToMisoString num) => ToSVG (Path num) num where
-    toSVG attrs (Path points) =
+instance (Num num, Ord num, ToMisoString num) => ToSVG (Polyline num) num where
+    toSVG attrs (Polyline points) =
         pure
-            . Miso.Svg.path_
-            $ Svg.d_ ("M " <> MisoString.intercalate " L " (mkPoint <$> points))
+            . Miso.Svg.polyline_
+            $ Svg.points_ (MisoString.unwords . fmap mkPoint $ points)
             : attrs
       where
         mkPoint :: Point num -> MisoString
-        mkPoint Point{..} = toMisoString x <> " " <> toMisoString y
+        mkPoint Point{..} = MisoString.intercalate "," . fmap toMisoString $ [x, y]
+
+--------------------------------------------------------------------------
+
+newtype Polygon num = Polygon {points :: [Point num]}
+    deriving stock (Generic)
+
+instance (Num num, Ord num) => Shape (Polygon num) num where
+    boundingBox (Polygon points) = boundingBoxOfPoints points
+    transform f = #Polygon %~ fmap f
+
+instance (Num num, Ord num, ToMisoString num) => ToSVG (Polygon num) num where
+    toSVG attrs (Polygon points) =
+        pure
+            . Miso.Svg.polygon_
+            $ Svg.points_ (MisoString.unwords . fmap mkPoint $ points)
+            : attrs
+      where
+        mkPoint :: Point num -> MisoString
+        mkPoint Point{..} = MisoString.intercalate "," . fmap toMisoString $ [x, y]
 
 --------------------------------------------------------------------------
 
@@ -242,5 +265,5 @@ translateDomain sup sub = transform $ translate #x . translate #y
                     then vMin
                     else vMin + (x - dMin) * (vMax - vMin) / (dMax - dMin)
 
-inDomain :: forall s num. (Shape s num, Ord num, Fractional num) => Rect num -> s -> s
+inDomain :: (Shape s num, Ord num, Fractional num) => Rect num -> s -> s
 inDomain d s = translateDomain d (boundingBox s) s

@@ -16,7 +16,8 @@ import Miso.Svg qualified as Svg
 import Miso.Svg.Property qualified as Svg
 
 data Series = Series
-    { colour :: Color (Alpha OKLCH) Double
+    { strokeColour :: Maybe (Color (Alpha OKLCH) Double)
+    , fillColour :: Maybe (Color (Alpha OKLCH) Double)
     , values :: [(Double, Double)]
     }
     deriving stock (Eq, Show)
@@ -58,12 +59,23 @@ data Padding
 
 data Plot = Plot
     { width :: Int
+    -- ^ The overall width of the canvas, including padding and plot area
     , height :: Int
+    -- ^ The overall height of the canvas, including padding and plot area
     , padding :: Maybe Padding
+    -- ^ The space from the edge of the canvas to the plot area
     , domainPadding :: Maybe Padding
+    -- ^ The space from the edge of the plot area to the series min/max
     , showAxes :: Bool
+    {- ^ Whether to render plot axes
+    TODO: separate X and Y
+    -}
     , showGrid :: Bool
+    {- ^ Whether to render plot grid
+    TODO: separate X and Y
+    -}
     , series :: [Series]
+    -- ^ The series to plot
     }
 
 instance Widget Plot model action where
@@ -152,18 +164,39 @@ instance Widget Plot model action where
               where
                 p = inViewBox Point{x = left, y}
 
+        plotElements :: [View model action]
         plotElements =
-            mconcat
-                $ [ toSVG
-                        [ Svg.fill_ "none"
-                        , Svg.stroke_ (toMisoString colour)
-                        , Svg.strokeLinecap_ "round"
-                        , Svg.strokeWidth_ "2"
-                        ]
-                        . translateDomain paddedViewBox domain
-                        $ Path [Point{..} | (x, y) <- values]
-                  | Series{..} <- series
-                  ]
+            flip concatMap (zip series seriesBoundingBoxes) \(Series{..}, Rect{..}) ->
+                let
+                    points = [Point{..} | (x, y) <- values]
+                    bottomRight' = bottomRight{y = domain.topLeft.y}
+                    bottomLeft' = bottomRight'{x = topLeft.x}
+                    points' = bottomRight' : bottomLeft' : points
+                    line colour =
+                        toSVG
+                            [ Svg.fill_ "none"
+                            , Svg.stroke_ $ toMisoString colour
+                            , Svg.strokeLinecap_ "round"
+                            , Svg.strokeWidth_ "2"
+                            ]
+                            . translateDomain paddedViewBox domain
+                            $ Polyline{..}
+                    area colour =
+                        toSVG
+                            [ Svg.fill_ $ toMisoString colour
+                            , Svg.stroke_ "none"
+                            ]
+                            . translateDomain paddedViewBox domain
+                            $ Polygon{points = points'}
+                 in
+                    mconcat
+                        . catMaybes
+                        $ [ line <$> strokeColour
+                          , area <$> fillColour
+                          ]
+
+        seriesBoundingBoxes :: [Rect Double]
+        seriesBoundingBoxes = boundingBox . fmap (uncurry Point) . values <$> series
 
         domain :: Rect Double
         domain =
@@ -171,7 +204,7 @@ instance Widget Plot model action where
                 & #topLeft %~ offsetPoint (subtract paddingLeft) (subtract paddingTop)
                 & #bottomRight %~ offsetPoint (+ paddingRight) (+ paddingBottom)
           where
-            d = boundingBox . fmap (uncurry Point) $ concatMap values series
+            d = boundingBoxOfRects seriesBoundingBoxes
             (paddingTop, paddingRight, paddingBottom, paddingLeft) = (uncurry resolvePadding $ rectSize d) domainPadding
 
         axisColour :: Double -> MisoString
