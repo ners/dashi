@@ -11,12 +11,14 @@ import Dashi.Components.Switch
 import Dashi.Prelude hiding (view)
 import Dashi.Style.Colour
 import Dashi.Style.Tokens
+import Dashi.Util (formatFloat)
 import Data.Bool (bool)
-import Data.Foldable (Foldable (toList))
+import Data.Foldable qualified as Foldable
 import Data.Generics.Labels ()
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
-import Miso (Component (initialAction, subs), Effect, FromJSVal (fromJSValUnchecked), component, emptyDecoder, windowSub, withSink)
+import GHC.Clock (getMonotonicTime)
+import Miso (Component (initialAction, subs), Effect, FromJSVal (fromJSValUnchecked), Sink, component, emptyDecoder, windowSub, withSink)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
 import Miso.State qualified as State
@@ -26,7 +28,7 @@ data Model
     { width :: Int
     , time :: Double
     , hz :: Int
-    , values :: Seq (Double, Double)
+    , fps :: Seq (Double, Double)
     , showAxes :: Bool
     , showGrid :: Bool
     }
@@ -38,7 +40,7 @@ initialModel =
         { width = 0
         , time = 0
         , hz = 60
-        , values = mempty
+        , fps = mempty
         , showAxes = True
         , showGrid = True
         }
@@ -46,7 +48,7 @@ initialModel =
 data Action
     = NoOp
     | Setup
-    | Tick
+    | Tick Double
     | UpdateWidth
     | SetWidth Int
     | SetHz Int
@@ -63,29 +65,21 @@ plot =
 getPlotWidth :: IO Int
 getPlotWidth = fromJSValUnchecked =<< DSL.eval "const e = document.querySelector('section > h2'); e ? e.clientWidth : 0"
 
-signal :: Double -> Double
-signal x = (sin (x * pi / 45) + 1) / 2 * sin (x * pi / 5)
-
-tick :: Model -> Model
-tick Model{..} =
-    Model
-        { time = time + 0.1
-        , values = Seq.dropWhileL ((time - 100 >) . fst) . (|> (time, signal time)) $ values
-        , ..
-        }
+tick' :: Sink Action -> IO ()
+tick' sink = sink . Tick =<< getMonotonicTime
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
 update Setup = do
     update UpdateWidth
-    State.modify $ (!! 1000) . iterate tick
-    update Tick
-update Tick = do
-    State.modify tick
-    Model{hz} <- State.get
+    withSink tick'
+update (Tick time) = do
+    Model{hz, time = oldTime} <- State.get
+    let append value = Seq.dropWhileL ((time - 10 >) . fst) . (|> (time, value))
+    State.modify $ (#time .~ time) . (#fps %~ append (1 / (time - oldTime)))
     withSink \sink -> do
         threadDelay $ 1_000_000 `div` hz
-        sink Tick
+        tick' sink
 update UpdateWidth = do
     withSink \sink ->
         getPlotWidth >>= \case
@@ -148,8 +142,63 @@ view Model{..} =
                     [ Series
                         { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 1
                         , fillColour = Just $ ColorOKLCHA 0.7 0.16 250 0.3
-                        , values = toList values
+                        , values = Foldable.toList fps
+                        , plotType = LinePlot
                         }
                     ]
+                , showX = formatFloat
+                , showY = formatFloat
+                }
+        , widget
+            Plot
+                { width
+                , height = Dashi.Prelude.min width 300
+                , showAxes
+                , showGrid
+                , padding =
+                    Just
+                        Padding
+                            { topPadding = Absolute 0
+                            , rightPadding = Absolute 0
+                            , bottomPadding = Absolute $ bool 0 25 showAxes
+                            , leftPadding = Absolute $ bool 0 50 showAxes
+                            }
+                , domainPadding =
+                    Just
+                        Padding
+                            { topPadding = Relative 0.1
+                            , rightPadding = Absolute 0.5
+                            , bottomPadding = Absolute 0
+                            , leftPadding = Absolute 0.5
+                            }
+                , series =
+                    [ -- Nixpkgs stable 25.11
+                      Series
+                        { strokeColour = Nothing
+                        , fillColour = Just $ ColorOKLCHA 0.55 0.12 264 1
+                        , values = [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
+                        , plotType = BarPlot{barWidth = 0.2}
+                        }
+                    , -- AUR
+                      Series
+                        { strokeColour = Nothing
+                        , fillColour = Just $ ColorOKLCHA 0.3211 0 0 1
+                        , values = [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
+                        , plotType = BarPlot{barWidth = 0.2}
+                        }
+                    , -- Ubuntu 26.04
+                      Series
+                        { strokeColour = Nothing
+                        , fillColour = Just $ ColorOKLCHA 0.6405 0.1941 37.76 1
+                        , values = [(0, 19856), (1, 8782), (2, 10111), (3, 1588)]
+                        , plotType = BarPlot{barWidth = 0.2}
+                        }
+                    ]
+                , showX = \case
+                    d | d < 1 -> "Newest"
+                    d | d < 2 -> "Outdated"
+                    d | d < 3 -> "Unique"
+                    _ -> "Problematic"
+                , showY = formatFloat
                 }
         ]

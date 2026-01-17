@@ -41,9 +41,8 @@ instance Shape (Point num) num where
 offsetPoint :: (num -> num) -> (num -> num) -> Point num -> Point num
 offsetPoint fx fy = (#x %~ fx) . (#y %~ fy)
 
-boundingBoxOfPoints :: forall f num. (Foldable f, Functor f, Num num, Ord num) => f (Point num) -> Rect num
-boundingBoxOfPoints (null -> True) = Rect (Point 0 0) (Point 0 0)
-boundingBoxOfPoints points =
+boundingBoxOfPoints1 :: forall f num. (Foldable f, Functor f, Ord num) => f (Point num) -> Rect num
+boundingBoxOfPoints1 points =
     Rect
         { topLeft =
             Point
@@ -60,6 +59,10 @@ boundingBoxOfPoints points =
     xs = x <$> points
     ys = y <$> points
 
+boundingBoxOfPoints :: forall f num. (Foldable f, Functor f, Num num, Ord num) => f (Point num) -> Rect num
+boundingBoxOfPoints (null -> True) = Rect (Point 0 0) (Point 0 0)
+boundingBoxOfPoints points = boundingBoxOfPoints1 points
+
 --------------------------------------------------------------------------
 
 data Rect num = Rect {topLeft :: Point num, bottomRight :: Point num}
@@ -69,13 +72,11 @@ rectSize :: (Num num) => Rect num -> (num, num)
 rectSize Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} =
     (right - left, bottom - top)
 
-instance Shape (Rect num) num where
+instance (Ord num) => Shape (Rect num) num where
     boundingBox = id
+    transform f Rect{..} = boundingBoxOfPoints1 [transform f topLeft, transform f bottomRight]
 
-    -- TODO: re-sort top-left and top-right
-    transform f = (#topLeft %~ transform f) . (#bottomRight %~ transform f)
-
-instance (Num num, ToMisoString num) => ToSVG (Rect num) num where
+instance (Num num, Ord num, ToMisoString num) => ToSVG (Rect num) num where
     toSVG attrs r@Rect{topLeft = Point{..}} =
         pure
             . Svg.rect_
@@ -87,8 +88,12 @@ instance (Num num, ToMisoString num) => ToSVG (Rect num) num where
       where
         (width, height) = rectSize r
 
+boundingBoxOfRects1 :: (Foldable f, Ord num) => f (Rect num) -> Rect num
+boundingBoxOfRects1 = boundingBoxOfPoints1 . concatMap \Rect{..} -> [topLeft, bottomRight]
+
 boundingBoxOfRects :: (Foldable f, Num num, Ord num) => f (Rect num) -> Rect num
-boundingBoxOfRects = boundingBoxOfPoints . concatMap \Rect{..} -> [topLeft, bottomRight]
+boundingBoxOfRects (null -> True) = boundingBoxOfPoints []
+boundingBoxOfRects rects = boundingBoxOfRects1 rects
 
 --------------------------------------------------------------------------
 
@@ -137,14 +142,14 @@ newtype Polyline num = Polyline {points :: [Point num]}
     deriving stock (Generic)
 
 instance (Num num, Ord num) => Shape (Polyline num) num where
-    boundingBox (Polyline points) = boundingBoxOfPoints points
+    boundingBox Polyline{..} = boundingBoxOfPoints points
     transform f = #Polyline %~ fmap f
 
 instance (Num num, Ord num, ToMisoString num) => ToSVG (Polyline num) num where
-    toSVG attrs (Polyline points) =
+    toSVG attrs Polyline{..} =
         pure
             . Miso.Svg.polyline_
-            $ Svg.points_ (MisoString.unwords . fmap mkPoint $ points)
+            $ Svg.points_ (MisoString.unwords $ mkPoint <$> points)
             : attrs
       where
         mkPoint :: Point num -> MisoString
@@ -156,11 +161,11 @@ newtype Polygon num = Polygon {points :: [Point num]}
     deriving stock (Generic)
 
 instance (Num num, Ord num) => Shape (Polygon num) num where
-    boundingBox (Polygon points) = boundingBoxOfPoints points
+    boundingBox Polygon{..} = boundingBoxOfPoints points
     transform f = #Polygon %~ fmap f
 
 instance (Num num, Ord num, ToMisoString num) => ToSVG (Polygon num) num where
-    toSVG attrs (Polygon points) =
+    toSVG attrs Polygon{..} =
         pure
             . Miso.Svg.polygon_
             $ Svg.points_ (MisoString.unwords . fmap mkPoint $ points)

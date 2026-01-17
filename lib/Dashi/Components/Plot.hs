@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
 {-# OPTIONS_GHC -Wno-partial-fields #-}
 
 module Dashi.Components.Plot where
@@ -7,28 +8,33 @@ import Clay qualified
 import Dashi.Diagram
 import Dashi.Prelude hiding (none, transform, (&))
 import Dashi.Style.Colour (Alpha)
-import Dashi.Util (formatFloat)
+import Data.Foldable (Foldable (toList))
 import Data.Function ((&))
+import Data.List qualified as List
+import Data.List.Extra qualified as List
 import Graphics.Color.Space.OKLAB.LCH
 import Miso.Html.Property qualified as Svg
 import Miso.String qualified as MisoString
 import Miso.Svg qualified as Svg
 import Miso.Svg.Property qualified as Svg
 
+data PlotType = LinePlot | BarPlot {barWidth :: Double}
+    deriving stock (Eq, Show)
+
 data Series = Series
     { strokeColour :: Maybe (Color (Alpha OKLCH) Double)
     , fillColour :: Maybe (Color (Alpha OKLCH) Double)
     , values :: [(Double, Double)]
+    , plotType :: PlotType
     }
-    deriving stock (Eq, Show)
 
 data PaddingAmount
     = Relative Double
-    | Absolute Int
+    | Absolute Double
 
 absolutePadding :: (Fractional num) => num -> PaddingAmount -> num
 absolutePadding total (Relative r) = total * realToFrac r
-absolutePadding _ (Absolute a) = fromIntegral a
+absolutePadding _ (Absolute a) = realToFrac a
 
 resolvePadding :: (Fractional num) => num -> num -> Maybe Padding -> (num, num, num, num)
 resolvePadding _ _ Nothing = (0, 0, 0, 0)
@@ -76,6 +82,10 @@ data Plot = Plot
     -}
     , series :: [Series]
     -- ^ The series to plot
+    , showX :: Double -> MisoString
+    -- ^ The function to render ticks on the X axis
+    , showY :: Double -> MisoString
+    -- ^ The function to render ticks on the Y axis
     }
 
 instance Widget Plot model action where
@@ -115,8 +125,8 @@ instance Widget Plot model action where
         gridElements =
             toSVG [Svg.stroke_ (axisColour 0.5), Svg.strokeWidth_ "1"]
                 . translateDomain paddedViewBox domain
-                $ [Shape $ Line Point{x, y = top} Point{x, y = bottom} | x <- ticksX]
-                <> [Shape $ Line Point{x = left, y} Point{x = right, y} | y <- ticksY]
+                $ [Shape $ Line Point{x, y = top} Point{x, y = bottom} | hasNonBarPlots, x <- ticksX]
+                    <> [Shape $ Line Point{x = left, y} Point{x = right, y} | y <- ticksY]
           where
             Rect{topLeft = Point{x = left, y = top}, bottomRight = Point{x = right, y = bottom}} = domain
 
@@ -145,7 +155,7 @@ instance Widget Plot model action where
                     Text
                         { position = offsetPoint id (+ 8) p
                         , anchor = Middle
-                        , content = formatFloat x
+                        , content = showX x
                         }
                 ]
               where
@@ -158,42 +168,78 @@ instance Widget Plot model action where
                     Text
                         { position = offsetPoint (subtract 8) id p
                         , anchor = End
-                        , content = formatFloat y
+                        , content = showY y
                         }
                 ]
               where
                 p = inViewBox Point{x = left, y}
 
+        isBarPlot :: PlotType -> Bool
+        isBarPlot BarPlot{} = True
+        isBarPlot _ = False
+
+        barPlotSeries :: [Series]
+        barPlotSeries = filter (isBarPlot . plotType) series
+
+        barPlotWidth :: PlotType -> Double
+        barPlotWidth BarPlot{barWidth} = barWidth
+        barPlotWidth _ = 0
+
+        totalBarPlotWidth :: Double
+        totalBarPlotWidth = sum $ barPlotWidth . plotType <$> barPlotSeries
+
         plotElements :: [View model action]
         plotElements =
-            flip concatMap (zip series seriesBoundingBoxes) \(Series{..}, Rect{..}) ->
+            mconcat
+                [ concatMap (uncurry renderLinePlot) . filter (not . isBarPlot . plotType . fst) $ zip series seriesBoundingBoxes
+                , let widths = List.scanl' (+) 0 $ barPlotWidth . plotType <$> barPlotSeries
+                   in concatMap (uncurry renderBarPlot) $ zip widths barPlotSeries
+                ]
+
+        renderLinePlot :: Series -> Rect Double -> [View model action]
+        renderLinePlot Series{..} Rect{..} =
+            mconcat . catMaybes $
+                [ line <$> strokeColour
+                , area <$> fillColour
+                ]
+          where
+            points = uncurry Point <$> values
+            bottomRight' = bottomRight{y = domain.topLeft.y}
+            bottomLeft' = bottomRight'{x = topLeft.x}
+            points' = bottomRight' : bottomLeft' : points
+            line colour =
+                toSVG
+                    [ Svg.fill_ "none"
+                    , Svg.stroke_ $ toMisoString colour
+                    , Svg.strokeLinecap_ "round"
+                    , Svg.strokeWidth_ "2"
+                    ]
+                    . translateDomain paddedViewBox domain
+                    $ Polyline{points}
+            area colour =
+                toSVG
+                    [ Svg.fill_ $ toMisoString colour
+                    , Svg.stroke_ "none"
+                    ]
+                    . translateDomain paddedViewBox domain
+                    $ Polygon{points = points'}
+
+        renderBarPlot :: Double -> Series -> [View model action]
+        renderBarPlot leftOffset Series{..} =
+            flip concatMap values \(x, y) ->
                 let
-                    points = [Point{..} | (x, y) <- values]
-                    bottomRight' = bottomRight{y = domain.topLeft.y}
-                    bottomLeft' = bottomRight'{x = topLeft.x}
-                    points' = bottomRight' : bottomLeft' : points
-                    line colour =
-                        toSVG
-                            [ Svg.fill_ "none"
-                            , Svg.stroke_ $ toMisoString colour
-                            , Svg.strokeLinecap_ "round"
-                            , Svg.strokeWidth_ "2"
-                            ]
-                            . translateDomain paddedViewBox domain
-                            $ Polyline{..}
-                    area colour =
-                        toSVG
-                            [ Svg.fill_ $ toMisoString colour
-                            , Svg.stroke_ "none"
-                            ]
-                            . translateDomain paddedViewBox domain
-                            $ Polygon{points = points'}
+                    left = x + leftOffset - totalBarPlotWidth / 2
+                    right = left + barPlotWidth plotType
                  in
-                    mconcat
-                        . catMaybes
-                        $ [ line <$> strokeColour
-                          , area <$> fillColour
-                          ]
+                    toSVG
+                        [ Svg.fill_ $ maybe "none" toMisoString fillColour
+                        , Svg.stroke_ $ maybe "none" toMisoString strokeColour
+                        ]
+                        . translateDomain paddedViewBox domain
+                        $ boundingBoxOfPoints1
+                            [ Point{x = left, y}
+                            , Point{x = right, y = 0}
+                            ]
 
         seriesBoundingBoxes :: [Rect Double]
         seriesBoundingBoxes = boundingBox . fmap (uncurry Point) . values <$> series
@@ -201,16 +247,24 @@ instance Widget Plot model action where
         domain :: Rect Double
         domain =
             d
-                & #topLeft %~ offsetPoint (subtract paddingLeft) (subtract paddingTop)
-                & #bottomRight %~ offsetPoint (+ paddingRight) (+ paddingBottom)
+                & #topLeft %~ offsetPoint (subtract paddingLeft) (subtract paddingBottom)
+                & #bottomRight %~ offsetPoint (+ paddingRight) (+ paddingTop)
           where
-            d = boundingBoxOfRects seriesBoundingBoxes
+            d = boundingBox $ seriesBoundingBoxes <> [dummyZero | hasBarPlots]
+            dummyZero :: Rect Double
+            dummyZero = head seriesBoundingBoxes & #topLeft . #y .~ 0
             (paddingTop, paddingRight, paddingBottom, paddingLeft) = (uncurry resolvePadding $ rectSize d) domainPadding
 
         axisColour :: Double -> MisoString
         axisColour = toMisoString . ColorOKLCHA 0.7 0 0
 
-        ticksX = calculateTicks x $ width `div` 100
+        hasBarPlots = any (isBarPlot . plotType) series
+        hasNonBarPlots = not $ all (isBarPlot . plotType) series
+
+        ticksX =
+            if hasNonBarPlots
+                then calculateTicks x $ width `div` 100
+                else List.sort . List.nubOrd $ concatMap (toList . fmap fst . values) series
         ticksY = calculateTicks y $ height `div` 100
 
         -- "Nice Numbers" algorithm to find human-readable tick values
