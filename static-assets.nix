@@ -17,29 +17,12 @@ let
     src = fetchFromGitHub {
       owner = "haskell-wasm";
       repo = "browser_wasi_shim";
-      rev = "fce68df4ad2bc9cfe6581a234587a76981882186";
-      hash = "sha256-FFBG5VPFvONBz+eUD/YUR3SSy8gfAsuWB9Avi8S9yqQ=";
+      rev = "9fbcf96836ba0c3652b394a45fc8c546efd64a4e";
+      hash = "sha256-soG50TSnteo7m7286/m09bs4NS+fcNqcGamIYRPE+h8=";
     };
-    npmDepsHash = "sha256-ErxU2EA+Enh5Bpbk3rsTrgeQnMktLjv9eNE0h5phntY=";
-    #nativeBuildInputs = with pkgs; [
-    #  closurecompiler
-    #];
-    postInstall = ''
-      cp -r "$out"/lib/node_modules/*/browser_wasi_shim/dist/*.js dist
-      rm -rf "$out"
+    npmDepsHash = "sha256-c9vJp/PQR3cXj45E6xT0q2AqZdpHn/UX/5qUQZ1ZAPI=";
+    installPhase = ''
       mv dist "$out"
-      #cd "$out"
-      #shopt -s extglob
-      #closure-compiler \
-      #  --js index.js \
-      #  --js !(index).js \
-      #  --js_output_file=index.min.js \
-      #  --jscomp_off=checkVars \
-      #  --compilation_level ADVANCED_OPTIMIZATIONS \
-      #  --isolation_mode=IIFE \
-      #  --assume_function_wrapper \
-      #  --language_in UNSTABLE
-      #shopt -u extglob
     '';
     meta = {
       description = "A pure javascript shim for WASI";
@@ -87,12 +70,12 @@ let
     }
     ''
       function compare() {
-        echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( 100 - $2 * 100 / $3 ))%)"
+        echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( $3 * 100 / $2 - 100 ))%)"
       }
       dashi-style > "$out"
       size1="$(cat "$out" | wc -l)"
       gzip1="$(gzip -c "$out" | wc -c)"
-      cleancss "$out" --output "$out"
+      cleancss --output "$out"{,}
       size2="$(cat "$out" | wc -c)"
       gzip2="$(gzip -c "$out" | wc -c)"
       compare "$name" $size1 $size2

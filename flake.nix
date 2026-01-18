@@ -90,30 +90,27 @@
               }
               ''
                 function compare() {
-                  echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( 100 - $2 * 100 / $3 ))%)"
+                  echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( $3 * 100 / $2 - 100 ))%)"
                 }
                 mkdir -p "$out"
                 cd "$out"
                 cp -r "${hfinal.${pname}.staticAssets}" static
                 chmod -R +w static
                 pushd "${hfinal.${pname}}/bin/${pname}.jsexe/"
-                size1="$(cat all.js | wc -c)"
-                gzip1="$(gzip -c all.js | wc -c)"
+                mainjs="$out/static/main.js"
                 closure-compiler \
                   --js=all.js \
-                  --js_output_file="$out/static/index.js" \
+                  --js_output_file="$mainjs" \
                   --jscomp_off=checkVars \
                   --externs all.externs.js \
                   --compilation_level ADVANCED_OPTIMIZATIONS \
                   --language_in UNSTABLE
-                size2="$(cat "$out/static/index.js" | wc -c)"
-                gzip2="$(gzip -c "$out/static/index.js" | wc -c)"
-                compare "index.js" $size1 $size2
-                compare "index.js.gz" $gzip1 $gzip2
+                compare "main.js" $(cat all.js | wc -c) $(gzip -c all.js | wc -c)
+                compare "main.js.gz" $(cat "$mainjs" | wc -c) $(gzip -c "$mainjs" | wc -c)
                 popd
                 cd static
                 rm -fr browser_wasi_shim
-                sed -i "s/\?v=0/\?v=$(md5sum index.js | cut -d' ' -f1)/" index.html
+                sed -i "s/\?v=0/\?v=$(md5sum main.js | cut -d' ' -f1)/" index.html
                 cd ..
                 mv static/{index.html,404.html,favicon.ico,apple-touch-icon.png} .
               '';
@@ -125,35 +122,56 @@
             dist = pkgs.runCommand "${pname}-wasm-dist"
               {
                 nativeBuildInputs = with pkgs; [
-                  hfinal.ghc
                   binaryen
+                  hfinal.ghc
                   nodejs
                   wasm-tools
+                  webpack-cli
                 ];
               }
               ''
                 function compare() {
-                  echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( 100 - $2 * 100 / $3 ))%)"
+                  echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( $3 * 100 / $2 - 100 ))%)"
+                }
+                function compress() {
+                    f1="$1"
+                    shift
+                    f2="$1"
+                    shift
+                    size1="$(cat $f1 | wc -c)"
+                    gzip1="$(gzip -c $f1 | wc -c)"
+                    eval "$*"
+                    size2="$(cat $f2 | wc -c)"
+                    gzip2="$(gzip -c $f2 | wc -c)"
+                    compare $f2 $size1 $size2
+                    compare $f2.gz $gzip1 $gzip2
                 }
                 mkdir -p "$out"
                 cd "$out"
                 cp -r "${hfinal.${pname}.staticAssets}" static
                 cd static
-                chmod +w .
+                chmod -R +w .
                 cp "${hfinal.${pname}}/bin/${pname}.wasm" app.wasm
                 chmod +w app.wasm
                 "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
                 # hold @MagicRB accountable for this crime
                 sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
-                size1="$(cat app.wasm | wc -c)"
-                gzip1="$(gzip -c app.wasm | wc -c)"
-                wasm-opt -all -O2 app.wasm -o app.wasm
-                wasm-tools strip -o app.wasm app.wasm
-                size2="$(cat app.wasm | wc -c)"
-                gzip2="$(gzip -c app.wasm | wc -c)"
-                compare "app.wasm" $size1 $size2
-                compare "app.wasm.gz" $gzip1 $gzip2
-                sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html index.js
+
+                compress app.wasm{,} "wasm-opt -all -O2 -o app.wasm{,} ; wasm-tools strip -o app.wasm{,}"
+                sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html main.js
+
+                substituteInPlace ghc_wasm_jsffi.js --replace-fail "node:timers" timers
+                entries="./main.js ./ghc_wasm_jsffi.js ./browser_wasi_shim/*.js"
+                compress "$entries" main.js webpack --config "${pkgs.writeText "webpack.config.js" /*javascript*/ ''
+                  module.exports = {
+                    resolve: {
+                      fallback: {
+                        timers: false, // do not include a polyfill for node:timers
+                      },
+                    },
+                  };
+                ''}" --mode production --output-path . --entry $entries
+                rm -fr ghc_wasm_jsffi.js browser_wasi_shim
                 cd ..
                 mv static/{index.html,404.html,favicon.ico,apple-touch-icon.png} .
               '';

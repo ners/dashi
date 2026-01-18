@@ -1,5 +1,5 @@
-import { WASI, OpenFile, File, ConsoleStdout } from "/static/browser_wasi_shim/index.js";
-import ghc_wasm_jsffi from "/static/ghc_wasm_jsffi.js";
+import { WASI, OpenFile, File, ConsoleStdout } from "./browser_wasi_shim/index.js";
+import ghc_wasm_jsffi from "./ghc_wasm_jsffi.js";
 
 const args = [];
 const env = ["GHCRTS=-H64m"];
