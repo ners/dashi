@@ -17,10 +17,10 @@ let
     src = fetchFromGitHub {
       owner = "haskell-wasm";
       repo = "browser_wasi_shim";
-      rev = "9fbcf96836ba0c3652b394a45fc8c546efd64a4e";
-      hash = "sha256-soG50TSnteo7m7286/m09bs4NS+fcNqcGamIYRPE+h8=";
+      rev = "0e10ea9465a098d1ee2cf3e09ed050102f0ead1a";
+      hash = "sha256-j/UhO3RvTF0NFE8gfbKopjBDdBPn1UdS01PQJixJMZc=";
     };
-    npmDepsHash = "sha256-c9vJp/PQR3cXj45E6xT0q2AqZdpHn/UX/5qUQZ1ZAPI=";
+    npmDepsHash = "sha256-eehX/bQoMo0rfCq6GF4ood0+xbRagMK4gWGXlZtpfJ4=";
     installPhase = ''
       mv dist "$out"
     '';

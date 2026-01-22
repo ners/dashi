@@ -48,11 +48,11 @@ main = do
     let updateModel :: Action -> Effect parent Model Action
         updateModel = liftM2 (>>) traceAction appUpdate
         model = emptyModel & either (const id) (#section . #current .~) (route uri)
+        events = defaultEvents <> keyboardEvents
     run
-        . startApp
+        . startApp events
         $ (component model updateModel appView)
-            { events = defaultEvents <> keyboardEvents
-            , initialAction = Just Setup
+            { initialAction = Just Setup
             , subs = [routerSub $ either (const NoOp) SetCurrentSection]
             }
 
