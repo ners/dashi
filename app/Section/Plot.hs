@@ -12,7 +12,6 @@ import Dashi.Diagram (bottom, top)
 import Dashi.Prelude hiding (view)
 import Dashi.Style.Colour
 import Dashi.Style.Tokens
-import Dashi.Util (formatFloat)
 import Data.Bool (bool)
 import Data.Foldable qualified as Foldable
 import Data.Generics.Labels ()
@@ -76,8 +75,9 @@ update Setup = do
     withSink tick'
 update (Tick time) = do
     Model{hz, time = oldTime} <- State.get
-    let append value = Seq.dropWhileL ((time - 10 >) . fst) . (|> (time, value))
-    State.modify $ (#time .~ time) . (#fps %~ append (1 / (time - oldTime)))
+    let minTime = time - 10
+        append value = Seq.dropWhileL ((minTime >) . fst) . (|> (time, value))
+    State.modify $ (#time .~ time) . if minTime > oldTime then id else #fps %~ append (1 / (time - oldTime))
     withSink \sink -> do
         threadDelay $ 1_000_000 `div` hz
         tick' sink
@@ -121,7 +121,7 @@ view Model{..} =
                 , text $ toMisoString hz <> "\xA0Hz"
                 ]
             ]
-        , widget
+        , widget @(Plot Double)
             Plot
                 { width
                 , height = Dashi.Prelude.min width 500
@@ -142,10 +142,10 @@ view Model{..} =
                         , plotType = LinePlot
                         }
                     ]
-                , showX = formatFloat
-                , showY = formatFloat
+                , showX = toMisoString
+                , showY = toMisoString
                 }
-        , widget
+        , widget @(Plot Double)
             Plot
                 { width
                 , height = Dashi.Prelude.min width 300
@@ -172,21 +172,21 @@ view Model{..} =
                     [ -- Nixpkgs stable 25.11
                       Series
                         { strokeColour = Nothing
-                        , fillColour = Just $ ColorOKLCHA 0.55 0.12 264 1
+                        , fillColour = Just $ ColorOKLCHA 0.55 0.12 264 0.75
                         , values = [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     , -- AUR
                       Series
                         { strokeColour = Nothing
-                        , fillColour = Just $ ColorOKLCHA 0.3211 0 0 1
+                        , fillColour = Just $ ColorOKLCHA 0.3211 0 0 0.75
                         , values = [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     , -- Ubuntu 26.04
                       Series
                         { strokeColour = Nothing
-                        , fillColour = Just $ ColorOKLCHA 0.6405 0.1941 37.76 1
+                        , fillColour = Just $ ColorOKLCHA 0.6405 0.1941 37.76 0.75
                         , values = [(0, 19856), (1, 8782), (2, 10111), (3, 1588)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
@@ -196,6 +196,6 @@ view Model{..} =
                     d | d < 2 -> "Outdated"
                     d | d < 3 -> "Unique"
                     _ -> "Problematic"
-                , showY = formatFloat
+                , showY = toMisoString
                 }
         ]

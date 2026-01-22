@@ -49,5 +49,5 @@ style = do
     Widget.style @Heading
     Widget.style @MDI
     Widget.style @Message
-    Widget.style @Plot @model @action
+    Widget.style @(Plot Double) @model @action
     Widget.style @ProgressBar @model @action

@@ -77,11 +77,21 @@ top = #topLeft . #y
 left :: Lens' (Rect num) num
 left = #topLeft . #x
 
+topRight :: Lens' (Rect num) (Point num)
+topRight = lens
+    (\Rect{topLeft = Point{y}, bottomRight = Point{x}} -> Point{..})
+    (\r Point{..} -> r & top .~ y & right .~ x)
+
 bottom :: Lens' (Rect num) num
 bottom = #bottomRight . #y
 
 right :: Lens' (Rect num) num
 right = #bottomRight . #x
+
+bottomLeft :: Lens' (Rect num) (Point num)
+bottomLeft = lens
+    (\Rect{topLeft = Point{x}, bottomRight = Point{y}} -> Point{..})
+    (\r Point{..} -> r & bottom .~ y & left .~ x)
 
 instance (Ord num) => Shape (Rect num) num where
     boundingBox = boundingBoxOfRects1 . Identity

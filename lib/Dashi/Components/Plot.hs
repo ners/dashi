@@ -18,14 +18,14 @@ import Miso.String qualified as MisoString
 import Miso.Svg qualified as Svg
 import Miso.Svg.Property qualified as Svg
 
-data PlotType = LinePlot | BarPlot {barWidth :: Double}
+data PlotType num = LinePlot | BarPlot {barWidth :: num}
     deriving stock (Eq, Show)
 
-data Series = Series
+data Series num = Series
     { strokeColour :: Maybe (Color (Alpha OKLCH) Double)
     , fillColour :: Maybe (Color (Alpha OKLCH) Double)
-    , values :: [(Double, Double)]
-    , plotType :: PlotType
+    , values :: [(num, num)]
+    , plotType :: PlotType num
     }
 
 data PaddingAmount num
@@ -82,14 +82,14 @@ contract Padding{..} r =
   where
     (absolutePadding -> padX, absolutePadding -> padY) = rectSize r
 
-data Plot = Plot
+data Plot num = Plot
     { width :: Int
     -- ^ The overall width of the canvas, including padding and plot area
     , height :: Int
     -- ^ The overall height of the canvas, including padding and plot area
-    , padding :: Maybe (Padding Double)
+    , padding :: Maybe (Padding num)
     -- ^ The space from the edge of the canvas to the plot area
-    , domainTransform :: Rect Double -> Rect Double
+    , domainTransform :: Rect num -> Rect num
     -- ^ The transformation of the domain, e.g. padding or forcing a 0 baseline.
     , showAxes :: Bool
     {- ^ Whether to render plot axes
@@ -99,20 +99,20 @@ data Plot = Plot
     {- ^ Whether to render plot grid
     TODO: separate X and Y
     -}
-    , series :: [Series]
+    , series :: [Series num]
     -- ^ The series to plot
-    , showX :: Double -> MisoString
+    , showX :: num -> MisoString
     -- ^ The function to render ticks on the X axis
-    , showY :: Double -> MisoString
+    , showY :: num -> MisoString
     -- ^ The function to render ticks on the Y axis
     }
 
-instance Widget Plot model action where
+instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action where
     widget' attrs Plot{..} =
         Svg.svg_
             ( Svg.width_ (toMisoString width)
                 : Svg.height_ (toMisoString height)
-                : Svg.viewBox_ (MisoString.unwords . fmap toMisoString $ [viewBox.topLeft.x, viewBox.topLeft.y, width, height])
+                : Svg.viewBox_ (MisoString.unwords [toMisoString viewBox.topLeft.x, toMisoString viewBox.topLeft.y, toMisoString width, toMisoString height])
                 : Svg.className "plot"
                 : attrs
             )
@@ -122,11 +122,11 @@ instance Widget Plot model action where
               , plotElements
               ]
       where
-        width', height' :: (Num num) => num
+        width', height' :: num
         width' = fromIntegral width
         height' = fromIntegral height
 
-        viewBox :: forall num. (Num num) => Rect num
+        viewBox :: Rect num
         viewBox =
             Rect
                 { topLeft = Point{x = 0, y = 0}
@@ -163,17 +163,17 @@ instance Widget Plot model action where
                   ]
           where
             Rect{..} = domain
-            topRight = Point{x = bottomRight.x, y = topLeft.y}
-            bottomLeft = Point{x = topLeft.x, y = bottomRight.y}
+            topRight' = Point{x = bottomRight.x, y = topLeft.y}
+            bottomLeft' = Point{x = topLeft.x, y = bottomRight.y}
             mkAxis :: (ToSVG s num) => s -> [View model action]
             mkAxis = toSVG [Svg.stroke_ (axisColour 1), Svg.strokeWidth_ "1"]
-            xAxis, yAxis :: Line Double
-            xAxis = Line topLeft topRight
-            yAxis = Line topLeft bottomLeft
-            inViewBox :: (Shape s Double) => s -> s
+            xAxis, yAxis :: Line num
+            xAxis = Line topLeft topRight'
+            yAxis = Line topLeft bottomLeft'
+            inViewBox :: (Shape s num) => s -> s
             inViewBox = translateDomain paddedViewBox domain
 
-            mkTickX, mkTickY :: Double -> [[View model action]]
+            mkTickX, mkTickY :: num -> [[View model action]]
             mkTickX x =
                 [ mkAxis $ Line p (offsetPoint id (+ 5) p)
                 , toSVG
@@ -200,18 +200,18 @@ instance Widget Plot model action where
               where
                 p = inViewBox Point{x = topLeft.x, y}
 
-        isBarPlot :: PlotType -> Bool
+        isBarPlot :: PlotType num -> Bool
         isBarPlot BarPlot{} = True
         isBarPlot _ = False
 
-        barPlotSeries :: [Series]
+        barPlotSeries :: [Series num]
         barPlotSeries = filter (isBarPlot . plotType) series
 
-        barPlotWidth :: PlotType -> Double
+        barPlotWidth :: PlotType num -> num
         barPlotWidth BarPlot{barWidth} = barWidth
         barPlotWidth _ = 0
 
-        totalBarPlotWidth :: Double
+        totalBarPlotWidth :: num
         totalBarPlotWidth = sum $ barPlotWidth . plotType <$> barPlotSeries
 
         plotElements :: [View model action]
@@ -222,7 +222,7 @@ instance Widget Plot model action where
                    in concatMap (uncurry renderBarPlot) $ zip widths barPlotSeries
                 ]
 
-        renderLinePlot :: Series -> Rect Double -> [View model action]
+        renderLinePlot :: Series num -> Rect num -> [View model action]
         renderLinePlot Series{..} Rect{..} =
             mconcat
                 . catMaybes
@@ -251,7 +251,7 @@ instance Widget Plot model action where
                     . translateDomain paddedViewBox domain
                     $ Polygon{points = points'}
 
-        renderBarPlot :: Double -> Series -> [View model action]
+        renderBarPlot :: num -> Series num -> [View model action]
         renderBarPlot leftOffset Series{..} =
             flip concatMap values \(x, y) ->
                 let
@@ -268,10 +268,10 @@ instance Widget Plot model action where
                             , Point{x = r, y = 0}
                             ]
 
-        seriesBoundingBoxes :: [Rect Double]
+        seriesBoundingBoxes :: [Rect num]
         seriesBoundingBoxes = boundingBox . fmap (uncurry Point) . values <$> series
 
-        domain :: Rect Double
+        domain :: Rect num
         domain = swapY . domainTransform . swapY $ boundingBox seriesBoundingBoxes
 
         axisColour :: Double -> MisoString
@@ -279,7 +279,7 @@ instance Widget Plot model action where
 
         hasNonBarPlots = not $ all (isBarPlot . plotType) series
 
-        ticksX, ticksY :: [Double]
+        ticksX, ticksY :: [num]
         ticksX =
             if hasNonBarPlots
                 then calculateTicks x $ width `div` 100
@@ -287,18 +287,19 @@ instance Widget Plot model action where
         ticksY = calculateTicks y $ height `div` 80
 
         -- "Nice Numbers" algorithm to find human-readable tick values
-        calculateTicks :: (Point Double -> Double) -> Int -> [Double]
+        calculateTicks :: (Point num -> num) -> Int -> [num]
         calculateTicks dim targetCount
             | dMin >= dMax = [dMin]
             | otherwise = (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
           where
             (dMin, dMax) = minMax dim domain
             range = dMax - dMin
-            roughStep = range / fromIntegral targetCount
+            roughStep = range / fromIntegral (max 1 targetCount)
 
             -- Calculate magnitude of the step (power of 10)
-            e = floor @_ @Int (logBase 10 roughStep)
-            fraction = roughStep / (10 ^^ e)
+            e = floor @Double @Int (logBase 10 $ realToFrac roughStep)
+            e10 = max 1 $ 10 ^^ e
+            fraction = roughStep / e10
 
             -- Round to nearest nice step (1, 2, 5, 10)
             niceFraction
@@ -307,7 +308,7 @@ instance Widget Plot model action where
                 | fraction < 7.5 = 5
                 | otherwise = 10
 
-            niceStep = niceFraction * (10 ^^ e)
+            niceStep = niceFraction * e10
 
             -- Calculate start and end indices
             startIdx, endIdx :: Int
