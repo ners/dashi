@@ -39,7 +39,16 @@ view Model =
                     <> description appearance
                     <> [ div_
                             [class_ "grid"]
-                            [ div_ [] . pure $ widget' @(Button Model Action) [attr] Button{size = Button.DefaultSize, appearance, label = [widget (iconFor appearance) | hasIcon] <> [text appearanceStr]}
+                            [ div_ []
+                                . pure
+                                $ widget' @(Button Model Action)
+                                    [attr]
+                                    Button
+                                        { size = Button.DefaultSize
+                                        , appearance
+                                        , label = [widget (iconFor appearance) | hasIcon] <> [text appearanceStr]
+                                        , onClick = Just NoOp
+                                        }
                             | attr <- [emptyAttr_, ariaBusy_ True, disabled_]
                             , hasIcon <- [False, True]
                             ]

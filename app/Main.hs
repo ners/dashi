@@ -31,7 +31,7 @@ import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
 import Miso
 import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
-import Miso.Html.Event (onChange, onClick, onClickPrevent)
+import Miso.Html.Event (onChange, onClickPrevent)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
 import Miso.Router (Router (href_, route, toURI))
 import Miso.String qualified as MisoString
@@ -164,11 +164,12 @@ appView model =
             , topBar =
                 Just
                     [ widget' @(Button Model Action)
-                        [id_ "nav-toggle", onClick . SetNavOpen . not $ model.navOpen]
+                        [id_ "nav-toggle"]
                         Button
                             { size = Button.IconButton
                             , appearance = Subtle
                             , label = [widget $ if model.navOpen then MdiMenuClose else MdiMenuOpen]
+                            , onClick = Just . SetNavOpen . not $ model.navOpen
                             }
                     , img_ [src_ "/static/icon.svg"]
                     , widget . Heading XLarge $ unsafeTranslate model "hello"
@@ -186,8 +187,7 @@ appView model =
                             , value = Language.code
                             , label = pure . text . MisoString.toUpper . Language.code
                             }
-                    , widget' @(Button Model Action)
-                        [onClick . SetColourScheme . cycleSucc $ model.colourScheme]
+                    , widget @(Button Model Action)
                         Button
                             { size = Button.IconButton
                             , appearance = Subtle
@@ -196,6 +196,7 @@ appView model =
                                     Colour.Scheme.Light -> MdiWhiteBalanceSunny
                                     Colour.Scheme.Dark -> MdiWeatherNight
                                 ]
+                            , onClick = Just . SetColourScheme . cycleSucc $ model.colourScheme
                             }
                     ]
             , sideNav =

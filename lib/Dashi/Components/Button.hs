@@ -22,6 +22,7 @@ import GHC.IsList (IsList (fromList))
 import Graphics.Color.Model (Alpha, setAlpha)
 import Graphics.Color.Space.OKLAB.LCH
 import Miso.Html.Element (button_, label_)
+import Miso.Html.Event qualified as Html
 
 data Background = Background Appearance InputState
     deriving stock (Eq)
@@ -75,11 +76,16 @@ data Button model action = Button
     { size :: ButtonSize
     , appearance :: Appearance
     , label :: [View model action]
+    , onClick :: Maybe action
     }
 
 instance Widget (Button model action) model action where
     widget' attrs Button{..} =
-        button_ (tokenAttr size : tokenAttr appearance : attrs <> [unselectable_ | isBusy])
+        button_
+            ( tokenAttr size
+                : tokenAttr appearance
+                : attrs <> [unselectable_ | isBusy] <> maybeToList (Html.onClickPrevent <$> onClick)
+            )
             $ label_ [] label
             : [widget Spinner | isBusy]
       where

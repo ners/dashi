@@ -4,7 +4,9 @@
 
 module Dashi.Components.TextField where
 
-import Clay hiding (Background, Color, Number, fullWidth, label, name, span_, type_, value, var)
+import Clay hiding (Background, Color, Number, fullWidth, name, not, type_, valid, value, var)
+import Clay qualified
+import Dashi.Components.Util (ariaInvalid_)
 import Dashi.Prelude hiding ((#), (&))
 import Dashi.Style.Colour (LightDark)
 import Dashi.Style.Colour qualified as Colour
@@ -56,7 +58,7 @@ data TextField action = TextField
     { name :: MisoString
     , type' :: Type
     , value :: Maybe MisoString
-    , isValid :: Bool
+    , valid :: Bool
     , onChange :: MisoString -> action
     }
 
@@ -65,7 +67,7 @@ instance Widget (TextField action) model action where
         | type' == MultiLine = textarea_ attrs' . fmap text . maybeToList $ value
         | otherwise = input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
       where
-        attrs' = name_ name : Html.onInput onChange : attrs
+        attrs' = name_ name : Html.onInput onChange : attrs <> [ariaInvalid_ True | not valid]
     style = do
         ":root" ? tokenDecl @Background
         (Clay.select <> textarea <> input # isOneOfAll' @Type) ? do
@@ -84,7 +86,9 @@ instance Widget (TextField action) model action where
             focusVisible & do
                 borderColor' Colour.BorderFocused
                 backgroundColor' $ Background ActiveState
-            ":user-invalid" & ":not(:focus-visible)" & borderColor' Colour.BorderDanger
+            isOneOf [":user-invalid", "aria-invalid" @= "true"]
+                & ":not(:focus-visible)"
+                & borderColor' Colour.BorderDanger
         textarea ? do
             "resize" -: "vertical"
             minHeight $ em 10

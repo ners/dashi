@@ -51,6 +51,12 @@ ariaBusy_ =
         True -> "true"
         False -> "false"
 
+ariaInvalid_ :: Bool -> Attribute action
+ariaInvalid_ =
+    aria_ "invalid" . \case
+        True -> "true"
+        False -> "false"
+
 ariaRole_ :: MisoString -> Attribute action
 ariaRole_ = aria_ "role"
 

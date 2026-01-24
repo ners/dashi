@@ -44,7 +44,7 @@ view Model =
                                 { name = "text"
                                 , type'
                                 , value = Nothing
-                                , isValid = True
+                                , valid = True
                                 , onChange = const NoOp
                                 }
                        ]
