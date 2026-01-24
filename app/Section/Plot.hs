@@ -136,7 +136,7 @@ view Model{..} =
                 , domainTransform = (top .~ 120) . (bottom .~ 0)
                 , series =
                     [ Series
-                        { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 1
+                        { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 0.8
                         , fillColour = Just $ ColorOKLCHA 0.7 0.16 250 0.3
                         , values = Foldable.toList fps
                         , plotType = LinePlot

@@ -41,10 +41,10 @@ view Model{..} =
             [ widget @(Tabs Tab Model Action)
                 Tabs
                     { tabs = Tab <$> [1, 2, 3]
-                    , label = pure . text . misoShow
+                    , label = pure . text . ishow
                     , selected = (== tab)
                     , onSelect = SelectTab
                     }
             ]
-        , div_ [] [text $ "Contents of " <> misoShow tab]
+        , div_ [] [text $ "Contents of " <> ishow tab]
         ]

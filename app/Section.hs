@@ -82,7 +82,7 @@ data ComponentId
     deriving stock (Generic, Eq, Show, Bounded, Enum)
 
 instance Router SectionId where
-    fromRoute = fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip) . breakAll (== ' ') . misoShow
+    fromRoute = fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip) . breakAll (== ' ') . ishow
     routeParser = Parser \_ tokens ->
         maybeToList $ List.firstJust (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens) [minBound .. maxBound]
 
@@ -125,7 +125,7 @@ view Model{..} =
         Components TextField -> mount TextField.textField
   where
     currentStr :: MisoString
-    currentStr = toMisoString . MisoString.replace " " "-" . MisoString.toLower . misoShow $ current
+    currentStr = toMisoString . MisoString.replace " " "-" . MisoString.toLower . ishow $ current
 
 section :: Lens' parent Model -> Model -> Component parent Model Action
 section l model =

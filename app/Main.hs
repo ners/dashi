@@ -13,6 +13,7 @@ import DSL qualified
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
+import Dashi.Components.Icon (MDI (..))
 import Dashi.Components.Select (Select (..))
 import Dashi.Components.Util
 import Dashi.Layout.Page (Page (..))
@@ -36,7 +37,6 @@ import Miso.Router (Router (href_, route, toURI))
 import Miso.String qualified as MisoString
 import Section (SectionId)
 import Section qualified
-import Web.Font.MDI
 
 #ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
@@ -109,7 +109,7 @@ data Action
     deriving stock (Show)
 
 traceAction :: Action -> Effect parent model action
-traceAction = io_ . consoleLog . ("traceAction: " <>) . misoShow
+traceAction = io_ . consoleLog . ("traceAction: " <>) . ishow
 
 getSystemColourScheme :: IO Colour.Scheme
 getSystemColourScheme =
@@ -204,7 +204,7 @@ appView model =
                         . pure
                         $ routesToUl
                             model.section.current
-                            [ (s, MisoString.words . misoShow $ s)
+                            [ (s, MisoString.words . ishow $ s)
                             | s <- [minBound .. maxBound]
                             ]
                     ]

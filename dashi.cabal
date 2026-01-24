@@ -55,9 +55,7 @@ common common
     containers,
     extra,
     generic-lens,
-    lens,
     miso,
-    web-font-mdi,
 
 library
   import: common
@@ -93,30 +91,29 @@ library
     Dashi.Style.Tokens
     Dashi.Style.Util
     Dashi.Util
+
   build-depends:
     Color,
     clay,
+    lens,
     text,
+    web-font-mdi,
 
 executable dashi
   import: common
   cpp-options: -O2
 
-  if impl(ghcjs) || arch(javascript)
-    cpp-options:
-      -DGHCJS_BROWSER
-    ld-options:
-      -sEXPORTED_RUNTIME_METHODS=HEAP8
+  if (impl(ghcjs) || arch(javascript))
+    cpp-options: -DGHCJS_BROWSER
+    ld-options: -sEXPORTED_RUNTIME_METHODS=HEAP8
   elif arch(wasm32)
-    cpp-options:
-      -DWASM
+    cpp-options: -DWASM
     ghc-options:
       -no-hs-main
       -optl-mexec-model=reactor
       "-optl-Wl,--export=hs_start"
   else
-    cpp-options:
-      -DVANILLA
+    cpp-options: -DVANILLA
 
   hs-source-dirs: app
   main-is: Main.hs
@@ -143,15 +140,17 @@ executable dashi
     Section.Switch
     Section.Tabs
     Section.TextField
+
   build-depends:
     dashi,
     fluent-bundle,
     fluent-syntax,
 
 executable dashi-style
-  import: common
+  default-language: Haskell2010
   hs-source-dirs: style
   main-is: Main.hs
   build-depends:
+    base,
     dashi,
     text,

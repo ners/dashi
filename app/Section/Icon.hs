@@ -3,12 +3,12 @@
 module Section.Icon where
 
 import Dashi.Components.Heading
+import Dashi.Components.Icon (Icon)
 import Dashi.Prelude hiding (view)
 import Dashi.Style.Tokens
 import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
-import Web.Font.MDI
 
 data Model = Model
     deriving stock (Generic, Eq, Show)
@@ -32,7 +32,7 @@ view Model =
         , p_ [] [text "An icon is a symbol representing a command, device, directory, or common action."]
         , div_
             [class_ "grid"]
-            [ widget @MDI mdi
+            [ widget @Icon mdi
             | mdi <- take (38 * 4) [minBound .. maxBound]
             ]
         ]

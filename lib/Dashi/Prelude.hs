@@ -29,6 +29,3 @@ import Prelude
 
 ishow :: (Show a, IsString s) => a -> s
 ishow = fromString . show
-
-misoShow :: (Show a) => a -> MisoString
-misoShow = toMisoString . show

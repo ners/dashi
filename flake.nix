@@ -278,5 +278,19 @@
               ];
             };
           });
+        formatter.${system} = pkgs.writeShellApplication {
+          name = "formatter";
+          runtimeInputs = with pkgs; with haskellPackages; [
+            cabal-gild
+            fd
+            fourmolu
+            nixpkgs-fmt
+          ];
+          text = ''
+            fd --extension=nix -X nixpkgs-fmt
+            fd --extension=hs -X fourmolu -i
+            fd --extension=cabal -x cabal-gild --io
+          '';
+        };
       });
 }
