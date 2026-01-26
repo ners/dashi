@@ -4,9 +4,8 @@ module Section.ProgressBar where
 
 import Dashi.Components.Heading
 import Dashi.Components.ProgressBar
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
-import Miso hiding (update, view)
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.String qualified as MisoString

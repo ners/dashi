@@ -4,9 +4,8 @@ module Section.Switch where
 
 import Dashi.Components.Heading
 import Dashi.Components.Switch
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
-import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (disabled_)
 

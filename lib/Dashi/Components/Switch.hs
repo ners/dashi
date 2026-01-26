@@ -11,7 +11,6 @@ import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Coerce (coerce)
-import Miso.Event.Types (Checked (..))
 import Miso.Html.Element (input_, label_, span_)
 import Miso.Html.Event (onChecked)
 import Miso.Html.Property (checked_, name_, type_)

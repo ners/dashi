@@ -14,7 +14,6 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Coerce (coerce)
 import GHC.IsList (fromList)
-import Miso (Checked (Checked))
 import Miso.Html.Element (fieldset_, input_, label_, span_)
 import Miso.Html.Event qualified as Html
 import Miso.Html.Property (checked_, name_, type_)

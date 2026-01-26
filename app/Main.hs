@@ -29,7 +29,7 @@ import Data.List.Extra qualified as List
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
-import Miso
+import Miso.DSL ((#))
 import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
 import Miso.Html.Event (onChange, onClickPrevent)
 import Miso.Html.Property (aria_, hidden_, id_, src_)

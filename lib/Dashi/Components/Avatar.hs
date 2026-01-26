@@ -5,7 +5,7 @@ module Dashi.Components.Avatar where
 import Clay hiding (Content, action, content, img, shape, size, span_, transparent, url)
 import Clay qualified
 import Dashi.Components.Icon ()
-import Dashi.Prelude hiding (has, rem, span, (#), (&))
+import Dashi.Prelude hiding (Image, has, rem, span, (#), (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Style.Util

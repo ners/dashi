@@ -11,7 +11,6 @@ import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util (backgroundColor', borderRadiusAll', fullWidth, var, (~:))
 import Data.List qualified as List
-import Miso
 import Miso.Html.Element (progress_)
 import Miso.Html.Property (max_, value_)
 

@@ -4,10 +4,9 @@ module Section.Range where
 
 import Dashi.Components.Heading
 import Dashi.Components.Range
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Data.Generics.Labels ()
-import Miso hiding (update, view)
 import Miso.Html.Element (p_, section_)
 
 newtype Model = Model {value :: Int}

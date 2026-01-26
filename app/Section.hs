@@ -3,13 +3,12 @@
 
 module Section where
 
-import Dashi.Prelude hiding (init)
+import Dashi.Prelude hiding (ComponentId, init)
 import Dashi.Util
 import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
-import Miso hiding (ComponentId)
 import Miso.Html.Element (div_)
 import Miso.Html.Property (id_)
 import Miso.Router (Router (..), Token (..))

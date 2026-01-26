@@ -5,10 +5,9 @@ module Section.Select where
 import Dashi.Components.Form (FormField (..))
 import Dashi.Components.Heading
 import Dashi.Components.Select
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Dashi.Util (uncapitalise)
-import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.String qualified as MisoString
 

@@ -7,10 +7,9 @@ import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
 import Dashi.Components.Icon (MDI (..))
 import Dashi.Components.Util
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Dashi.Util
-import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_, disabled_)
 

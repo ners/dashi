@@ -6,14 +6,12 @@ import Clay hiding (action, aside, main_, not)
 import Clay qualified
 import Clay.Media (minDeviceWidth)
 import Dashi.Components.Widget
+import Dashi.Prelude hiding (all, aside, has, rem, (&))
 import Dashi.Style.Util
 import Data.List qualified as List
-import Data.Maybe (catMaybes)
-import Miso (View)
 import Miso.Html.Element (aside_, div_, header_, nav_)
 import Miso.Html.Element qualified as Html
 import Miso.Html.Property (id_)
-import Prelude hiding (all, rem)
 
 data Page model action = Page
     { banner :: Maybe [View model action]
@@ -25,12 +23,13 @@ data Page model action = Page
 
 instance Widget (Page model action) model action where
     widget' attrs Page{..} =
-        div_ (id_ "page" : attrs) . catMaybes $
-            [ header_ [] <$> topBar
-            , nav_ [] <$> sideNav
-            , pure $ Html.main_ [] main_
-            , aside_ [] <$> aside
-            ]
+        div_ (id_ "page" : attrs)
+            . catMaybes
+            $ [ header_ [] <$> topBar
+              , nav_ [] <$> sideNav
+              , pure $ Html.main_ [] main_
+              , aside_ [] <$> aside
+              ]
     style = do
         "#page" ? do
             minHeight $ vh 100

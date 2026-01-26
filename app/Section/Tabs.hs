@@ -4,10 +4,9 @@ module Section.Tabs where
 
 import Dashi.Components.Heading
 import Dashi.Components.Tabs
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Data.Generics.Labels ()
-import Miso hiding (update, view)
 import Miso.Html.Element (div_, p_, section_)
 
 newtype Tab = Tab Int

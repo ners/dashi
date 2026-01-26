@@ -4,9 +4,8 @@ module Section.Message where
 
 import Dashi.Components.Heading
 import Dashi.Components.Message
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
-import Miso hiding (update, view)
 import Miso.Html.Element (p_, section_)
 
 data Model = Model

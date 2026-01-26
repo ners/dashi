@@ -3,9 +3,8 @@
 module Section.Overview where
 
 import Dashi.Components.Heading
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
-import Miso hiding (update, view)
 import Miso.Html.Element (a_, p_, section_)
 import Miso.Html.Property (href_)
 

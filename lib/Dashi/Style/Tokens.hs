@@ -6,9 +6,8 @@ import Clay hiding (Color, FontSize, fontSize)
 import Dashi.Util (emptyAttr_, emptyRefinement)
 import Data.String (IsString (fromString))
 import GHC.IsList (IsList (..))
-import Miso (Attribute)
 import Miso.Html.Property (class_)
-import Prelude hiding (rem)
+import Miso.Prelude
 
 class Token t where
     tokenName :: (IsString s, Semigroup s) => t -> s

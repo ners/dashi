@@ -1,6 +1,6 @@
 module DSL (module DSL, module Miso.DSL) where
 
-import Dashi.Prelude hiding (head, (#))
+import Dashi.Prelude hiding (head, parent, (#))
 import Miso.DSL
 
 call' :: (ToArgs args, ToObject obj) => MisoString -> args -> obj -> IO JSVal

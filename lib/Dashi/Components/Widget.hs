@@ -3,8 +3,7 @@
 module Dashi.Components.Widget where
 
 import Clay (Css)
-import Miso
-import Prelude
+import Miso.Prelude
 
 class Widget w model action where
     widget' :: [Attribute action] -> w -> View model action

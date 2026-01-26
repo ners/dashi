@@ -7,7 +7,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     ghc-wasm-meta = {
-      url = "gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org";
+      url = "github:haskell-wasm/ghc-wasm-meta";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-wasm = {
@@ -65,7 +65,6 @@
           ${pname} = hfinal.callCabal2nix pname (sourceFilter ./.) { } // {
             staticAssets = pkgs.callPackage ./static-assets.nix { inherit inputs; };
           };
-          identicon-style-squares = dontCheck (doJailbreak hprev.identicon-style-squares);
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           miso = hfinal.callCabal2nix "miso" inputs.miso { };
           miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
@@ -187,18 +186,6 @@
             ];
           };
           inherit (final.haskellPackages) dashi;
-          csso = prev.buildNpmPackage rec {
-            pname = "csso";
-            version = "4.0.2";
-            src = prev.fetchFromGitHub {
-              owner = "css";
-              repo = "csso-cli";
-              tag = "v${version}";
-              hash = "sha256-mP3Q+7JlgIfPLZsCtYSpTBdV4+tT5qiEeP6fB87Wxw8=";
-            };
-            npmDepsHash = "sha256-IKy4o/tcNo0Hy49aTKAoHhfsR3xUNFYeBuvSoZXh0UI=";
-            dontNpmBuild = true;
-          };
         })
       ];
       extendHaskellPackages = nativePkgs: pkgs:
@@ -234,7 +221,7 @@
           )
           { default = pkgs.haskellPackages; }
           pkgs.haskell.packages;
-        pkg = pkgs: pkgs.haskell.packages.ghc912.${pname};
+        pkg = pkgs: pkgs.haskell.packages.ghc9122.${pname};
         dist = pkgs: (pkg pkgs).dist;
       in
       {

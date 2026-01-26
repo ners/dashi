@@ -9,7 +9,7 @@ import Dashi.Components.Plot
 import Dashi.Components.Range
 import Dashi.Components.Switch
 import Dashi.Diagram (bottom, top)
-import Dashi.Prelude hiding (view)
+import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Colour
 import Dashi.Style.Tokens
 import Data.Bool (bool)
@@ -18,7 +18,6 @@ import Data.Generics.Labels ()
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
 import GHC.Clock (getMonotonicTime)
-import Miso (Component (initialAction, subs), Effect, FromJSVal (fromJSValUnchecked), Sink, component, emptyDecoder, windowSub, withSink)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
 import Miso.State qualified as State

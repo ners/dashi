@@ -11,7 +11,6 @@ import Data.Fixed (Fixed, HasResolution)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import GHC.Float (FFFormat (..), formatRealFloat)
-import Miso (Attribute (Styles), View (VText))
 import Miso.String qualified as MisoString
 import Numeric (fromRat)
 
