@@ -7,10 +7,11 @@ module Dashi.Prelude
     , module Data.Maybe
     , module Data.Semigroup
     , module Data.String
+    , module Data.Vector.Strict
     , module GHC.Generics
+    , module Miso.Prelude
     , module Miso.String
     , module Miso.Types
-    , module Miso.Prelude
     )
 where
 
@@ -22,6 +23,7 @@ import Data.Generics.Labels ()
 import Data.Maybe
 import Data.Semigroup (Semigroup (sconcat))
 import Data.String (IsString (fromString))
+import Data.Vector.Strict (Vector)
 import GHC.Generics (Generic)
 import Miso.Prelude hiding (at, set, view, (#))
 import Miso.String (FromMisoString, MisoString, ToMisoString, fromMisoString, fromMisoStringEither, toMisoString)

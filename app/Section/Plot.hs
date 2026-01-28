@@ -8,15 +8,13 @@ import Dashi.Components.Heading
 import Dashi.Components.Plot
 import Dashi.Components.Range
 import Dashi.Components.Switch
-import Dashi.Diagram (bottom, top)
+import Dashi.Diagram (Point (..), bottom, top)
 import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Colour
 import Dashi.Style.Tokens
 import Data.Bool (bool)
-import Data.Foldable qualified as Foldable
 import Data.Generics.Labels ()
-import Data.Sequence (Seq)
-import Data.Sequence qualified as Seq
+import Data.Vector.Strict qualified as Vector
 import GHC.Clock (getMonotonicTime)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
@@ -27,7 +25,7 @@ data Model
     { width :: Int
     , time :: Double
     , hz :: Int
-    , fps :: Seq (Double, Double)
+    , fps :: Vector (Point Double)
     , showAxes :: Bool
     , showGrid :: Bool
     }
@@ -75,8 +73,13 @@ update Setup = do
 update (Tick time) = do
     Model{hz, time = oldTime} <- State.get
     let minTime = time - 10
-        append value = Seq.dropWhileL ((minTime >) . fst) . (|> (time, value))
-    State.modify $ (#time .~ time) . if minTime > oldTime then id else #fps %~ append (1 / (time - oldTime))
+    State.modify
+        $ (#time .~ time)
+        . ( filtered (const $ minTime <= oldTime)
+                . #fps
+                %~ Vector.dropWhile ((minTime >) . x)
+                . flip Vector.snoc Point{x = time, y = 1 / (time - oldTime)}
+          )
     withSink \sink -> do
         threadDelay $ 1_000_000 `div` hz
         tick' sink
@@ -137,7 +140,7 @@ view Model{..} =
                     [ Series
                         { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 0.8
                         , fillColour = Just $ ColorOKLCHA 0.7 0.16 250 0.3
-                        , values = Foldable.toList fps
+                        , values = fps
                         , plotType = LinePlot
                         }
                     ]
@@ -172,21 +175,21 @@ view Model{..} =
                       Series
                         { strokeColour = Nothing
                         , fillColour = Just $ ColorOKLCHA 0.55 0.12 264 0.75
-                        , values = [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
+                        , values = Vector.fromList $ uncurry Point <$> [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     , -- AUR
                       Series
                         { strokeColour = Nothing
                         , fillColour = Just $ ColorOKLCHA 0.3211 0 0 0.75
-                        , values = [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
+                        , values = Vector.fromList $ uncurry Point <$> [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     , -- Ubuntu 26.04
                       Series
                         { strokeColour = Nothing
                         , fillColour = Just $ ColorOKLCHA 0.6405 0.1941 37.76 0.75
-                        , values = [(0, 19856), (1, 8782), (2, 10111), (3, 1588)]
+                        , values = Vector.fromList $ uncurry Point <$> [(0, 19856), (1, 8782), (2, 10111), (3, 1588)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     ]

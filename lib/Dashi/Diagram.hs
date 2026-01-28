@@ -32,7 +32,7 @@ instance {-# OVERLAPS #-} (Num num, Ord num, ToSVG s num, Foldable f, Functor f)
 --------------------------------------------------------------------------
 
 data Point num = Point {x :: num, y :: num}
-    deriving stock (Generic)
+    deriving stock (Generic, Eq, Show)
 
 instance Shape (Point num) num where
     boundingBox p = Rect p p

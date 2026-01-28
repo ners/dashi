@@ -56,6 +56,7 @@ common common
     extra,
     generic-lens,
     miso,
+    vector,
 
 library
   import: common

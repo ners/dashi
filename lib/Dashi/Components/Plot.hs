@@ -8,10 +8,10 @@ import Clay qualified
 import Dashi.Diagram
 import Dashi.Prelude hiding (none, transform, (&))
 import Dashi.Style.Colour (Alpha)
-import Data.Foldable (Foldable (toList))
 import Data.Function ((&))
 import Data.List qualified as List
 import Data.List.Extra qualified as List
+import Data.Vector.Strict qualified as Vector
 import Graphics.Color.Space.OKLAB.LCH
 import Miso.Html.Property qualified as Svg
 import Miso.String qualified as MisoString
@@ -24,7 +24,7 @@ data PlotType num = LinePlot | BarPlot {barWidth :: num}
 data Series num = Series
     { strokeColour :: Maybe (Color (Alpha OKLCH) Double)
     , fillColour :: Maybe (Color (Alpha OKLCH) Double)
-    , values :: [(num, num)]
+    , values :: Vector (Point num)
     , plotType :: PlotType num
     }
 
@@ -230,10 +230,8 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
                   , area <$> fillColour
                   ]
           where
-            points = uncurry Point <$> values
             bottomRight' = bottomRight{y = domain.topLeft.y}
             bottomLeft' = bottomRight'{x = topLeft.x}
-            points' = bottomRight' : bottomLeft' : points
             line colour =
                 toSVG
                     [ Svg.fill_ "none"
@@ -242,18 +240,18 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
                     , Svg.strokeWidth_ "2"
                     ]
                     . translateDomain paddedViewBox domain
-                    $ Polyline{points}
+                    $ Polyline{points = Vector.toList values}
             area colour =
                 toSVG
                     [ Svg.fill_ $ toMisoString colour
                     , Svg.stroke_ "none"
                     ]
                     . translateDomain paddedViewBox domain
-                    $ Polygon{points = points'}
+                    $ Polygon{points = bottomRight' : bottomLeft' : Vector.toList values}
 
         renderBarPlot :: num -> Series num -> [View model action]
         renderBarPlot leftOffset Series{..} =
-            flip concatMap values \(x, y) ->
+            flip concatMap values \Point{..} ->
                 let
                     l = x + leftOffset - totalBarPlotWidth / 2
                     r = l + barPlotWidth plotType
@@ -269,7 +267,7 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
                             ]
 
         seriesBoundingBoxes :: [Rect num]
-        seriesBoundingBoxes = boundingBox . fmap (uncurry Point) . values <$> series
+        seriesBoundingBoxes = boundingBox . values <$> series
 
         domain :: Rect num
         domain = swapY . domainTransform . swapY $ boundingBox seriesBoundingBoxes
@@ -283,7 +281,7 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         ticksX =
             if hasNonBarPlots
                 then calculateTicks x $ width `div` 100
-                else List.sort . List.nubOrd $ concatMap (toList . fmap fst . values) series
+                else List.sort . List.nubOrd $ concatMap (fmap x . Vector.toList . values) series
         ticksY = calculateTicks y $ height `div` 80
 
         -- "Nice Numbers" algorithm to find human-readable tick values
