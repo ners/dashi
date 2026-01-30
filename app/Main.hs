@@ -49,8 +49,7 @@ main = do
         updateModel = liftM2 (>>) traceAction appUpdate
         model = emptyModel & either (const id) (#section . #current .~) (route uri)
         events = defaultEvents <> keyboardEvents
-    run
-        . startApp events
+    startApp events
         $ (component model updateModel appView)
             { initialAction = Just Setup
             , subs = [routerSub $ either (const NoOp) SetCurrentSection]
