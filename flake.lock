@@ -128,11 +128,11 @@
     "miso": {
       "flake": false,
       "locked": {
-        "lastModified": 1769579585,
-        "narHash": "sha256-ZRR5lq7lZczE85gSkHGwhnSK8xm5hCWI63zZN12JmK4=",
+        "lastModified": 1769834280,
+        "narHash": "sha256-ZMjBdimRdNQ3a+zZIp5FzTNC6I4QVTjZy8H7r/9WMkU=",
         "owner": "haskell-miso",
         "repo": "miso",
-        "rev": "ee4fb74e24ad7f7eb57b4f887902f5b5b9aafffe",
+        "rev": "cf3dec5a6301cc584e3c5e2408fda41da6fcfd89",
         "type": "github"
       },
       "original": {
