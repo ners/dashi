@@ -18,7 +18,10 @@ instance Widget Spinner model action where
               ]
                 <> attrs
             )
-            [ style_ [] [".spinner1{transform-origin:center;animation:spinner3 2s linear infinite}.spinner1 circle{stroke-linecap:round;animation:spinner2 1.5s ease-in-out infinite}@keyframes spinner3{100%{transform:rotate(360deg)}}@keyframes spinner2{0%{stroke-dasharray:0 150;stroke-dashoffset:0}47.5%{stroke-dasharray:42 150;stroke-dashoffset:-16}95%,100%{stroke-dasharray:42 150;stroke-dashoffset:-59}}"]
+            [ style_
+                []
+                [ ".spinner1{transform-origin:center;animation:spinner3 2s linear infinite}.spinner1 circle{stroke-linecap:round;animation:spinner2 1.5s ease-in-out infinite}@keyframes spinner3{100%{transform:rotate(360deg)}}@keyframes spinner2{0%{stroke-dasharray:0 150;stroke-dashoffset:0}47.5%{stroke-dasharray:42 150;stroke-dashoffset:-16}95%,100%{stroke-dasharray:42 150;stroke-dashoffset:-59}}"
+                ]
             , g_
                 [class_ "spinner1"]
                 [ circle_

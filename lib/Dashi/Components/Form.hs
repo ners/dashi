@@ -3,7 +3,17 @@
 
 module Dashi.Components.Form where
 
-import Clay hiding (fullWidth, legend, name, not, option, required, selected, span_, type_)
+import Clay hiding
+    ( fullWidth
+    , legend
+    , name
+    , not
+    , option
+    , required
+    , selected
+    , span_
+    , type_
+    )
 import Clay qualified hiding (not)
 import Dashi.Components.Checkbox (CheckboxGroup)
 import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
@@ -25,17 +35,25 @@ data FormField w model action = FormField
 viewMessage :: (Appearance, MisoString) -> View model action
 viewMessage (appearance, Just -> secondary) = widget Message{size = FormMessage, title = Nothing, ..}
 
-viewWithLegend :: (Widget w model action) => [Attribute action] -> FormField w model action -> View model action
+viewWithLegend
+    :: (Widget w model action)
+    => [Attribute action] -> FormField w model action -> View model action
 viewWithLegend attrs FormField{..} =
     fieldset_ [class_ "form-field"]
         $ [legend_ [] legend | not . null $ legend]
         <> [widget' ([required_ True | required] <> attrs) field]
         <> (viewMessage <$> messages)
 
-viewWithLabel :: (Widget w model action) => [Attribute action] -> FormField w model action -> View model action
+viewWithLabel
+    :: (Widget w model action)
+    => [Attribute action] -> FormField w model action -> View model action
 viewWithLabel attrs FormField{..} =
     fieldset_ [class_ "form-field"]
-        $ label_ [] ([span_ [class_ "legend"] legend | not . null $ legend] <> [widget' ([required_ True | required] <> attrs) field])
+        $ label_
+            []
+            ( [span_ [class_ "legend"] legend | not . null $ legend]
+                <> [widget' ([required_ True | required] <> attrs) field]
+            )
         : (viewMessage <$> messages)
 
 instance (Widget w model action) => Widget (FormField w model action) model action where
@@ -61,7 +79,11 @@ instance {-# OVERLAPPING #-} Widget (FormField () model action) model action whe
             fontSize' Small
             marginBottom . token $ Space XSmall
         let requiredChild = self # Clay.required
-        (Clay.legend # has (self |+ requiredChild) <> (Clay.label # has requiredChild) ** ".legend")
+        ( Clay.legend
+                # has (self |+ requiredChild)
+                <> (Clay.label # has requiredChild)
+                ** ".legend"
+            )
             ? after
             & do
                 fontWeight $ weight 300
@@ -69,10 +91,18 @@ instance {-# OVERLAPPING #-} Widget (FormField () model action) model action whe
                 color' $ Colour.Text Danger
                 marginLeft . token $ Space XSmall
 
-instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (CheckboxGroup o model action) model action) model action where
+instance
+    {-# OVERLAPPING #-}
+    (Eq o)
+    => Widget (FormField (CheckboxGroup o model action) model action) model action
+    where
     widget' = viewWithLegend
     style = pure ()
 
-instance {-# OVERLAPPING #-} (Eq o) => Widget (FormField (RadioGroup o model action) model action) model action where
+instance
+    {-# OVERLAPPING #-}
+    (Eq o)
+    => Widget (FormField (RadioGroup o model action) model action) model action
+    where
     widget' = viewWithLegend
     style = pure ()

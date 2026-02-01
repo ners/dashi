@@ -26,6 +26,14 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Accessibility"
-        , p_ [] [text "An accessible app means people of all abilities can interact with, understand, and navigate it."]
-        , p_ [] [text "Dashi components ship with built-in accessibility features, such as keyboard support and sensible ARIA usage. However, you still need to review your patterns, content, and interactions so your app is accessible end-to-end."]
+        , p_
+            []
+            [ text
+                "An accessible app means people of all abilities can interact with, understand, and navigate it."
+            ]
+        , p_
+            []
+            [ text
+                "Dashi components ship with built-in accessibility features, such as keyboard support and sensible ARIA usage. However, you still need to review your patterns, content, and interactions so your app is accessible end-to-end."
+            ]
         ]

@@ -6,10 +6,7 @@
 
 module Main where
 
-import Control.Applicative ((<|>))
-import Control.Monad (liftM2)
 import Control.Monad.Extra (unlessM)
-import DSL qualified
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
@@ -24,12 +21,10 @@ import Dashi.Style.Tokens hiding (Token)
 import Dashi.Util
 import Data.Bifunctor (Bifunctor (second))
 import Data.Either.Extra (eitherToMaybe)
-import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
-import Miso.DSL ((#))
 import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
 import Miso.Html.Event (onChange, onClickPrevent)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
@@ -51,8 +46,8 @@ main = do
         events = defaultEvents <> keyboardEvents
     startApp events
         $ (component model updateModel appView)
-            { initialAction = Just Setup
-            , subs = [routerSub $ either (const NoOp) SetCurrentSection]
+            { subs = [routerSub $ either (const NoOp) SetCurrentSection]
+            , mount = Just Setup
             }
 
 instance Eq (a -> b) where
@@ -111,12 +106,9 @@ traceAction :: Action -> Effect parent model action
 traceAction = io_ . consoleLog . ("traceAction: " <>) . ishow
 
 getSystemColourScheme :: IO Colour.Scheme
-getSystemColourScheme =
-    DSL.window
-        >>= DSL.call' @MisoString "matchMedia" "(prefers-color-scheme: dark)"
-        >>= DSL.getProp "matches"
-        >>= DSL.fromJSVal
-        <&> maybe Colour.Scheme.Light (^. Colour.Scheme.isDark)
+getSystemColourScheme = do
+    [js| return window.matchMedia("(prefers-color-scheme: dark)").matches |]
+        <&> (^. Colour.Scheme.isDark)
 
 getCurrentSection :: IO (Maybe SectionId)
 getCurrentSection = eitherToMaybe . route <$> getURI
@@ -135,23 +127,27 @@ appUpdate (SetLanguage lang) = do
         []
         setBundle
         (SetBundle . Left . (.body))
-    io_ do
-        html <- getProp "documentElement" =<< DSL.document
-        html # "setAttribute" $ ("lang" :: MisoString, Language.code @MisoString lang)
-        pure ()
+    io_ [js| document.documentElement.setAttribute('lang', ${lang}) |]
   where
     setBundle :: Response MisoString -> Action
-    setBundle Response{body} = SetBundle . fmap (buildBundle [Language.code lang] . pure) . Resource.parse . fromMisoString $ body
+    setBundle Response{body} =
+        SetBundle
+            . fmap (buildBundle [Language.code lang] . pure)
+            . Resource.parse
+            . fromMisoString
+            $ body
 appUpdate (SetBundle b) = #bundle .= ResponseReceived b
 appUpdate (SetColourScheme scheme) = do
     #colourScheme .= scheme
     io_ do
-        html <- getProp "documentElement" =<< DSL.document
         Property name value <- pure $ tokenAttr scheme
-        html # "setAttribute" $ (name, value)
-        pure ()
+        [js| document.documentElement.setAttribute(${name}, ${value}) |]
 appUpdate (SetCurrentSection sectionId) = do
-    io_ . unlessM ((Just sectionId ==) <$> getCurrentSection) . pushURI . toURI $ sectionId
+    io_
+        . unlessM ((Just sectionId ==) <$> getCurrentSection)
+        . pushURI
+        . toURI
+        $ sectionId
     #section . #current .= sectionId
 appUpdate NoOp = pure ()
 
@@ -209,7 +205,7 @@ appView model =
                             ]
                     ]
             , main_ =
-                [ mount $ Section.section #section model.section
+                [ mount_ $ Section.section #section model.section
                 , dialog_ [textProp "closedby" "any"] [widget $ Heading Large "Dialog!"]
                 ]
             , aside = Nothing
@@ -218,10 +214,12 @@ appView model =
 routesToUl :: SectionId -> [(SectionId, [MisoString])] -> View Model Action
 routesToUl current routes = ul_ [] $ groupToLi <$> groups
   where
-    groups = second (fmap . second $ drop 1) <$> List.groupOnKey (listToMaybe . snd) routes
+    groups =
+        second (fmap . second $ drop 1) <$> List.groupOnKey (listToMaybe . snd) routes
     textLabel :: MisoString -> View Model Action
     textLabel = text . capitalise . unpascal
-    groupToLi :: (Maybe MisoString, [(SectionId, [MisoString])]) -> View Model Action
+    groupToLi
+        :: (Maybe MisoString, [(SectionId, [MisoString])]) -> View Model Action
     groupToLi (Just label, [(r, [])]) =
         li_
             [aria_ "current" "page" | r == current]

@@ -28,7 +28,11 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Icon"
-        , p_ [] [text "An icon is a symbol representing a command, device, directory, or common action."]
+        , p_
+            []
+            [ text
+                "An icon is a symbol representing a command, device, directory, or common action."
+            ]
         , div_
             [class_ "grid"]
             [ widget @Icon mdi

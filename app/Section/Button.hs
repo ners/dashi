@@ -32,7 +32,11 @@ view Model =
     section_ []
         . mconcat
         $ [ pure . widget $ Heading Large "Button"
-          , pure . p_ [] . pure . text $ "A button triggers an event or action. They let users know what will happen next."
+          , pure
+                . p_ []
+                . pure
+                . text
+                $ "A button triggers an event or action. They let users know what will happen next."
           , mconcat
                 [ [widget . Heading Medium $ appearanceStr]
                     <> description appearance

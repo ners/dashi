@@ -20,8 +20,10 @@ fromText = fromString . Text.unpack
 formatFloat :: (RealFloat a, IsString s) => a -> s
 formatFloat v
     | v == 0 = "0"
-    | abs v < 1e-5 || abs v > 1e10 = fromString $ formatRealFloat FFExponent Nothing v
-    | v - fromIntegral @Int (floor v) == 0 = fromString $ formatRealFloat FFFixed (Just 0) v
+    | abs v < 1e-5 || abs v > 1e10 =
+        fromString $ formatRealFloat FFExponent Nothing v
+    | v - fromIntegral @Int (floor v) == 0 =
+        fromString $ formatRealFloat FFFixed (Just 0) v
     | otherwise = fromString $ formatRealFloat FFGeneric Nothing v
 
 instance (HasResolution k) => ToMisoString (Fixed k) where
@@ -49,7 +51,8 @@ pascalWords = iso (breakAll isUpper) (mconcat . fmap capitalise)
 
 breakAll :: (Char -> Bool) -> MisoString -> [MisoString]
 breakAll f t
-    | Just (c, cs) <- MisoString.uncons r = ls <> (breakAll f cs & _head %~ MisoString.cons c)
+    | Just (c, cs) <- MisoString.uncons r =
+        ls <> (breakAll f cs & _head %~ MisoString.cons c)
     | otherwise = ls
   where
     (l, r) = MisoString.break f t

@@ -16,7 +16,8 @@ selector Medium = h3
 selector Large = h2
 selector XLarge = h1
 
-element :: SizeToken -> [Attribute action] -> [View model action] -> View model action
+element
+    :: SizeToken -> [Attribute action] -> [View model action] -> View model action
 element XSmall = h5_
 element Small = h4_
 element Medium = h3_

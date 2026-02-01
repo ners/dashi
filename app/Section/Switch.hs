@@ -28,7 +28,9 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Switch"
-        , p_ [] [text "A switch is used to view or toggle between enabled or disabled states."]
+        , p_
+            []
+            [text "A switch is used to view or toggle between enabled or disabled states."]
         , div_
             []
             [ widget @(Switch Model Action)

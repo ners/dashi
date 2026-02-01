@@ -28,7 +28,8 @@ instance Widget MDI model action where
             fontFamily ["Material Design Icons"] []
             fontStyle normal
             fontWeight normal
-            fontFaceSrc [FontFaceSrcUrl "/static/materialdesignicons-webfont.woff2" (Just WOFF2)]
+            fontFaceSrc
+                [FontFaceSrcUrl "/static/materialdesignicons-webfont.woff2" (Just WOFF2)]
         ".mdi" ? do
             display inlineBlock
             textRendering auto

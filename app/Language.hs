@@ -22,6 +22,15 @@ code German = "de"
 code French = "fr"
 code Italian = "it"
 
+instance ToMisoString Language where
+    toMisoString = code
+
+instance FromMisoString Language where
+    fromMisoStringEither s = maybeToEither ("unknown language code: " <> fromMisoString s) $ fromCode s
+
+instance ToJSVal Language where
+    toJSVal = toJSVal . toMisoString
+
 fromCode :: MisoString -> Maybe Language
 fromCode str = List.find (\lang -> code lang == str) [minBound .. maxBound]
 
@@ -34,10 +43,15 @@ locale = Locale . code
 class Translatable model where
     getBundle :: model -> Maybe Bundle
 
-translate :: (Translatable model) => model -> MisoString -> Either String MisoString
+translate
+    :: (Translatable model) => model -> MisoString -> Either String MisoString
 translate model key = do
     bundle <- maybeToEither "No bundle" . getBundle $ model
-    message <- maybeToEither "Failed to get message" . Fluent.getMessage bundle . fromMisoString $ key
+    message <-
+        maybeToEither "Failed to get message"
+            . Fluent.getMessage bundle
+            . fromMisoString
+            $ key
     value <- maybeToEither "Failed to get value" . Fluent.getValue $ message
     fromText <$> Fluent.formatPattern bundle value
 

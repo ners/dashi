@@ -26,5 +26,9 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Design tokens"
-        , p_ [] [text "Design tokens are name and value pairings that represent small, repeatable design decisions. A token can be a colour, font style, unit of white space, or even a motion animation designed for a specific need."]
+        , p_
+            []
+            [ text
+                "Design tokens are name and value pairings that represent small, repeatable design decisions. A token can be a colour, font style, unit of white space, or even a motion animation designed for a specific need."
+            ]
         ]

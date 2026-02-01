@@ -41,7 +41,8 @@ instance Shape (Point num) num where
 offsetPoint :: (num -> num) -> (num -> num) -> Point num -> Point num
 offsetPoint fx fy = (#x %~ fx) . (#y %~ fy)
 
-boundingBoxOfPoints1 :: forall f num. (Foldable f, Functor f, Ord num) => f (Point num) -> Rect num
+boundingBoxOfPoints1
+    :: forall f num. (Foldable f, Functor f, Ord num) => f (Point num) -> Rect num
 boundingBoxOfPoints1 points =
     Rect
         { topLeft =
@@ -59,7 +60,9 @@ boundingBoxOfPoints1 points =
     xs = x <$> points
     ys = y <$> points
 
-boundingBoxOfPoints :: forall f num. (Foldable f, Functor f, Num num, Ord num) => f (Point num) -> Rect num
+boundingBoxOfPoints
+    :: forall f num
+     . (Foldable f, Functor f, Num num, Ord num) => f (Point num) -> Rect num
 boundingBoxOfPoints (null -> True) = Rect (Point 0 0) (Point 0 0)
 boundingBoxOfPoints points = boundingBoxOfPoints1 points
 
@@ -245,7 +248,8 @@ instance Shape (SomeShape num) num where
 instance ToSVG (SomeShape num) num where
     toSVG attrs (Shape s) = toSVG attrs s
 
-boundingBoxOfShapes :: (Foldable f, Functor f, Num num, Ord num) => f (SomeShape num) -> Rect num
+boundingBoxOfShapes
+    :: (Foldable f, Functor f, Num num, Ord num) => f (SomeShape num) -> Rect num
 boundingBoxOfShapes = boundingBoxOfRects . fmap boundingBox
 
 --------------------------------------------------------------------------
@@ -277,7 +281,9 @@ svg viewBox attrs shapes =
   where
     domain = boundingBoxOfShapes shapes
 
-translateDomain :: forall s num. (Shape s num, Eq num, Fractional num) => Rect num -> Rect num -> s -> s
+translateDomain
+    :: forall s num
+     . (Shape s num, Eq num, Fractional num) => Rect num -> Rect num -> s -> s
 translateDomain sup sub = transform $ translate #x . translate #y
   where
     minMax :: Lens' (Point num) num -> Rect num -> (num, num)

@@ -28,7 +28,11 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Checkbox"
-        , p_ [] [text "A checkbox is an input control that allows a user to select one or more options from a number of choices."]
+        , p_
+            []
+            [ text
+                "A checkbox is an input control that allows a user to select one or more options from a number of choices."
+            ]
         , div_
             []
             [ widget @(Checkbox Model Action)

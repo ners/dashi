@@ -30,7 +30,9 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Text field"
-        , p_ [] [text "A text field is an input that allows a user to write or edit text."]
+        , p_
+            []
+            [text "A text field is an input that allows a user to write or edit text."]
         , form_
             []
             $ mconcat

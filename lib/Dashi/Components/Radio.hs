@@ -4,7 +4,16 @@
 
 module Dashi.Components.Radio where
 
-import Clay hiding (fullWidth, label, legend, name, option, selected, span_, type_)
+import Clay hiding
+    ( fullWidth
+    , label
+    , legend
+    , name
+    , option
+    , selected
+    , span_
+    , type_
+    )
 import Dashi.Components.Icon (iconContent)
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Prelude hiding ((#), (&))

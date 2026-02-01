@@ -27,7 +27,11 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Message"
-        , p_ [] [text "A message lets users know when important information is available or when an action is required."]
+        , p_
+            []
+            [ text
+                "A message lets users know when important information is available or when an action is required."
+            ]
         , widget $ Heading Medium "Inline message"
         , widget
             Message
@@ -70,14 +74,17 @@ view Model =
                 { size = SectionMessage
                 , appearance = Primary
                 , title = Just "Editing is restricted"
-                , secondary = Just "You're not allowed to change these restrictions. It's either due to the restrictions on the page, or permission settings for this space."
+                , secondary =
+                    Just
+                        "You're not allowed to change these restrictions. It's either due to the restrictions on the page, or permission settings for this space."
                 }
         , widget
             Message
                 { size = SectionMessage
                 , appearance = Warning
                 , title = Just "Cannot connect to the database"
-                , secondary = Just "We're unable to save any progress at this time. Please try again later."
+                , secondary =
+                    Just "We're unable to save any progress at this time. Please try again later."
                 }
         , widget
             Message
@@ -91,6 +98,7 @@ view Model =
                 { size = SectionMessage
                 , appearance = Danger
                 , title = Just "This account has been permanently deleted"
-                , secondary = Just "The user `IanAtlas` no longer has access to Atlassian services."
+                , secondary =
+                    Just "The user `IanAtlas` no longer has access to Atlassian services."
                 }
         ]

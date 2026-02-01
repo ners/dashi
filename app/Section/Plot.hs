@@ -3,7 +3,6 @@
 module Section.Plot where
 
 import Control.Concurrent (threadDelay)
-import DSL qualified
 import Dashi.Components.Heading
 import Dashi.Components.Plot
 import Dashi.Components.Range
@@ -12,10 +11,7 @@ import Dashi.Diagram (Point (..), bottom, top)
 import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Colour
 import Dashi.Style.Tokens
-import Data.Bool (bool)
-import Data.Generics.Labels ()
 import Data.Vector.Strict qualified as Vector
-import GHC.Clock (getMonotonicTime)
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
 import Miso.State qualified as State
@@ -23,6 +19,7 @@ import Miso.State qualified as State
 data Model
     = Model
     { width :: Int
+    , running :: Bool
     , time :: Double
     , hz :: Int
     , fps :: Vector (Point Double)
@@ -35,6 +32,7 @@ initialModel :: Model
 initialModel =
     Model
         { width = 0
+        , running = True
         , time = 0
         , hz = 60
         , fps = mempty
@@ -51,27 +49,34 @@ data Action
     | SetHz Int
     | SetShowAxes Bool
     | SetShowGrid Bool
+    | Start
+    | Stop
 
 plot :: Component parent Model Action
 plot =
     (component initialModel update view)
-        { initialAction = Just Setup
-        , subs = [windowSub "resize" emptyDecoder \() -> UpdateWidth]
+        { subs = [windowSub "resize" emptyDecoder \() -> UpdateWidth]
+        , mount = Just Setup
+        , unmount = Just Stop
         }
 
-getPlotWidth :: IO Int
-getPlotWidth = fromJSValUnchecked =<< DSL.eval "const e = document.querySelector('section > h2'); e ? e.clientWidth : 0"
+getPlotWidth :: IO (Maybe Int)
+getPlotWidth =
+    [js|
+        const e = document.querySelector('section > h2');
+        return e ? e.clientWidth : null
+    |]
 
 tick' :: Sink Action -> IO ()
-tick' sink = sink . Tick =<< getMonotonicTime
+tick' sink = sink . Tick . (/ 1000) =<< now
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
 update Setup = do
     update UpdateWidth
-    withSink tick'
+    update Start
 update (Tick time) = do
-    Model{hz, time = oldTime} <- State.get
+    Model{time = oldTime, hz, running} <- State.get
     let minTime = time - 10
     State.modify
         $ (#time .~ time)
@@ -80,27 +85,35 @@ update (Tick time) = do
                 %~ Vector.dropWhile ((minTime >) . x)
                 . flip Vector.snoc Point{x = time, y = 1 / (time - oldTime)}
           )
-    withSink \sink -> do
+    when running $ withSink \sink -> do
         threadDelay $ 1_000_000 `div` hz
         tick' sink
 update UpdateWidth = do
     withSink \sink ->
         getPlotWidth >>= \case
-            0 -> do
+            Nothing -> do
                 threadDelay 100_000
                 sink UpdateWidth
-            w -> sink (SetWidth w)
+            Just w -> sink (SetWidth w)
 update (SetWidth w) = #width .= w
 update (SetHz hz) = #hz .= hz
 update (SetShowAxes b) = #showAxes .= b
 update (SetShowGrid b) = #showGrid .= b
+update Start = do
+    #running .= True
+    withSink tick'
+update Stop = #running .= False
 
 view :: Model -> View Model Action
 view Model{..} =
     section_
         []
         [ widget $ Heading Large "Plot"
-        , p_ [] [text "Plots offer a way to visualise data sets in an intuitive, easy to understand way."]
+        , p_
+            []
+            [ text
+                "Plots offer a way to visualise data sets in an intuitive, easy to understand way."
+            ]
         , div_
             [class_ "controls"]
             [ widget @(Switch Model Action)
@@ -119,7 +132,8 @@ view Model{..} =
                     }
             , div_
                 []
-                [ widget @(Range Action) Range{value = hz, step = 5, min = 10, max = 120, onChange = SetHz}
+                [ widget @(Range Action)
+                    Range{value = hz, step = 5, min = 10, max = 120, onChange = SetHz}
                 , text $ toMisoString hz <> "\xA0Hz"
                 ]
             ]
@@ -175,21 +189,30 @@ view Model{..} =
                       Series
                         { strokeColour = Nothing
                         , fillColour = Just $ ColorOKLCHA 0.55 0.12 264 0.75
-                        , values = Vector.fromList $ uncurry Point <$> [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
+                        , values =
+                            Vector.fromList
+                                $ uncurry Point
+                                <$> [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     , -- AUR
                       Series
                         { strokeColour = Nothing
                         , fillColour = Just $ ColorOKLCHA 0.3211 0 0 0.75
-                        , values = Vector.fromList $ uncurry Point <$> [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
+                        , values =
+                            Vector.fromList
+                                $ uncurry Point
+                                <$> [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     , -- Ubuntu 26.04
                       Series
                         { strokeColour = Nothing
                         , fillColour = Just $ ColorOKLCHA 0.6405 0.1941 37.76 0.75
-                        , values = Vector.fromList $ uncurry Point <$> [(0, 19856), (1, 8782), (2, 10111), (3, 1588)]
+                        , values =
+                            Vector.fromList
+                                $ uncurry Point
+                                <$> [(0, 19856), (1, 8782), (2, 10111), (3, 1588)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     ]

@@ -1,11 +1,9 @@
-{-# LANGUAGE OverloadedLists #-}
 {-# OPTIONS_GHC -Wno-term-variable-capture #-}
 
 module Section where
 
 import Dashi.Prelude hiding (ComponentId, init)
 import Dashi.Util
-import Data.Generics.Labels ()
 import Data.List.Extra qualified as List
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
@@ -44,8 +42,8 @@ allSections :: Seq SectionId
 allSections =
     mconcat
         [ pure Overview
-        , Foundations <$> [minBound .. maxBound]
-        , Components <$> [minBound .. maxBound]
+        , Foundations <$> Seq.fromList [minBound .. maxBound]
+        , Components <$> Seq.fromList [minBound .. maxBound]
         ]
 
 instance Enum SectionId where
@@ -81,9 +79,15 @@ data ComponentId
     deriving stock (Generic, Eq, Show, Bounded, Enum)
 
 instance Router SectionId where
-    fromRoute = fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip) . breakAll (== ' ') . ishow
+    fromRoute =
+        fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip)
+            . breakAll (== ' ')
+            . ishow
     routeParser = Parser \_ tokens ->
-        maybeToList $ List.firstJust (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens) [minBound .. maxBound]
+        maybeToList
+            $ List.firstJust
+                (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens)
+                [minBound .. maxBound]
 
 data Model = Model
     { current :: SectionId
@@ -103,28 +107,29 @@ data Action = NoOp
 view :: Model -> View Model Action
 view Model{..} =
     div_ [key_ currentStr, id_ currentStr] . pure $ case current of
-        Overview -> mount Overview.overview
-        Foundations Accessibility -> mount Accessibility.accessibility
-        Foundations DesignTokens -> mount DesignTokens.tokens
-        Components Avatar -> mount Avatar.avatar
-        Components Button -> mount Button.button
-        Components Form -> mount $ Form.form #form form
-        Components Icon -> mount Icon.icon
-        Components Link -> mount Link.link
-        Components Message -> mount Message.message
-        Components Checkbox -> mount Checkbox.checkbox
-        Components Plot -> mount Plot.plot
-        Components ProgressBar -> mount ProgressBar.progressBar
-        Components Radio -> mount Radio.radio
-        Components Range -> mount Range.range
-        Components Select -> mount Select.select
-        Components Switch -> mount Switch.switch
-        Components Spinner -> mount Spinner.spinner
-        Components Tabs -> mount Tabs.tabs
-        Components TextField -> mount TextField.textField
+        Overview -> mount_ Overview.overview
+        Foundations Accessibility -> mount_ Accessibility.accessibility
+        Foundations DesignTokens -> mount_ DesignTokens.tokens
+        Components Avatar -> mount_ Avatar.avatar
+        Components Button -> mount_ Button.button
+        Components Form -> mount_ $ Form.form #form form
+        Components Icon -> mount_ Icon.icon
+        Components Link -> mount_ Link.link
+        Components Message -> mount_ Message.message
+        Components Checkbox -> mount_ Checkbox.checkbox
+        Components Plot -> mount_ Plot.plot
+        Components ProgressBar -> mount_ ProgressBar.progressBar
+        Components Radio -> mount_ Radio.radio
+        Components Range -> mount_ Range.range
+        Components Select -> mount_ Select.select
+        Components Switch -> mount_ Switch.switch
+        Components Spinner -> mount_ Spinner.spinner
+        Components Tabs -> mount_ Tabs.tabs
+        Components TextField -> mount_ TextField.textField
   where
     currentStr :: MisoString
-    currentStr = toMisoString . MisoString.replace " " "-" . MisoString.toLower . ishow $ current
+    currentStr =
+        toMisoString . MisoString.replace " " "-" . MisoString.toLower . ishow $ current
 
 section :: Lens' parent Model -> Model -> Component parent Model Action
 section l model =

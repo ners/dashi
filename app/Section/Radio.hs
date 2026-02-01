@@ -28,7 +28,11 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Radio"
-        , p_ [] [text "A radio input allows users to select only one option from a number of choices. Radio is generally displayed in a radio group."]
+        , p_
+            []
+            [ text
+                "A radio input allows users to select only one option from a number of choices. Radio is generally displayed in a radio group."
+            ]
         , div_
             []
             [ widget @(Radio Model Action)

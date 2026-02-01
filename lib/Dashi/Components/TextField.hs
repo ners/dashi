@@ -4,7 +4,18 @@
 
 module Dashi.Components.TextField where
 
-import Clay hiding (Background, Color, Number, fullWidth, name, not, type_, valid, value, var)
+import Clay hiding
+    ( Background
+    , Color
+    , Number
+    , fullWidth
+    , name
+    , not
+    , type_
+    , valid
+    , value
+    , var
+    )
 import Clay qualified
 import Dashi.Components.Util (ariaInvalid_)
 import Dashi.Prelude hiding ((#), (&))
@@ -65,7 +76,8 @@ data TextField action = TextField
 instance Widget (TextField action) model action where
     widget' attrs TextField{..}
         | type' == MultiLine = textarea_ attrs' . fmap text . maybeToList $ value
-        | otherwise = input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
+        | otherwise =
+            input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
       where
         attrs' = name_ name : Html.onInput onChange : attrs <> [ariaInvalid_ True | not valid]
     style = do

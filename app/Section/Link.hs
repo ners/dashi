@@ -28,7 +28,12 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Link"
-        , p_ [] [text "A link takes people to a new location in the app or another website."]
+        , p_
+            []
+            [text "A link takes people to a new location in the app or another website."]
         , div_ [] [widget @(Link Model Action) $ Link "" [text "Default link"]]
-        , div_ [] [widget' @(Link Model Action) [appearance_ Subtle] $ Link "" [text "Subtle link"]]
+        , div_
+            []
+            [ widget' @(Link Model Action) [appearance_ Subtle] $ Link "" [text "Subtle link"]
+            ]
         ]

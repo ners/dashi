@@ -3,7 +3,20 @@
 
 module Dashi.Components.ActionBar where
 
-import Clay hiding (area, fullWidth, left, legend, name, not, option, required, right, selected, span_, type_)
+import Clay hiding
+    ( area
+    , fullWidth
+    , left
+    , legend
+    , name
+    , not
+    , option
+    , required
+    , right
+    , selected
+    , span_
+    , type_
+    )
 import Dashi.Prelude hiding (Left, Right, (#), (**))
 import Dashi.Style.Tokens
 import Dashi.Style.Util

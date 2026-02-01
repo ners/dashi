@@ -27,6 +27,10 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Spinner"
-        , p_ [] [text "A spinner is an animated spinning icon that lets users know content is being loaded."]
+        , p_
+            []
+            [ text
+                "A spinner is an animated spinning icon that lets users know content is being loaded."
+            ]
         , widget Spinner
         ]

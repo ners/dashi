@@ -4,12 +4,28 @@
 
 module Dashi.Components.ProgressBar where
 
-import Clay hiding (Background, Color, Value, action, fullWidth, max, size, value, var)
+import Clay hiding
+    ( Background
+    , Color
+    , Value
+    , action
+    , fullWidth
+    , max
+    , size
+    , value
+    , var
+    )
 import Dashi.Prelude hiding (max, (&))
 import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
-import Dashi.Style.Util (backgroundColor', borderRadiusAll', fullWidth, var, (~:))
+import Dashi.Style.Util
+    ( backgroundColor'
+    , borderRadiusAll'
+    , fullWidth
+    , var
+    , (~:)
+    )
 import Data.List qualified as List
 import Miso.Html.Element (progress_)
 import Miso.Html.Property (max_, value_)
@@ -89,11 +105,22 @@ instance Widget ProgressBar model action where
                     ~: mconcat
                         [ var (tokenName Background) []
                         , " "
-                        , mconcat ["linear-gradient(to right, ", var (tokenName $ Progress Default) [], " 30%, transparent 30%)"]
+                        , mconcat
+                            [ "linear-gradient(to right, "
+                            , var (tokenName $ Progress Default) []
+                            , " 30%, transparent 30%)"
+                            ]
                         , " "
                         , "top left / 150% 150% no-repeat"
                         ]
-                animation "progress-indeterminate" (sec 2) easeInOut (sec 0) infinite normal forwards
+                animation
+                    "progress-indeterminate"
+                    (sec 2)
+                    easeInOut
+                    (sec 0)
+                    infinite
+                    normal
+                    forwards
 
         keyframes
             "progress-indeterminate"

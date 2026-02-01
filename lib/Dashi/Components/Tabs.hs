@@ -24,7 +24,10 @@ instance Widget (Tabs t model action) model action where
     widget' attrs Tabs{..} =
         ul_
             (class_ "tabs" : ariaRole_ "group" : attrs)
-            [ li_ (tabindex_ "0" : onClick (onSelect tab) : [aria_ "current" "true" | selected tab]) . label $ tab
+            [ li_
+                (tabindex_ "0" : onClick (onSelect tab) : [aria_ "current" "true" | selected tab])
+                . label
+                $ tab
             | tab <- tabs
             ]
     style =

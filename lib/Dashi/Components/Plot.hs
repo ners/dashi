@@ -60,7 +60,8 @@ expand SymmetricPadding{..} r =
         r
 expand Padding{..} r =
     r
-        & #topLeft %~ offsetPoint (subtract $ padX leftPadding) (subtract $ padY topPadding)
+        & #topLeft
+            %~ offsetPoint (subtract $ padX leftPadding) (subtract $ padY topPadding)
         & #bottomRight %~ offsetPoint (+ padX rightPadding) (+ padY bottomPadding)
   where
     (absolutePadding -> padX, absolutePadding -> padY) = rectSize r
@@ -78,7 +79,8 @@ contract SymmetricPadding{..} r =
 contract Padding{..} r =
     r
         & #topLeft %~ offsetPoint (+ padX leftPadding) (+ padY topPadding)
-        & #bottomRight %~ offsetPoint (subtract $ padX rightPadding) (subtract $ padY bottomPadding)
+        & #bottomRight
+            %~ offsetPoint (subtract $ padX rightPadding) (subtract $ padY bottomPadding)
   where
     (absolutePadding -> padX, absolutePadding -> padY) = rectSize r
 
@@ -92,13 +94,11 @@ data Plot num = Plot
     , domainTransform :: Rect num -> Rect num
     -- ^ The transformation of the domain, e.g. padding or forcing a 0 baseline.
     , showAxes :: Bool
-    {- ^ Whether to render plot axes
-    TODO: separate X and Y
-    -}
+    -- ^ Whether to render plot axes
+    --     TODO: separate X and Y
     , showGrid :: Bool
-    {- ^ Whether to render plot grid
-    TODO: separate X and Y
-    -}
+    -- ^ Whether to render plot grid
+    --     TODO: separate X and Y
     , series :: [Series num]
     -- ^ The series to plot
     , showX :: num -> MisoString
@@ -112,7 +112,14 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         Svg.svg_
             ( Svg.width_ (toMisoString width)
                 : Svg.height_ (toMisoString height)
-                : Svg.viewBox_ (MisoString.unwords [toMisoString viewBox.topLeft.x, toMisoString viewBox.topLeft.y, toMisoString width, toMisoString height])
+                : Svg.viewBox_
+                    ( MisoString.unwords
+                        [ toMisoString viewBox.topLeft.x
+                        , toMisoString viewBox.topLeft.y
+                        , toMisoString width
+                        , toMisoString height
+                        ]
+                    )
                 : Svg.className "plot"
                 : attrs
             )
@@ -217,7 +224,9 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         plotElements :: [View model action]
         plotElements =
             mconcat
-                [ concatMap (uncurry renderLinePlot) . filter (not . isBarPlot . plotType . fst) $ zip series seriesBoundingBoxes
+                [ concatMap (uncurry renderLinePlot)
+                    . filter (not . isBarPlot . plotType . fst)
+                    $ zip series seriesBoundingBoxes
                 , let widths = List.scanl' (+) 0 $ barPlotWidth . plotType <$> barPlotSeries
                    in concatMap (uncurry renderBarPlot) $ zip widths barPlotSeries
                 ]
@@ -281,7 +290,8 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         ticksX =
             if hasNonBarPlots
                 then calculateTicks x $ width `div` 100
-                else List.sort . List.nubOrd $ concatMap (fmap x . Vector.toList . values) series
+                else
+                    List.sort . List.nubOrd $ concatMap (fmap x . Vector.toList . values) series
         ticksY = calculateTicks y $ height `div` 80
 
         -- "Nice Numbers" algorithm to find human-readable tick values

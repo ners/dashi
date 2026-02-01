@@ -4,7 +4,17 @@
 
 module Dashi.Components.Checkbox where
 
-import Clay hiding (Color, fullWidth, label, legend, name, option, selected, span_, type_)
+import Clay hiding
+    ( Color
+    , fullWidth
+    , label
+    , legend
+    , name
+    , option
+    , selected
+    , span_
+    , type_
+    )
 import Clay qualified
 import Dashi.Components.Icon (iconContent, iconFont)
 import Dashi.Components.Util (ariaRole_)
@@ -30,7 +40,11 @@ instance Widget (Checkbox model action) model action where
     widget' attrs Checkbox{..} =
         label_
             []
-            [ input_ $ type_ "checkbox" : name_ name : Html.onChecked (onChecked . coerce) : checked_ selected : attrs
+            [ input_ $ type_ "checkbox"
+                : name_ name
+                : Html.onChecked (onChecked . coerce)
+                : checked_ selected
+                : attrs
             , span_ [] label
             ]
     style = do

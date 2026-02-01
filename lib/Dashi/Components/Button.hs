@@ -3,9 +3,17 @@
 
 module Dashi.Components.Button where
 
-import Clay hiding (Background, Color, action, fullWidth, label, size, span_, var)
+import Clay hiding
+    ( Background
+    , Color
+    , action
+    , fullWidth
+    , label
+    , size
+    , span_
+    , var
+    )
 import Clay qualified hiding (Color, fullWidth)
-import Control.Monad (when)
 import Dashi.Components.Icon ()
 import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
@@ -50,7 +58,11 @@ instance Token Background where
 
 instance ValueToken Background where
     type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
-    tokenValue (Background Default state) = complementaryLightDark . ColorOKLCHA 0.2422 0.0735 260.41 $ 0.1 * (fromIntegral . succ . fromEnum) state
+    tokenValue (Background Default state) =
+        complementaryLightDark
+            . ColorOKLCHA 0.2422 0.0735 260.41
+            $ 0.1
+            * (fromIntegral . succ . fromEnum) state
     tokenValue (Background Subtle DefaultState) = flip setAlpha 0 <$> tokenValue (Background Default DefaultState)
     tokenValue (Background Subtle state) = tokenValue $ Background Default state
     tokenValue (Background appearance state) =
@@ -84,7 +96,9 @@ instance Widget (Button model action) model action where
         button_
             ( tokenAttr size
                 : tokenAttr appearance
-                : attrs <> [unselectable_ | isBusy] <> maybeToList (Html.onClickPrevent <$> onClick)
+                : attrs
+                    <> [unselectable_ | isBusy]
+                    <> maybeToList (Html.onClickPrevent <$> onClick)
             )
             $ label_ [] label
             : [widget Spinner | isBusy]
@@ -99,7 +113,10 @@ instance Widget (Button model action) model action where
             position relative
             boxShadow
                 . fromList
-                $ [bsInset . bsColor (colorToken Colour.Border) $ shadowWithBlur nil nil (var "border-width" [])]
+                $ [ bsInset
+                        . bsColor (colorToken Colour.Border)
+                        $ shadowWithBlur nil nil (var "border-width" [])
+                  ]
             color' $ Colour.Text Subtle
             byToken Subtle & do
                 "box-shadow" -: "none"
@@ -142,7 +159,8 @@ instance Widget (Button model action) model action where
             ariaBusy True & Clay.label ? opacity 0
             for_ @[] allTokens \appearance ->
                 byToken appearance & do
-                    when (elem @[] appearance [Primary, Success, Warning, Danger, Discovery]) $ color' Colour.InverseText
+                    when (elem @[] appearance [Primary, Success, Warning, Danger, Discovery])
+                        $ color' Colour.InverseText
                     backgroundColor' $ Background appearance DefaultState
                     sconcat [ariaBusy False, Clay.not disabled] & do
                         hover & backgroundColor' (Background appearance HoveredState)

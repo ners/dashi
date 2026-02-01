@@ -4,7 +4,6 @@
 module Section.Form where
 
 import Control.Concurrent (threadDelay)
-import Control.Monad (unless, when)
 import Dashi.Components.ActionBar
 import Dashi.Components.Button
 import Dashi.Components.Button qualified as Button
@@ -69,7 +68,7 @@ update Submit = do
                 threadDelay 5_000_000
                 sink Reset
 update Reset = do
-    io_ $ eval "[...document.forms].forEach(e => e.reset())"
+    io_ [js| [...document.forms].forEach(e => e.reset()) |]
     put initialModel
 
 view :: Model -> View Model Action
@@ -124,7 +123,9 @@ view Model{..} =
                                 , onClick = Just Reset
                                 }
                         , widget' @(Button Model Action) @Model @Action
-                            ([disabled_ | not (usernameInput.valid && passwordInput.valid)] <> [ariaBusy_ submitInProgress])
+                            ( [disabled_ | not (usernameInput.valid && passwordInput.valid)]
+                                <> [ariaBusy_ submitInProgress]
+                            )
                             Button
                                 { size = Button.DefaultSize
                                 , appearance = Primary

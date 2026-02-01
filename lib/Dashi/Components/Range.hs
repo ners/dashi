@@ -6,7 +6,22 @@
 
 module Dashi.Components.Range where
 
-import Clay hiding (Background, Color, Value, action, clamp, div, fullWidth, max, rem, round, size, type_, value, var)
+import Clay hiding
+    ( Background
+    , Color
+    , Value
+    , action
+    , clamp
+    , div
+    , fullWidth
+    , max
+    , rem
+    , round
+    , size
+    , type_
+    , value
+    , var
+    )
 import Dashi.Prelude hiding (max, none, (#))
 import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
@@ -105,13 +120,18 @@ instance Widget (Range action) model action where
             height $ em 0.5
             color' Progress
             cursor ewResize
-            "background-image" -: "linear-gradient(to right, currentColor var(--progress), transparent var(--progress))"
-        sconcat ((input # ("type" @= "range") #) <$> ["::-moz-range-thumb", "::-webkit-slider-thumb"]) ? do
-            "-moz-appearance" ~: none
-            "-webkit-appearance" ~: none
-            width $ em 1
-            height $ em 1
-            borderRadiusAll' Large
-            backgroundColor' Thumb
-            marginTop $ em 0.03
-            borderWidth nil
+            "background-image"
+                -: "linear-gradient(to right, currentColor var(--progress), transparent var(--progress))"
+        sconcat
+            ( (input # ("type" @= "range") #)
+                <$> ["::-moz-range-thumb", "::-webkit-slider-thumb"]
+            )
+            ? do
+                "-moz-appearance" ~: none
+                "-webkit-appearance" ~: none
+                width $ em 1
+                height $ em 1
+                borderRadiusAll' Large
+                backgroundColor' Thumb
+                marginTop $ em 0.03
+                borderWidth nil

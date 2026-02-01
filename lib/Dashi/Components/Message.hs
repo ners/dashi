@@ -12,7 +12,9 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (a_, div_, span_)
 import Miso.Html.Property (class_)
-import Web.Font.MDI (MDI (MdiAlert, MdiAlertRhombus, MdiCheckCircle, MdiHelpCircle, MdiInformation))
+import Web.Font.MDI
+    ( MDI (MdiAlert, MdiAlertRhombus, MdiCheckCircle, MdiHelpCircle, MdiInformation)
+    )
 
 data MessageSize
     = InlineMessage

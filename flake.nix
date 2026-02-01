@@ -66,7 +66,7 @@
             staticAssets = pkgs.callPackage ./static-assets.nix { inherit inputs; };
           };
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
-          miso = hfinal.callCabal2nix "miso" inputs.miso { };
+          miso = enableCabalFlag "template-haskell" (hfinal.callCabal2nix "miso" inputs.miso { });
           miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
           plots = doJailbreak (unmarkBroken hprev.plots);
           pointfree-fancy = doJailbreak (unmarkBroken hprev.pointfree-fancy);
@@ -79,12 +79,15 @@
           };
         })
         (hfinal: hprev: lib.optionalAttrs (hprev.ghc.targetPrefix == "javascript-unknown-ghcjs-") {
+          mkDerivation = args: hprev.mkDerivation (args // {
+            enableExternalInterpreter = false;
+          });
           ${pname} = appendBuildFlag "--ghc-options=-DGHCJS_BROWSER" hprev.${pname} // {
             inherit (hprev.${pname}) staticAssets;
             dist = pkgs.runCommand "${pname}-js-dist"
               {
                 nativeBuildInputs = with pkgs; [
-                  closurecompiler
+                  webpack-cli
                 ];
               }
               ''
@@ -96,16 +99,28 @@
                 cp -r "${hfinal.${pname}.staticAssets}" static
                 chmod -R +w static
                 pushd "${hfinal.${pname}}/bin/${pname}.jsexe/"
+                webpack --config "${pkgs.writeText "webpack.config.js" /*javascript*/ ''
+                  module.exports = {
+                    mode: "production",
+                    optimization: {
+                      usedExports: true,
+                      chunkIds: "total-size",
+                    },
+                    resolve: {
+                      fallback: {
+                        fs: false,
+                        os: false,
+                        path: false,
+                        "ghcjs-profiling": false,
+                        "child_process": false,
+                      },
+                    },
+                  };
+                ''}" --output-path "$out" --entry ./all.js
                 mainjs="$out/static/main.js"
-                closure-compiler \
-                  --js=all.js \
-                  --js_output_file="$mainjs" \
-                  --jscomp_off=checkVars \
-                  --externs all.externs.js \
-                  --compilation_level ADVANCED_OPTIMIZATIONS \
-                  --language_in UNSTABLE
-                compare "main.js" $(cat all.js | wc -c) $(gzip -c all.js | wc -c)
-                compare "main.js.gz" $(cat "$mainjs" | wc -c) $(gzip -c "$mainjs" | wc -c)
+                mv "$out/main.js" "$mainjs"
+                compare "main.js" $(cat all.js | wc -c) $(cat "$mainjs" | wc -c)
+                compare "main.js.gz" $(gzip -c all.js | wc -c) $(gzip -c "$mainjs" | wc -c)
                 popd
                 cd static
                 rm -fr browser_wasi_shim
@@ -122,6 +137,7 @@
               {
                 nativeBuildInputs = with pkgs; [
                   binaryen
+                  brotli
                   hfinal.ghc
                   nodejs
                   wasm-tools
@@ -139,11 +155,14 @@
                     shift
                     size1="$(cat $f1 | wc -c)"
                     gzip1="$(gzip -c $f1 | wc -c)"
+                    brotli1="$(brotli -c $f1 | wc -c)" || true
                     eval "$*"
                     size2="$(cat $f2 | wc -c)"
                     gzip2="$(gzip -c $f2 | wc -c)"
+                    brotli2="$(brotli -c $f2 | wc -c)" || true
                     compare $f2 $size1 $size2
                     compare $f2.gz $gzip1 $gzip2
+                    compare $f2.br $brotli1 $brotli2
                 }
                 mkdir -p "$out"
                 cd "$out"
@@ -223,20 +242,17 @@
           pkgs.haskell.packages;
         pkg = pkgs: pkgs.haskell.packages.ghc9122.${pname};
         dist = pkgs: (pkg pkgs).dist;
+        server = drv: pkgs.writeShellApplication {
+          name = "${drv.name}-server";
+          runtimeInputs = with pkgs; [ http-server ];
+          text = ''http-server "${drv}" --brotli --gzip'';
+        };
       in
       {
         packages.${system} = {
           default = pkgs.linkFarmFromDrvs pname ([ (pkg pkgs) ] ++ map dist [ jsPkgs wasmPkgs ]);
-          jsServer = pkgs.writeShellApplication {
-            name = "${pname}-js-server";
-            runtimeInputs = with pkgs; [ http-server ];
-            text = "http-server ${dist jsPkgs}";
-          };
-          wasmServer = pkgs.writeShellApplication {
-            name = "${pname}-wasm-server";
-            runtimeInputs = with pkgs; [ http-server ];
-            text = "http-server ${dist wasmPkgs}";
-          };
+          jsServer = server (dist jsPkgs);
+          wasmServer = server (dist wasmPkgs);
         };
         legacyPackages.${system} = pkgs // {
           inherit jsPkgs wasmPkgs;

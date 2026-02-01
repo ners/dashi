@@ -6,7 +6,6 @@ import Dashi.Components.Heading
 import Dashi.Components.Tabs
 import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
-import Data.Generics.Labels ()
 import Miso.Html.Element (div_, p_, section_)
 
 newtype Tab = Tab Int
@@ -34,7 +33,11 @@ view Model{..} =
     section_
         []
         [ widget $ Heading Large "Tabs"
-        , p_ [] [text "Tabs are used to organise content by grouping similar information on the same page."]
+        , p_
+            []
+            [ text
+                "Tabs are used to organise content by grouping similar information on the same page."
+            ]
         , div_
             []
             [ widget @(Tabs Tab Model Action)

@@ -8,7 +8,13 @@ import Clay hiding (Color, cast, fullWidth, var)
 import Clay qualified
 import Clay.Property ()
 import Clay.Render (renderRefinement)
-import Clay.Selector (Fix (In), Path (Elem), Refinement (Refinement), SelectorF (SelectorF), refinementFromText)
+import Clay.Selector
+    ( Fix (In)
+    , Path (Elem)
+    , Refinement (Refinement)
+    , SelectorF (SelectorF)
+    , refinementFromText
+    )
 import Clay.Stylesheet (App (Root), Rule (Nested), key, rule, runS)
 import Dashi.Style.Colour ()
 import Dashi.Style.Colour qualified as Colour
@@ -94,7 +100,9 @@ fontFamily' :: Value -> Css
 fontFamily' = fontFamily [] . pure . other
 
 focusable :: Css
-focusable = focusVisible & outline solid (var "outline-width" []) (colorToken Colour.BorderFocused)
+focusable =
+    focusVisible
+        & outline solid (var "outline-width" []) (colorToken Colour.BorderFocused)
 
 underlinedOnHover :: Css
 underlinedOnHover = do
@@ -152,7 +160,9 @@ fontSize' = Clay.fontSize . token . FontSize
 isOneOf :: [Refinement] -> Refinement
 isOneOf refinements =
     refinementFromText . LazyText.toStrict $
-        ":is(" <> LazyText.intercalate "," (concatMap renderRefinement refinements) <> ")"
+        ":is("
+            <> LazyText.intercalate "," (concatMap renderRefinement refinements)
+            <> ")"
 
 isOneOf' :: (Token t) => [t] -> Refinement
 isOneOf' = isOneOf . fmap byToken

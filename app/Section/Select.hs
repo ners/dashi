@@ -30,7 +30,11 @@ view Model =
     section_
         []
         [ widget $ Heading Large "Select"
-        , p_ [] [text "Select allows users to make a single selection or multiple selections from a list of options."]
+        , p_
+            []
+            [ text
+                "Select allows users to make a single selection or multiple selections from a list of options."
+            ]
         , div_
             []
             [ widget @(FormField (Select MisoString Model Action) Model Action)
@@ -40,7 +44,15 @@ view Model =
                     , field =
                         Select
                             { name = "select"
-                            , options = ["Africa", "Asia", "Europe", "North America", "South America", "Antarctica", "Australia"]
+                            , options =
+                                [ "Africa"
+                                , "Asia"
+                                , "Europe"
+                                , "North America"
+                                , "South America"
+                                , "Antarctica"
+                                , "Australia"
+                                ]
                             , selected = const False
                             , value = MisoString.intercalate "-" . fmap uncapitalise . MisoString.words
                             , label = pure . text

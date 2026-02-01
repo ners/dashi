@@ -2,7 +2,6 @@
 
 module Dashi.Components.Util where
 
-import Control.Monad ((>=>))
 import Dashi.Prelude
 import Dashi.Style.Tokens (Appearance, Token (..))
 import Data.List qualified as List
