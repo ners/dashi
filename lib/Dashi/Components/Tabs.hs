@@ -4,7 +4,7 @@
 module Dashi.Components.Tabs where
 
 import Clay hiding (label, name, selected, span_, type_)
-import Dashi.Components.Util (ariaRole_)
+import Dashi.Components.Util (ariaCurrent_, ariaRole_)
 import Dashi.Prelude hiding (none, (&))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
@@ -25,7 +25,7 @@ instance Widget (Tabs t model action) model action where
         ul_
             (class_ "tabs" : ariaRole_ "group" : attrs)
             [ li_
-                (tabindex_ "0" : onClick (onSelect tab) : [aria_ "current" "true" | selected tab])
+                (tabindex_ "0" : onClick (onSelect tab) : [ariaCurrent_ True | selected tab])
                 . label
                 $ tab
             | tab <- tabs
@@ -50,7 +50,7 @@ instance Widget (Tabs t model action) model action where
                     right nil
                     bottom . em $ -0.2
                     borderBottom (em 0.3) solid transparent
-                "@aria-current" & do
+                ariaCurrent True & do
                     color' $ Colour.Text Primary
                     after & borderBottomColor (colorToken Colour.BorderFocused)
                 hover <> Clay.not @Refinement "@aria-current" & do

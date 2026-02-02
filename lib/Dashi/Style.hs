@@ -12,6 +12,7 @@ import Dashi.Components.Form (FormField)
 import Dashi.Components.Heading (Heading)
 import Dashi.Components.Link (Link)
 import Dashi.Components.Message (Message)
+import Dashi.Components.Pagination (Pagination)
 import Dashi.Components.Plot (Plot)
 import Dashi.Components.ProgressBar (ProgressBar)
 import Dashi.Components.Radio (Radio, RadioGroup)
@@ -39,6 +40,7 @@ style = do
     Widget.style @(CheckboxGroup value model action) @model @action
     Widget.style @(FormField value model action) @model @action
     Widget.style @(Link model action) @model @action
+    Widget.style @(Pagination action) @model @action
     Widget.style @(Radio model action) @model @action
     Widget.style @(RadioGroup value model action) @model @action
     Widget.style @(Range action) @model @action

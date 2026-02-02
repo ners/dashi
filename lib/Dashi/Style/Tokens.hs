@@ -3,11 +3,10 @@
 module Dashi.Style.Tokens where
 
 import Clay hiding (Color, FontSize, fontSize)
+import Dashi.Prelude
 import Dashi.Util (emptyAttr_, emptyRefinement)
-import Data.String (IsString (fromString))
 import GHC.IsList (IsList (..))
 import Miso.Html.Property (class_)
-import Miso.Prelude
 
 class Token t where
     tokenName :: (IsString s, Semigroup s) => t -> s
@@ -26,6 +25,9 @@ class Token t where
     allTokens :: (IsList l, Item l ~ t) => l
     default allTokens :: (IsList l, Item l ~ t, Bounded t, Enum t) => l
     allTokens = fromList [minBound .. maxBound]
+
+byTokens :: (Token t) => (t -> Css) -> Css
+byTokens f = for_ @[] allTokens \t -> byToken t Clay.& f t
 
 nonDefaultTokenName :: (Token t, Eq t, IsString s, Semigroup s) => t -> Maybe s
 nonDefaultTokenName t

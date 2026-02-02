@@ -13,8 +13,14 @@ import Miso.Html (span_)
 import Miso.Html.Property (class_)
 import Web.Font.MDI (MDI (..), mdiChar)
 
-iconFont :: Css
-iconFont = "font" ~: "normal normal normal 1.5em/1 'Material Design Icons'"
+iconStyle :: Css
+iconStyle = do
+    "font" ~: "normal normal normal 1.5em/1 'Material Design Icons'"
+    userSelect none
+    textAlign center
+    display inlineBlock
+    textRendering auto
+    important $ textDecoration none
 
 iconContent :: MDI -> Content
 iconContent = stringContent . fromString . pure . mdiChar
@@ -30,10 +36,4 @@ instance Widget MDI model action where
             fontWeight normal
             fontFaceSrc
                 [FontFaceSrcUrl "/static/materialdesignicons-webfont.woff2" (Just WOFF2)]
-        ".mdi" ? do
-            display inlineBlock
-            textRendering auto
-            important $ textDecoration none
-            iconFont
-            userSelect none
-            textAlign center
+        ".mdi" ? iconStyle

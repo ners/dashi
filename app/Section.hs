@@ -23,6 +23,7 @@ import Section.Icon qualified as Icon
 import Section.Link qualified as Link
 import Section.Message qualified as Message
 import Section.Overview qualified as Overview
+import Section.Pagination qualified as Pagination
 import Section.Plot qualified as Plot
 import Section.ProgressBar qualified as ProgressBar
 import Section.Radio qualified as Radio
@@ -69,6 +70,7 @@ data ComponentId
     | Icon
     | Link
     | Message
+    | Pagination
     | Plot
     | ProgressBar
     | Radio
@@ -120,6 +122,7 @@ view Model{..} =
         Components Link -> mount_ Link.link
         Components Message -> mount_ Message.message
         Components Checkbox -> mount_ Checkbox.checkbox
+        Components Pagination -> mount_ Pagination.pagination
         Components Plot -> mount_ Plot.plot
         Components ProgressBar -> mount_ ProgressBar.progressBar
         Components Radio -> mount_ Radio.radio

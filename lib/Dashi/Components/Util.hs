@@ -49,6 +49,12 @@ ariaBusy_ =
         True -> "true"
         False -> "false"
 
+ariaCurrent_ :: Bool -> Attribute action
+ariaCurrent_ =
+    aria_ "current" . \case
+        True -> "true"
+        False -> "false"
+
 ariaInvalid_ :: Bool -> Attribute action
 ariaInvalid_ =
     aria_ "invalid" . \case

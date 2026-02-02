@@ -54,13 +54,12 @@ instance Widget (ActionBar model action) model action where
             display grid
             gridTemplateAreas [tokenName <$> allTokens @Area]
             gridTemplateColumns [fr 1, fr 1, fr 1]
-            for_ @[] allTokens \area ->
-                self # byToken area ? do
-                    "grid-area" -: tokenName area
-                    display flex
-                    flexDirection row
-                    gap' XSmall
-                    justifyContent $ case area of
-                        Left -> flexStart
-                        Centre -> center
-                        Right -> flexEnd
+            byTokens \area -> do
+                "grid-area" -: tokenName area
+                display flex
+                flexDirection row
+                gap' XSmall
+                justifyContent $ case area of
+                    Left -> flexStart
+                    Centre -> center
+                    Right -> flexEnd

@@ -85,9 +85,7 @@ instance Widget ProgressBar model action where
             display block
             fullWidth
             backgroundColor' Background
-            for_ @[] [minBound .. maxBound] \size ->
-                byToken size & do
-                    height . tokenValue . Space $ size
+            byTokens $ height . tokenValue . Space
             borderRadiusAll' Large
             "::-webkit-progress-bar" & do
                 borderRadiusAll' Large

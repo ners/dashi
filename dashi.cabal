@@ -74,6 +74,7 @@ library
     Dashi.Components.Icon
     Dashi.Components.Link
     Dashi.Components.Message
+    Dashi.Components.Pagination
     Dashi.Components.Plot
     Dashi.Components.ProgressBar
     Dashi.Components.Radio
@@ -134,6 +135,7 @@ executable dashi
     Section.Link
     Section.Message
     Section.Overview
+    Section.Pagination
     Section.Plot
     Section.ProgressBar
     Section.Radio

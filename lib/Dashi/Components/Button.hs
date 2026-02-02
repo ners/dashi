@@ -91,6 +91,30 @@ data Button model action = Button
     , onClick :: Maybe action
     }
 
+appearanceStyle :: Appearance -> Css
+appearanceStyle appearance = do
+    when (appearance == Subtle) $ "box-shadow" -: "none"
+    when (elem @[] appearance [Primary, Success, Warning, Danger, Discovery])
+        $ color' Colour.InverseText
+    backgroundColor' $ Background appearance DefaultState
+    sconcat [ariaBusy False, Clay.not disabled] & do
+        hover & backgroundColor' (Background appearance HoveredState)
+        active & backgroundColor' (Background appearance ActiveState)
+
+sizeStyle :: ButtonSize -> Css
+sizeStyle DefaultSize = pure ()
+sizeStyle IconButton = do
+    paddingYX' XSmall XSmall
+    Clay.label ? Clay.span # ".mdi" ? transform none
+sizeStyle CompactButton = do
+    paddingYX (em 0.125) (token $ Space Medium)
+    Clay.span ? transform (translateY nil)
+sizeStyle FullWidthButton = do
+    fullWidth
+    Clay.label ? do
+        fullWidth
+        justifyContent spaceEvenly
+
 instance Widget (Button model action) model action where
     widget' attrs Button{..} =
         button_
@@ -118,21 +142,8 @@ instance Widget (Button model action) model action where
                         $ shadowWithBlur nil nil (var "border-width" [])
                   ]
             color' $ Colour.Text Subtle
-            byToken Subtle & do
-                "box-shadow" -: "none"
             borderRadiusAll' Small
             paddingYX' XSmall Medium
-            byToken IconButton & do
-                paddingYX' XSmall XSmall
-                Clay.label ? Clay.span # ".mdi" ? transform none
-            byToken CompactButton & do
-                paddingYX (em 0.125) (token $ Space Medium)
-                Clay.span ? transform (translateY nil)
-            byToken FullWidthButton & do
-                fullWidth
-                Clay.label ? do
-                    fullWidth
-                    justifyContent spaceEvenly
             fontWeight $ weight 550
             backgroundColor' $ Background Default DefaultState
             transition "background" (sec 0.15) easeOut 0
@@ -157,11 +168,5 @@ instance Widget (Button model action) model action where
                 width $ em 1.4
                 height $ em 1.4
             ariaBusy True & Clay.label ? opacity 0
-            for_ @[] allTokens \appearance ->
-                byToken appearance & do
-                    when (elem @[] appearance [Primary, Success, Warning, Danger, Discovery])
-                        $ color' Colour.InverseText
-                    backgroundColor' $ Background appearance DefaultState
-                    sconcat [ariaBusy False, Clay.not disabled] & do
-                        hover & backgroundColor' (Background appearance HoveredState)
-                        active & backgroundColor' (Background appearance ActiveState)
+            byTokens sizeStyle
+            byTokens appearanceStyle

@@ -4,7 +4,7 @@
 module Dashi.Components.Message where
 
 import Clay hiding (Background, icon, size, span_, title)
-import Dashi.Components.Icon (iconContent)
+import Dashi.Components.Icon (Icon, iconContent)
 import Dashi.Components.Util (selectable_)
 import Dashi.Prelude hiding (has, none, (#), (&))
 import Dashi.Style.Colour qualified as Colour
@@ -34,6 +34,66 @@ data Message = Message
     , secondary :: Maybe MisoString
     }
 
+sizeStyle :: MessageSize -> Css
+sizeStyle InlineMessage = do
+    pressable
+    underlinedOnHover
+    display inlineFlex
+    flexDirection row
+    alignItems center
+    ".title" ? color' (Colour.Text Default)
+    ".secondary" ? color' (Colour.Text Subtle)
+    fontWeight $ weight 500
+    gap' XSmall
+sizeStyle FormMessage = do
+    display flex
+    flexDirection row
+    alignItems center
+    gap' XSmall
+    ".mdi" ? fontSize' Large
+    fontSize' Small
+    byToken Subtle & ".mdi" ? display none
+sizeStyle SectionMessage = do
+    borderRadiusAll' Medium
+    paddingAll' Medium
+    paddingRight . tokenValue . Space $ Large
+    display flex
+    alignItems center
+    sconcat [has ".title", has ".secondary"] & do
+        display grid
+        gridTemplateAreas
+            [ ["icon", "title"]
+            , ["icon", "secondary"]
+            ]
+        ".mdi" ? do
+            "grid-area" -: "icon"
+            alignSelf baseline
+        ".title" ? ("grid-area" -: "title")
+        ".secondary" ? ("grid-area" -: "secondary")
+        rowGap' XSmall
+    gridTemplateColumns [em 1.5, auto]
+    columnGap' Small
+    ".title" ? do
+        fontSize' Large
+        fontWeight $ weight 700
+
+icon :: Appearance -> Icon
+icon Default = MdiInformation
+icon Primary = icon Default
+icon Subtle = icon Default
+icon Success = MdiCheckCircle
+icon Warning = MdiAlert
+icon Danger = MdiAlertRhombus
+icon Discovery = MdiHelpCircle
+
+appearanceStyle :: Appearance -> Css
+appearanceStyle appearance = do
+    byToken FormMessage & color' (Colour.Text appearance)
+    byToken SectionMessage & backgroundColor' (Colour.Background appearance)
+    ".mdi" # before ? do
+        content . iconContent . icon $ appearance
+        color' $ Colour.Text appearance
+
 instance Widget Message model action where
     widget' attrs Message{..} =
         tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs)
@@ -50,59 +110,5 @@ instance Widget Message model action where
     style =
         ".message" ? do
             maxWidth $ pct 100
-            byToken InlineMessage & do
-                pressable
-                underlinedOnHover
-                display inlineFlex
-                flexDirection row
-                alignItems center
-                ".title" ? color' (Colour.Text Default)
-                ".secondary" ? color' (Colour.Text Subtle)
-                fontWeight $ weight 500
-                gap' XSmall
-            byToken FormMessage & do
-                display flex
-                flexDirection row
-                alignItems center
-                gap' XSmall
-                ".mdi" ? fontSize' Large
-            byToken SectionMessage & do
-                borderRadiusAll' Medium
-                paddingAll' Medium
-                paddingRight . tokenValue . Space $ Large
-                display flex
-                alignItems center
-                sconcat [has ".title", has ".secondary"] & do
-                    display grid
-                    gridTemplateAreas
-                        [ ["icon", "title"]
-                        , ["icon", "secondary"]
-                        ]
-                    ".mdi" ? do
-                        "grid-area" -: "icon"
-                        alignSelf baseline
-                    ".title" ? ("grid-area" -: "title")
-                    ".secondary" ? ("grid-area" -: "secondary")
-                    rowGap' XSmall
-                gridTemplateColumns [em 1.5, auto]
-                columnGap' Small
-                ".title" ? do
-                    fontSize' Large
-                    fontWeight $ weight 700
-            byToken FormMessage & do
-                fontSize' Small
-                byToken Subtle & ".mdi" ? display none
-            let icon Default = MdiInformation
-                icon Primary = icon Default
-                icon Subtle = icon Default
-                icon Success = MdiCheckCircle
-                icon Warning = MdiAlert
-                icon Danger = MdiAlertRhombus
-                icon Discovery = MdiHelpCircle
-            for_ @[] [minBound .. maxBound] \appearance ->
-                byToken appearance & do
-                    byToken FormMessage & color' (Colour.Text appearance)
-                    byToken SectionMessage & backgroundColor' (Colour.Background appearance)
-                    ".mdi" # before ? do
-                        content . iconContent . icon $ appearance
-                        color' $ Colour.Text appearance
+            byTokens sizeStyle
+            byTokens appearanceStyle

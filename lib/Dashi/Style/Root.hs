@@ -103,8 +103,7 @@ style = do
     html ? do
         overflowX hidden
         overflowY auto
-        for_ @[] @_ @Colour.Scheme allTokens \scheme ->
-            byToken scheme & ("color-scheme" -: tokenName scheme)
+        byTokens @Colour.Scheme \scheme -> "color-scheme" -: tokenName scheme
     body ? do
         font $
             var @Value

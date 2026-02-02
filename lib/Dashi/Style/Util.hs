@@ -36,6 +36,10 @@ ariaBusy :: Bool -> Refinement
 ariaBusy True = "aria-busy" @= "true"
 ariaBusy False = Clay.not $ ariaBusy True
 
+ariaCurrent :: Bool -> Refinement
+ariaCurrent True = "aria-current" @= "true"
+ariaCurrent False = Clay.not $ ariaCurrent True
+
 ariaRole :: Text -> Refinement
 ariaRole = ("aria-role" @=)
 

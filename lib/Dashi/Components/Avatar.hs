@@ -60,18 +60,17 @@ instance Widget Avatar model action where
     style =
         ".avatar" ? do
             "image-rendering" -: "pixelated"
-            for_ @[] allTokens \size ->
-                byToken size & do
-                    let sizeEm = case size of
-                            XSmall -> 1
-                            Small -> 1.75
-                            Medium -> 2
-                            Large -> 2.5
-                            XLarge -> 6
-                    width $ rem sizeEm
-                    height $ rem sizeEm
-                    lineHeight $ rem sizeEm
-                    Clay.fontSize (rem $ sizeEm / 3)
+            byTokens \size -> do
+                let sizeEm = case size of
+                        XSmall -> 1
+                        Small -> 1.75
+                        Medium -> 2
+                        Large -> 2.5
+                        XLarge -> 6
+                width $ rem sizeEm
+                height $ rem sizeEm
+                lineHeight $ rem sizeEm
+                Clay.fontSize (rem $ sizeEm / 3)
             overflow hidden
             backgroundColor' (Colour.Background Primary)
             fontWeight $ weight 600
