@@ -5,6 +5,7 @@ module Dashi.Style where
 import Clay hiding (style)
 import Dashi.Components.ActionBar (ActionBar)
 import Dashi.Components.Avatar (Avatar, AvatarItem)
+import Dashi.Components.Breadcrumbs (Breadcrumbs)
 import Dashi.Components.Button (Button)
 import Dashi.Components.Checkbox (Checkbox, CheckboxGroup)
 import Dashi.Components.Form (FormField)
@@ -32,6 +33,7 @@ style = do
     Widget.style @(Page model action) @model @action
 
     Widget.style @(ActionBar model action) @model @action
+    Widget.style @(Breadcrumbs model action) @model @action
     Widget.style @(Button model action) @model @action
     Widget.style @(Checkbox model action) @model @action
     Widget.style @(CheckboxGroup value model action) @model @action

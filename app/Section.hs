@@ -14,6 +14,7 @@ import Miso.String qualified as MisoString
 import Miso.Util.Parser (ParserT (..))
 import Section.Accessibility qualified as Accessibility
 import Section.Avatar qualified as Avatar
+import Section.Breadcrumbs qualified as Breadcrumbs
 import Section.Button qualified as Button
 import Section.Checkbox qualified as Checkbox
 import Section.DesignTokens qualified as DesignTokens
@@ -61,6 +62,7 @@ data FoundationId
 
 data ComponentId
     = Avatar
+    | Breadcrumbs
     | Button
     | Checkbox
     | Form
@@ -111,6 +113,7 @@ view Model{..} =
         Foundations Accessibility -> mount_ Accessibility.accessibility
         Foundations DesignTokens -> mount_ DesignTokens.tokens
         Components Avatar -> mount_ Avatar.avatar
+        Components Breadcrumbs -> mount_ Breadcrumbs.breadcrumbs
         Components Button -> mount_ Button.button
         Components Form -> mount_ $ Form.form #form form
         Components Icon -> mount_ Icon.icon

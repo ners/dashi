@@ -36,3 +36,4 @@ instance Widget MDI model action where
             important $ textDecoration none
             iconFont
             userSelect none
+            textAlign center

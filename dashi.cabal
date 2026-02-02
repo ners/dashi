@@ -66,6 +66,7 @@ library
     Dashi
     Dashi.Components.ActionBar
     Dashi.Components.Avatar
+    Dashi.Components.Breadcrumbs
     Dashi.Components.Button
     Dashi.Components.Checkbox
     Dashi.Components.Form
@@ -124,6 +125,7 @@ executable dashi
     Section
     Section.Accessibility
     Section.Avatar
+    Section.Breadcrumbs
     Section.Button
     Section.Checkbox
     Section.DesignTokens
