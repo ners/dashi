@@ -11,7 +11,7 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (li_, ul_)
 import Miso.Html.Event (onClick)
-import Miso.Html.Property (aria_, class_, tabindex_)
+import Miso.Html.Property (class_, tabindex_)
 
 data Tabs t model action = Tabs
     { tabs :: [t]

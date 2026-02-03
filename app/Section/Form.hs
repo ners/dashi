@@ -10,6 +10,8 @@ import Dashi.Components.Button qualified as Button
 import Dashi.Components.Checkbox
 import Dashi.Components.Form
 import Dashi.Components.Heading
+import Dashi.Components.Icon (MDI (MdiSecurity))
+import Dashi.Components.Message
 import Dashi.Components.TextField
 import Dashi.Components.TextField qualified as TextField
 import Dashi.Components.Util
@@ -88,7 +90,7 @@ view Model{..} =
                     , messages = usernameMessages
                     }
             , widget' @(FormField _ Model Action) @Model @Action
-                ([autocomplete_ "current-password"] <> [disabled_ | submitInProgress])
+                ([autocomplete_ "new-password"] <> [disabled_ | submitInProgress])
                 FormField
                     { legend = [text "Password"]
                     , required = True
@@ -111,7 +113,16 @@ view Model{..} =
                     }
             , widget
                 ActionBar
-                    { left = []
+                    { left =
+                        [ widget
+                            Message
+                                { size = FormMessage
+                                , appearance = Subtle
+                                , icon = Just . CustomIcon $ MdiSecurity
+                                , title = Nothing
+                                , secondary = Just "Your inputs will not be stored"
+                                }
+                        ]
                     , centre = []
                     , right =
                         [ widget' @(Button Model Action) @Model @Action

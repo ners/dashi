@@ -7,7 +7,7 @@ module Dashi.Components.Icon
 where
 
 import Clay hiding (action, span_)
-import Dashi.Prelude hiding (none)
+import Dashi.Prelude hiding (has, none, span, (&))
 import Dashi.Style.Util ((~:))
 import Miso.Html (span_)
 import Miso.Html.Property (class_)
@@ -27,7 +27,7 @@ iconContent = stringContent . fromString . pure . mdiChar
 
 type Icon = MDI
 
-instance Widget MDI model action where
+instance Widget Icon model action where
     widget' attrs = span_ (class_ "mdi" : attrs) . pure . textRaw . fromString . pure . mdiChar
     style = do
         fontFace do
@@ -36,4 +36,12 @@ instance Widget MDI model action where
             fontWeight normal
             fontFaceSrc
                 [FontFaceSrcUrl "/static/materialdesignicons-webfont.woff2" (Just WOFF2)]
-        ".mdi" ? iconStyle
+        ".mdi" ? do
+            iconStyle
+            ".inline" & do
+                position relative
+                top $ em 0.1
+                marginRight $ em 0.2
+
+inlineIcon :: Icon -> View model action
+inlineIcon = widget' [class_ "inline"]

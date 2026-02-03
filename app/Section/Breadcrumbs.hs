@@ -4,6 +4,10 @@ module Section.Breadcrumbs where
 
 import Dashi.Components.Breadcrumbs
 import Dashi.Components.Heading
+import Dashi.Components.Icon
+    ( MDI (MdiNumeric1Box, MdiNumeric2Circle, MdiNumeric3CircleOutline)
+    , inlineIcon
+    )
 import Dashi.Components.Link
 import Dashi.Components.Util (appearance_)
 import Dashi.Prelude hiding (update, view)
@@ -45,5 +49,17 @@ view Model =
                 , widget' @(Link Model Action)
                     [appearance_ Subtle]
                     Link{href = "#", label = [text "Three"]}
+                ]
+        , widget @(Breadcrumbs Model Action)
+            $ Breadcrumbs
+                [ widget' @(Link Model Action)
+                    [appearance_ Subtle]
+                    Link{href = "#", label = [inlineIcon MdiNumeric1Box, text "One"]}
+                , widget' @(Link Model Action)
+                    [appearance_ Subtle]
+                    Link{href = "#", label = [inlineIcon MdiNumeric2Circle, text "Two"]}
+                , widget' @(Link Model Action)
+                    [appearance_ Subtle]
+                    Link{href = "#", label = [inlineIcon MdiNumeric3CircleOutline, text "Three"]}
                 ]
         ]

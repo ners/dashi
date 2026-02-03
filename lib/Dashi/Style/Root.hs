@@ -111,3 +111,11 @@ style = do
                 ["normal " <> var "font-weight" [] <> " 14px/1.4 " <> var "font-family" []]
         backgroundColor' $ Colour.Background Default
         color' $ Colour.Text Default
+        Clay.not (has "*") & do
+            height $ vh 100
+            display flex
+            justifyContent center
+            alignItems center
+            before & do
+                display block
+                content (stringContent "Loading...")

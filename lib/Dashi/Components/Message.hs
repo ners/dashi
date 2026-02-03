@@ -3,8 +3,17 @@
 
 module Dashi.Components.Message where
 
-import Clay hiding (Background, icon, size, span_, title)
-import Dashi.Components.Icon (Icon, iconContent)
+import Clay hiding (Background, i, icon, size, span_, title)
+import Dashi.Components.Icon
+    ( MDI
+        ( MdiAlert
+        , MdiAlertRhombus
+        , MdiCheckCircle
+        , MdiHelpCircle
+        , MdiInformation
+        )
+    )
+import Dashi.Components.Icon qualified as Components
 import Dashi.Components.Util (selectable_)
 import Dashi.Prelude hiding (has, none, (#), (&))
 import Dashi.Style.Colour qualified as Colour
@@ -12,9 +21,6 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (a_, div_, span_)
 import Miso.Html.Property (class_)
-import Web.Font.MDI
-    ( MDI (MdiAlert, MdiAlertRhombus, MdiCheckCircle, MdiHelpCircle, MdiInformation)
-    )
 
 data MessageSize
     = InlineMessage
@@ -27,9 +33,14 @@ instance Token MessageSize where
     tokenName FormMessage = "form"
     tokenName SectionMessage = "section"
 
+data Icon
+    = DefaultIcon
+    | CustomIcon Components.Icon
+
 data Message = Message
     { size :: MessageSize
     , appearance :: Appearance
+    , icon :: Maybe Icon
     , title :: Maybe MisoString
     , secondary :: Maybe MisoString
     }
@@ -50,9 +61,11 @@ sizeStyle FormMessage = do
     flexDirection row
     alignItems center
     gap' XSmall
-    ".mdi" ? fontSize' Large
+    ".mdi" ? do
+        fontSize' Large
+        position relative
+        top . em $ -0.05
     fontSize' Small
-    byToken Subtle & ".mdi" ? display none
 sizeStyle SectionMessage = do
     borderRadiusAll' Medium
     paddingAll' Medium
@@ -77,32 +90,34 @@ sizeStyle SectionMessage = do
         fontSize' Large
         fontWeight $ weight 700
 
-icon :: Appearance -> Icon
-icon Default = MdiInformation
-icon Primary = icon Default
-icon Subtle = icon Default
-icon Success = MdiCheckCircle
-icon Warning = MdiAlert
-icon Danger = MdiAlertRhombus
-icon Discovery = MdiHelpCircle
+defaultIcon :: Appearance -> Maybe Components.Icon
+defaultIcon Default = Nothing
+defaultIcon Primary = Just MdiInformation
+defaultIcon Subtle = Nothing
+defaultIcon Success = Just MdiCheckCircle
+defaultIcon Warning = Just MdiAlert
+defaultIcon Danger = Just MdiAlertRhombus
+defaultIcon Discovery = Just MdiHelpCircle
 
 appearanceStyle :: Appearance -> Css
 appearanceStyle appearance = do
     byToken FormMessage & color' (Colour.Text appearance)
     byToken SectionMessage & backgroundColor' (Colour.Background appearance)
-    ".mdi" # before ? do
-        content . iconContent . icon $ appearance
-        color' $ Colour.Text appearance
+    ".mdi" ? color' (Colour.Text appearance)
 
 instance Widget Message model action where
     widget' attrs Message{..} =
         tag (class_ "message" : tokenAttr size : tokenAttr appearance : attrs)
             . catMaybes
-            $ [ pure $ span_ [class_ "mdi"] []
+            $ [ widget <$> icon'
               , span_ [class_ "title"] . pure . text <$> title
               , span_ [class_ "secondary"] . pure . text <$> secondary
               ]
       where
+        icon' =
+            icon >>= \case
+                DefaultIcon -> defaultIcon appearance
+                CustomIcon i -> Just i
         tag
             | size == InlineMessage = a_ . (selectable_ :)
             | otherwise = div_

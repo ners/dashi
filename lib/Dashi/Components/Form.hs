@@ -16,7 +16,11 @@ import Clay hiding
     )
 import Clay qualified hiding (not)
 import Dashi.Components.Checkbox (CheckboxGroup)
-import Dashi.Components.Message (Message (..), MessageSize (FormMessage))
+import Dashi.Components.Message
+    ( Icon (DefaultIcon)
+    , Message (..)
+    , MessageSize (FormMessage)
+    )
 import Dashi.Components.Radio (RadioGroup)
 import Dashi.Prelude hiding (has, (#), (&), (**))
 import Dashi.Style.Colour qualified as Colour
@@ -33,7 +37,14 @@ data FormField w model action = FormField
     }
 
 viewMessage :: (Appearance, MisoString) -> View model action
-viewMessage (appearance, Just -> secondary) = widget Message{size = FormMessage, title = Nothing, ..}
+viewMessage (appearance, Just -> secondary) =
+    widget
+        Message
+            { size = FormMessage
+            , icon = Just DefaultIcon
+            , title = Nothing
+            , ..
+            }
 
 viewWithLegend
     :: (Widget w model action)

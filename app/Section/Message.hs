@@ -37,6 +37,7 @@ view Model =
             Message
                 { size = InlineMessage
                 , appearance = Primary
+                , icon = Just DefaultIcon
                 , title = Just "Software update"
                 , secondary = Just "You've been upgraded to version 5.2"
                 }
@@ -44,6 +45,7 @@ view Model =
             Message
                 { size = InlineMessage
                 , appearance = Warning
+                , icon = Just DefaultIcon
                 , title = Nothing
                 , secondary = Just "Your bill may increase"
                 }
@@ -51,6 +53,7 @@ view Model =
             Message
                 { size = InlineMessage
                 , appearance = Danger
+                , icon = Just DefaultIcon
                 , title = Nothing
                 , secondary = Just "Username taken"
                 }
@@ -58,6 +61,7 @@ view Model =
             Message
                 { size = InlineMessage
                 , appearance = Success
+                , icon = Just DefaultIcon
                 , title = Nothing
                 , secondary = Just "Files have been added"
                 }
@@ -65,14 +69,49 @@ view Model =
             Message
                 { size = InlineMessage
                 , appearance = Discovery
+                , icon = Just DefaultIcon
                 , title = Nothing
                 , secondary = Nothing
+                }
+        , widget $ Heading Medium "Form message"
+        , widget
+            Message
+                { size = FormMessage
+                , appearance = Primary
+                , icon = Just DefaultIcon
+                , title = Nothing
+                , secondary = Just "Will not be used for marketing purposes"
+                }
+        , widget
+            Message
+                { size = FormMessage
+                , appearance = Warning
+                , icon = Just DefaultIcon
+                , title = Nothing
+                , secondary = Just "Weak password"
+                }
+        , widget
+            Message
+                { size = FormMessage
+                , appearance = Danger
+                , icon = Just DefaultIcon
+                , title = Nothing
+                , secondary = Just "Username is taken"
+                }
+        , widget
+            Message
+                { size = FormMessage
+                , appearance = Success
+                , icon = Just DefaultIcon
+                , title = Nothing
+                , secondary = Just "Username is available"
                 }
         , widget $ Heading Medium "Section message"
         , widget
             Message
                 { size = SectionMessage
                 , appearance = Primary
+                , icon = Just DefaultIcon
                 , title = Just "Editing is restricted"
                 , secondary =
                     Just
@@ -82,6 +121,7 @@ view Model =
             Message
                 { size = SectionMessage
                 , appearance = Warning
+                , icon = Just DefaultIcon
                 , title = Just "Cannot connect to the database"
                 , secondary =
                     Just "We're unable to save any progress at this time. Please try again later."
@@ -90,6 +130,7 @@ view Model =
             Message
                 { size = SectionMessage
                 , appearance = Success
+                , icon = Just DefaultIcon
                 , title = Nothing
                 , secondary = Just "The file has been uploaded."
                 }
@@ -97,6 +138,7 @@ view Model =
             Message
                 { size = SectionMessage
                 , appearance = Danger
+                , icon = Just DefaultIcon
                 , title = Just "This account has been permanently deleted"
                 , secondary =
                     Just "The user `IanAtlas` no longer has access to Atlassian services."

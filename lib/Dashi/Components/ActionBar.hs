@@ -17,7 +17,8 @@ import Clay hiding
     , span_
     , type_
     )
-import Dashi.Prelude hiding (Left, Right, (#), (**))
+import Clay qualified
+import Dashi.Prelude hiding (Left, Right, has, (#), (&), (**))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (div_)
@@ -44,22 +45,34 @@ instance Widget (ActionBar model action) model action where
     widget' attrs ActionBar{..} =
         div_
             (class_ "action-bar" : attrs)
-            [ div_ [class_ "left"] left
-            , div_ [class_ "centre"] centre
-            , div_ [class_ "right"] right
-            ]
-    style =
+            . mconcat
+            $ [ [div_ [tokenAttr Left] left | not $ null left]
+              , [div_ [tokenAttr Centre] centre | not $ null centre]
+              , [div_ [tokenAttr Right] right | not $ null right]
+              ]
+    style = do
+        form ? ".action-bar" ? marginTop (token $ Space Medium)
         ".action-bar" ? do
             fullWidth
-            display grid
-            gridTemplateAreas [tokenName <$> allTokens @Area]
-            gridTemplateColumns [fr 1, fr 1, fr 1]
-            byTokens \area -> do
-                "grid-area" -: tokenName area
+            sconcat (has . ("" #) . byToken <$> allTokens @Area) & do
+                display grid
+                byTokens \area -> do
+                    "grid-area" -: tokenName area
+                    display flex
+                    flexDirection row
+                    gap' XSmall
+                    justifyContent $ case area of
+                        Left -> flexStart
+                        Centre -> center
+                        Right -> flexEnd
+                gridTemplateAreas [tokenName <$> allTokens @Area]
+                gridTemplateColumns [fr 1, fr 1, fr 1]
+            Clay.not (has ("" # byToken Centre)) & do
                 display flex
                 flexDirection row
-                gap' XSmall
-                justifyContent $ case area of
-                    Left -> flexStart
-                    Centre -> center
-                    Right -> flexEnd
+                alignItems baseline
+                justifyContent spaceBetween
+                "" ? byTokens \case
+                    Left -> pure ()
+                    Centre -> pure ()
+                    Right -> textAlign end
