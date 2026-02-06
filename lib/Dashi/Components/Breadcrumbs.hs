@@ -7,7 +7,7 @@ import Dashi.Components.Icon (MDI (MdiChevronRight), iconContent, iconStyle)
 import Dashi.Prelude hiding (has, (#), (&), (|>))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
-import Dashi.Style.Util (color', has, token)
+import Dashi.Style.Util (color', has, token, fontSize', paddingYX)
 import Data.List qualified as List
 import Miso.Html.Element (div_, span_)
 import Miso.Html.Property (class_)
@@ -25,9 +25,11 @@ instance Widget (Breadcrumbs model action) model action where
             flexDirection row
             ".separator" ? do
                 color' (Colour.Text Subtle)
-                width . token $ Space Medium
+                paddingYX nil (token $ Space XSmall)
                 iconStyle
+                fontSize' Medium
                 before & content (iconContent MdiChevronRight)
+                alignSelf center
             has ".mdi" & ".separator" ? do
                 position relative
                 top $ em 0.1
