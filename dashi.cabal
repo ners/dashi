@@ -145,6 +145,7 @@ executable dashi
     Section.Switch
     Section.Tabs
     Section.TextField
+    UserPrefs
 
   build-depends:
     dashi,

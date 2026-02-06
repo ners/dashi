@@ -32,6 +32,8 @@ import Miso.Router (Router (href_, route, toURI))
 import Miso.String qualified as MisoString
 import Section (SectionId)
 import Section qualified
+import UserPrefs (UserPrefs (..))
+import UserPrefs qualified
 
 #ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
@@ -73,8 +75,8 @@ responseData (ResponseReceived (Right res)) = Just res
 responseData _ = Nothing
 
 data Model = Model
-    { bundle :: RequestStatus Language Bundle
-    , colourScheme :: Colour.Scheme
+    { userPrefs :: UserPrefs
+    , bundle :: RequestStatus Language Bundle
     , section :: Section.Model
     , navOpen :: Bool
     }
@@ -86,41 +88,40 @@ instance Translatable Model where
 emptyModel :: Model
 emptyModel =
     Model
-        { bundle = NotRequested
-        , colourScheme = Colour.Scheme.Light
+        { userPrefs = UserPrefs.dummy
+        , bundle = NotRequested
         , section = Section.initialModel
         , navOpen = False
         }
 
 data Action
-    = Setup
+    = NoOp
+    | Setup
     | SetNavOpen Bool
     | SetLanguage Language
     | SetBundle (Either String Bundle)
     | SetColourScheme Colour.Scheme
     | SetCurrentSection SectionId
-    | NoOp
     deriving stock (Show)
 
 traceAction :: Action -> Effect parent model action
 traceAction = io_ . consoleLog . ("traceAction: " <>) . ishow
 
-getSystemColourScheme :: IO Colour.Scheme
-getSystemColourScheme = do
-    [js| return window.matchMedia("(prefers-color-scheme: dark)").matches |]
-        <&> (^. Colour.Scheme.isDark)
-
 getCurrentSection :: IO (Maybe SectionId)
 getCurrentSection = eitherToMaybe . route <$> getURI
 
 appUpdate :: Action -> Effect parent Model Action
-appUpdate Setup = do
-    -- TODO take this from header / local storage / browser settings ...
-    appUpdate $ SetLanguage Language.English
-    io $ SetColourScheme <$> getSystemColourScheme
+appUpdate NoOp = pure ()
+appUpdate Setup =
+    withSink \sink ->
+        UserPrefs.get >>= \UserPrefs{..} -> do
+            sink $ SetLanguage language
+            sink $ SetColourScheme colourScheme
 -- io setNavOpen
 appUpdate (SetNavOpen navOpen) = #navOpen .= navOpen
 appUpdate (SetLanguage lang) = do
+    #userPrefs . #language .= lang
+    io_ . UserPrefs.modify $ #language .~ lang
     #bundle .= RequestInProgress lang
     getText
         ("/static/" <> Language.code lang <> ".ftl")
@@ -132,14 +133,15 @@ appUpdate (SetLanguage lang) = do
     setBundle :: Response MisoString -> Action
     setBundle Response{body} =
         SetBundle
-            . fmap (buildBundle [Language.code lang] . pure)
+            . fmap (buildBundle [Language.locale lang] . pure)
             . Resource.parse
             . fromMisoString
             $ body
 appUpdate (SetBundle b) = #bundle .= ResponseReceived b
 appUpdate (SetColourScheme scheme) = do
-    #colourScheme .= scheme
+    #userPrefs . #colourScheme .= scheme
     io_ do
+        UserPrefs.modify $ #colourScheme .~ scheme
         Property name value <- pure $ tokenAttr scheme
         [js| document.documentElement.setAttribute(${name}, ${value}) |]
 appUpdate (SetCurrentSection sectionId) = do
@@ -149,7 +151,6 @@ appUpdate (SetCurrentSection sectionId) = do
         . toURI
         $ sectionId
     #section . #current .= sectionId
-appUpdate NoOp = pure ()
 
 appView :: Model -> View Model Action
 appView model =
@@ -170,7 +171,7 @@ appView model =
                     , widget . Heading XLarge $ unsafeTranslate model "hello"
                     , widget' @(Select Language Model Action)
                         [ appearance_ Subtle
-                        , onChange $ maybe NoOp SetLanguage . Language.fromCode
+                        , onChange $ either (const NoOp) SetLanguage . fromMisoStringEither
                         ]
                         Select
                             { name = "language"
@@ -187,11 +188,11 @@ appView model =
                             { size = Button.IconButton
                             , appearance = Subtle
                             , label =
-                                [ widget $ case model.colourScheme of
+                                [ widget $ case model.userPrefs.colourScheme of
                                     Colour.Scheme.Light -> MdiWhiteBalanceSunny
                                     Colour.Scheme.Dark -> MdiWeatherNight
                                 ]
-                            , onClick = Just . SetColourScheme . cycleSucc $ model.colourScheme
+                            , onClick = Just . SetColourScheme . cycleSucc $ model.userPrefs.colourScheme
                             }
                     ]
             , sideNav =

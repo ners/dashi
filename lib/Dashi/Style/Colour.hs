@@ -30,9 +30,9 @@ import Graphics.Color.Space
     )
 import Graphics.Color.Space.OKLAB.LCH
 import Graphics.Color.Space.RGB.SRGB
-import Miso.Property (textProp)
-import Miso.String (MisoString, ToMisoString (..))
-import Prelude
+import Miso.JSON (FromJSON (..), ToJSON (..), withText)
+import Miso.Prelude
+import Miso.String (ToMisoString (..))
 
 type Colour = Color OKLCH
 
@@ -40,6 +40,17 @@ type AlphaColour = Color (Alpha OKLCH)
 
 data Scheme = Light | Dark
     deriving stock (Eq, Show, Bounded, Enum)
+
+instance FromJSON Scheme where
+    parseJSON = withText "Colour.Scheme" \s ->
+        oneOf
+            [ pure scheme
+            | scheme <- [minBound .. maxBound]
+            , s == tokenName scheme
+            ]
+
+instance ToJSON Scheme where
+    toJSON = toJSON @MisoString . tokenName
 
 isDark :: Iso' Bool Scheme
 isDark = iso (bool Light Dark) (== Dark)
@@ -93,9 +104,9 @@ instance (Num e, Elevator e) => Clay.Val (Color (SRGB l) e) where
 instance (Num e, Elevator e) => Clay.Val (Color (Alpha (SRGB l)) e) where
     value :: Color (Alpha (SRGB l)) e -> Clay.Value
     value (ColorSRGBA ((255 *) -> r) ((255 *) -> g) ((255 *) -> b) a) =
-        fn "rgb" $
-            [toShowS r, toShowS g, toShowS b]
-                <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn "rgb"
+            $ [toShowS r, toShowS g, toShowS b]
+            <> if a == 1 then [] else [showChar '/', toShowS a]
 
 instance (Elevator e) => Clay.Val (Color OKLCH e) where
     value :: Color OKLCH e -> Clay.Value
@@ -104,9 +115,9 @@ instance (Elevator e) => Clay.Val (Color OKLCH e) where
 instance (Elevator e) => Clay.Val (Color (Alpha OKLCH) e) where
     value :: Color (Alpha OKLCH) e -> Clay.Value
     value (ColorOKLCHA l c h a) =
-        fn "oklch" $
-            [toShowS l, toShowS c, toShowS h]
-                <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn "oklch"
+            $ [toShowS l, toShowS c, toShowS h]
+            <> if a == 1 then [] else [showChar '/', toShowS a]
 
 instance (Clay.Val c, Eq c) => Clay.Val (LightDark c) where
     value :: LightDark c -> Clay.Value
@@ -122,9 +133,9 @@ instance (Num e, Elevator e) => ToMisoString (Color (SRGB l) e) where
 instance (Num e, Elevator e) => ToMisoString (Color (Alpha (SRGB l)) e) where
     toMisoString :: Color (Alpha (SRGB l)) e -> MisoString
     toMisoString (ColorSRGBA ((255 *) -> r) ((255 *) -> g) ((255 *) -> b) a) =
-        fn "rgb" $
-            [toShowS r, toShowS g, toShowS b]
-                <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn "rgb"
+            $ [toShowS r, toShowS g, toShowS b]
+            <> if a == 1 then [] else [showChar '/', toShowS a]
 
 instance (Elevator e) => ToMisoString (Color OKLCH e) where
     toMisoString :: Color OKLCH e -> MisoString
@@ -133,9 +144,9 @@ instance (Elevator e) => ToMisoString (Color OKLCH e) where
 instance (Elevator e) => ToMisoString (Color (Alpha OKLCH) e) where
     toMisoString :: Color (Alpha OKLCH) e -> MisoString
     toMisoString (ColorOKLCHA l c h a) =
-        fn "oklch" $
-            [toShowS l, toShowS c, toShowS h]
-                <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn "oklch"
+            $ [toShowS l, toShowS c, toShowS h]
+            <> if a == 1 then [] else [showChar '/', toShowS a]
 
 instance (ToMisoString c, Eq c) => ToMisoString (LightDark c) where
     toMisoString :: LightDark c -> MisoString
