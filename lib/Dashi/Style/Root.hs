@@ -61,15 +61,8 @@ style = do
             , "monospace"
             , var "font-family-emoji" []
             ]
-        varDecl "font-family" $ var @Value "font-family-sans-serif" []
-        varDecl "line-height" $ unitless 1.5
-        varDecl "font-weight" $ weight 400
-        varDecl "font-size" $ pct 100
-        varDecl "text-underline-offset" $ rem 0.1
-        varDecl "border-radius" $ rem 0.25
-        varDecl "border-width" $ rem 0.0625
-        varDecl "outline-width" $ rem 0.125
-        varDecl "transition" ([value $ sec 0.2, value easeInOut] :: [Value])
+        varDecl @Value "font-body" $
+            "normal 400 14px/1.5 " <> var "font-family-sans-serif" []
         tokenDecl @Space
         tokenDecl @Radius
         tokenDecl @Colour.Text
@@ -105,17 +98,15 @@ style = do
         overflowY auto
         byTokens @Colour.Scheme \scheme -> "color-scheme" -: tokenName scheme
     body ? do
-        font $
-            var @Value
-                "font-body"
-                ["normal " <> var "font-weight" [] <> " 14px/1.4 " <> var "font-family" []]
+        font $ var @Value "font-body" []
         backgroundColor' $ Colour.Background Default
         color' $ Colour.Text Default
-        Clay.not (has "*") & do
+        has ("#dashi-loading" # onlyChild) & do
             height $ vh 100
             display flex
             justifyContent center
             alignItems center
-            before & do
-                display block
-                content (stringContent "Loading...")
+            "#dashi-loading" ? do
+                width $ em 2
+                height $ em 2
+        "#dashi-loading" ? not onlyChild & display none
