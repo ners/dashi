@@ -3,15 +3,9 @@
 module Section where
 
 import Dashi.Prelude hiding (ComponentId, init)
-import Dashi.Util
-import Data.List.Extra qualified as List
-import Data.Sequence (Seq)
-import Data.Sequence qualified as Seq
 import Miso.Html.Element (div_)
 import Miso.Html.Property (id_)
-import Miso.Router (Router (..), Token (..))
 import Miso.String qualified as MisoString
-import Miso.Util.Parser (ParserT (..))
 import Section.Accessibility qualified as Accessibility
 import Section.Avatar qualified as Avatar
 import Section.Breadcrumbs qualified as Breadcrumbs
@@ -33,65 +27,7 @@ import Section.Spinner qualified as Spinner
 import Section.Switch qualified as Switch
 import Section.Tabs qualified as Tabs
 import Section.TextField qualified as TextField
-
-data SectionId
-    = Overview
-    | Foundations FoundationId
-    | Components ComponentId
-    deriving stock (Eq, Show)
-
-allSections :: Seq SectionId
-allSections =
-    mconcat
-        [ pure Overview
-        , Foundations <$> Seq.fromList [minBound .. maxBound]
-        , Components <$> Seq.fromList [minBound .. maxBound]
-        ]
-
-instance Enum SectionId where
-    toEnum = Seq.index allSections
-    fromEnum = fromJust . flip Seq.elemIndexL allSections
-
-instance Bounded SectionId where
-    minBound = toEnum 0
-    maxBound = toEnum . pred $ Seq.length allSections
-
-data FoundationId
-    = Accessibility
-    | DesignTokens
-    deriving stock (Eq, Show, Bounded, Enum)
-
-data ComponentId
-    = Avatar
-    | Breadcrumbs
-    | Button
-    | Checkbox
-    | Form
-    | Icon
-    | Link
-    | Message
-    | Pagination
-    | Plot
-    | ProgressBar
-    | Radio
-    | Range
-    | Select
-    | Spinner
-    | Switch
-    | Tabs
-    | TextField
-    deriving stock (Generic, Eq, Show, Bounded, Enum)
-
-instance Router SectionId where
-    fromRoute =
-        fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip)
-            . breakAll (== ' ')
-            . ishow
-    routeParser = Parser \_ tokens ->
-        maybeToList
-            $ List.firstJust
-                (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens)
-                [minBound .. maxBound]
+import SectionId
 
 data Model = Model
     { current :: SectionId

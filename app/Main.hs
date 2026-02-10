@@ -25,13 +25,13 @@ import Data.List.Extra qualified as List
 import Language
 import Language.Fluent.Bundle (Bundle (..), buildBundle)
 import Language.Fluent.Syntax.Resource qualified as Resource
-import Miso.Html.Element (a_, dialog_, div_, img_, li_, ul_)
-import Miso.Html.Event (onChange, onClickPrevent)
+import Miso.Html.Element (dialog_, div_, img_, li_, ul_)
+import Miso.Html.Event (onChange)
 import Miso.Html.Property (aria_, hidden_, id_, src_)
-import Miso.Router (Router (href_, route, toURI))
+import Miso.Router (Router (route, toURI))
 import Miso.String qualified as MisoString
-import Section (SectionId)
 import Section qualified
+import SectionId (SectionId, sectionLink)
 import UserPrefs (UserPrefs (..))
 import UserPrefs qualified
 
@@ -221,14 +221,10 @@ routesToUl current routes = ul_ [] $ groupToLi <$> groups
     textLabel = text . capitalise . unpascal
     groupToLi
         :: (Maybe MisoString, [(SectionId, [MisoString])]) -> View Model Action
-    groupToLi (Just label, [(r, [])]) =
+    groupToLi (Just _, [(r, [])]) =
         li_
             [aria_ "current" "page" | r == current]
-            [ a_
-                [ href_ r
-                , onClickPrevent $ SetCurrentSection r
-                ]
-                [textLabel label]
+            [ sectionLink SetCurrentSection r
             ]
     groupToLi (groupLabel, group) =
         li_ []

@@ -8,7 +8,9 @@ import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (div_, p_, section_)
+import Miso.Router (Router (toURI))
 import Miso.String qualified as MisoString
+import SectionId (ComponentId (Spinner), SectionId (Components), sectionLink)
 
 data Model = Model
     deriving stock (Generic, Eq, Show)
@@ -16,13 +18,16 @@ data Model = Model
 initialModel :: Model
 initialModel = Model
 
-data Action = NoOp
+data Action
+    = NoOp
+    | Navigate SectionId
 
 progressBar :: Component parent Model Action
 progressBar = component initialModel update view
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
+update (Navigate s) = io_ . pushURI . toURI $ s
 
 view :: Model -> View Model Action
 view Model =
@@ -39,7 +44,12 @@ view Model =
             [ text
                 "Use a progress bar when the process is complex or has a long wait time, and you can determine the percentage of the process that has been completed."
             ]
-        , p_ [] [text "For short loading times, use a spinner instead."]
+        , p_
+            []
+            [ text "For short loading times, use a "
+            , sectionLink Navigate $ Components Spinner
+            , text " instead."
+            ]
         , div_
             [ styleInline_ "display: flex; flex-direction: column; gap: var(--dashi-space-s);"
             ]

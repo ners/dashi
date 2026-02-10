@@ -53,7 +53,6 @@ common common
 
   build-depends:
     base,
-    containers,
     extra,
     generic-lens,
     miso,
@@ -145,6 +144,7 @@ executable dashi
     Section.Switch
     Section.Tabs
     Section.TextField
+    SectionId
     UserPrefs
 
   build-depends:

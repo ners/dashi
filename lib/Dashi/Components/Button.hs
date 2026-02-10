@@ -24,8 +24,7 @@ import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.List qualified as List
-import Data.Sequence (Seq)
-import Data.Sequence qualified as Seq
+import Data.Vector.Strict qualified as Vector
 import GHC.IsList (IsList (fromList))
 import Graphics.Color.Model (Alpha, setAlpha)
 import Graphics.Color.Space.OKLAB.LCH
@@ -35,16 +34,16 @@ import Miso.Html.Event qualified as Html
 data Background = Background Appearance InputState
     deriving stock (Eq)
 
-allBackgrounds :: Seq Background
+allBackgrounds :: Vector Background
 allBackgrounds = Background <$> [minBound .. maxBound] <*> [minBound .. maxBound]
 
 instance Enum Background where
-    toEnum = Seq.index allBackgrounds
-    fromEnum = fromJust . flip Seq.elemIndexL allBackgrounds
+    toEnum = (Vector.!) allBackgrounds
+    fromEnum = fromJust . flip Vector.findIndex allBackgrounds . (==)
 
 instance Bounded Background where
     minBound = toEnum 0
-    maxBound = toEnum . pred $ Seq.length allBackgrounds
+    maxBound = toEnum . pred $ Vector.length allBackgrounds
 
 instance Token Background where
     tokenName (Background appearance state) =

@@ -7,7 +7,7 @@ import Dashi.Components.Icon (MDI (MdiChevronRight), iconContent, iconStyle)
 import Dashi.Prelude hiding (has, (#), (&), (|>))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
-import Dashi.Style.Util (color', has, token, fontSize', paddingYX)
+import Dashi.Style.Util (color', fontSize', has, paddingYX, token)
 import Data.List qualified as List
 import Miso.Html.Element (div_, span_)
 import Miso.Html.Property (class_)
