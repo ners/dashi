@@ -6,13 +6,8 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    ghc-wasm-meta = {
-      url = "github:haskell-wasm/ghc-wasm-meta";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nix-wasm = {
       url = "github:ners/nix-wasm";
-      inputs.ghc-wasm-meta.follows = "ghc-wasm-meta";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     fluent-hs = {
@@ -226,21 +221,8 @@
         jsPkgs = extendHaskellPackages pkgs pkgs.pkgsCross.ghcjs;
         wasmPkgs = extendHaskellPackages pkgs inputs.nix-wasm.legacyPackages.${system};
         packages = ps: [ ps.${pname} ];
-        hps = with lib; foldlAttrs
-          (acc: name: hp':
-            let
-              hp = tryEval hp';
-              version = getVersion hp.value.ghc;
-              majorMinor = versions.majorMinor version;
-              ghcName = "ghc${replaceStrings ["."] [""] majorMinor}";
-            in
-            if hp.value ? ghc && ! acc ? ${ghcName} && versionAtLeast version "9.4" && versionOlder version "9.13"
-            then acc // { ${ghcName} = hp.value; }
-            else acc
-          )
-          { default = pkgs.haskellPackages; }
-          pkgs.haskell.packages;
-        pkg = pkgs: pkgs.haskell.packages.ghc9122.${pname};
+        ghc = "ghc912";
+        pkg = pkgs: pkgs.haskell.packages.${ghc}.${pname};
         dist = pkgs: (pkg pkgs).dist;
         server = drv: pkgs.writeShellApplication {
           name = "${drv.name}-server";
@@ -257,30 +239,23 @@
         legacyPackages.${system} = pkgs // {
           inherit jsPkgs wasmPkgs;
         };
-        devShells.${system} =
-          foreach hps (ghcName: hp: {
-            ${ghcName} = hp.shellFor {
-              inherit packages;
-              nativeBuildInputs = with pkgs.haskellPackages; [
-                cabal-install
-                ghcid
-                hp.haskell-language-server
-                pointfree-fancy
-              ];
-              shellHook = ''
-                find static -type l -delete
-                ln -s "${hp.${pname}.staticAssets}"/* static
-                ln -fs static/index.html static/favicon.ico static/apple-touch-icon.png .
-              '';
-            };
-          } // {
-            wasm = wasmPkgs.haskellPackages.shellFor {
+        devShells.${system}.default = pkgs.mkShell {
+          inputsFrom = [
+            (wasmPkgs.haskellPackages.shellFor {
               inherit packages;
               nativeBuildInputs = with wasmPkgs; [
                 cabal-install
               ];
-            };
-          });
+            })
+            (pkgs.haskell.packages.${ghc}.shellFor {
+              inherit packages;
+              nativeBuildInputs = with pkgs; [
+                cabal-install
+                haskell.packages.${ghc}.haskell-language-server
+              ];
+            })
+          ];
+        };
         formatter.${system} = pkgs.writeShellApplication {
           name = "formatter";
           runtimeInputs = with pkgs; with haskellPackages; [

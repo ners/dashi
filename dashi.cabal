@@ -18,6 +18,12 @@ source-repository head
   type: git
   location: https://github.com/ners/dashi
 
+flag interactive
+  default:
+    False
+  manual:
+    True
+
 common common
   default-language: GHC2021
   ghc-options:
@@ -28,6 +34,13 @@ common common
     -Wno-missing-import-lists
     -Wno-missing-kind-signatures
     -Wno-all-missed-specialisations
+
+  if (impl(ghcjs) || arch(javascript))
+    cpp-options: -DGHCJS_BROWSER
+  elif arch(wasm32)
+    cpp-options: -DWASM
+  else
+    cpp-options: -DVANILLA
 
   default-extensions:
     ApplicativeDo
@@ -106,17 +119,16 @@ executable dashi
   import: common
   cpp-options: -O2
 
+  if flag (interactive)
+    cpp-options:
+      -DINTERACTIVE
   if (impl(ghcjs) || arch(javascript))
-    cpp-options: -DGHCJS_BROWSER
     ld-options: -sEXPORTED_RUNTIME_METHODS=HEAP8
   elif arch(wasm32)
-    cpp-options: -DWASM
     ghc-options:
       -no-hs-main
       -optl-mexec-model=reactor
       "-optl-Wl,--export=hs_start"
-  else
-    cpp-options: -DVANILLA
 
   hs-source-dirs: app
   main-is: Main.hs

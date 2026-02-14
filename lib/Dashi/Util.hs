@@ -32,7 +32,7 @@ instance (HasResolution k) => ToMisoString (Fixed k) where
 instance ToMisoString Rational where
     toMisoString = formatFloat @Double . fromRat
 
-#if defined(GHCJS_BROWSER) || defined(WASM)
+#ifndef VANILLA
 instance Cons MisoString MisoString Char Char where
     _Cons = prism' (uncurry MisoString.cons) MisoString.uncons
 #endif

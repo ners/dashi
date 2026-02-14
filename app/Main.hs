@@ -35,7 +35,7 @@ import SectionId (SectionId, sectionLink)
 import UserPrefs (UserPrefs (..))
 import UserPrefs qualified
 
-#ifdef WASM
+#if defined(WASM) && !defined(INTERACTIVE)
 foreign export javascript "hs_start" main :: IO ()
 #endif
 
