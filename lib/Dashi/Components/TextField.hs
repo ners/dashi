@@ -86,7 +86,7 @@ instance Widget (TextField action) model action where
             display block
             fullWidth
             focusable
-            border (var "border-width" []) solid (colorToken Colour.Border)
+            border (token BorderWidth) solid (colorToken Colour.Border)
             byToken Subtle & borderColor transparent
             paddingAll' XSmall
             borderRadiusAll' Small

@@ -125,3 +125,13 @@ instance Token InputState where
     byToken DefaultState = emptyRefinement
     byToken HoveredState = hover
     byToken ActiveState = active
+
+data BorderWidth = BorderWidth
+    deriving stock (Eq, Bounded, Enum)
+
+instance Token BorderWidth where
+    tokenName BorderWidth = "border-width"
+
+instance ValueToken BorderWidth where
+    type ValueType BorderWidth = Size LengthUnit
+    tokenValue BorderWidth = Clay.rem 0.0625

@@ -70,6 +70,7 @@ style = do
         tokenDecl @Colour.Background
         tokenDecl @Colour.Border
         tokenDecl @FontSize
+        tokenDecl @BorderWidth
     star ? do
         marginAll nil
         paddingAll nil
