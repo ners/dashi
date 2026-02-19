@@ -83,13 +83,16 @@ let
     '';
 in
 runCommand "dashi-static-assets" { } ''
-  cp -r "${./static}" "$out"
+  mkdir -p "$out"
   cd "$out"
+  cp -r "${./static}" ./static
+  cd static
   chmod -R +w .
-
   cp "${inputs.mdi-webfont}"/*.woff2 .
-  cp "${favicon}" favicon.ico
-  cp "${apple-touch-icon}" apple-touch-icon.png
   cp -r "${browser_wasi_shim}" browser_wasi_shim
   cp "${dashi-css}" dashi.css
+  cd ..
+  cp "${favicon}" favicon.ico
+  cp "${apple-touch-icon}" apple-touch-icon.png
+  mv static/*.html .
 ''

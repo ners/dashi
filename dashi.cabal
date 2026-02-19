@@ -117,7 +117,7 @@ library
 
 executable dashi
   import: common
-  cpp-options: -O2
+  ghc-options: -O2
 
   if flag (interactive)
     cpp-options:

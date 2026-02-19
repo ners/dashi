@@ -46,10 +46,13 @@ main = do
         updateModel = liftM2 (>>) traceAction appUpdate
         model = emptyModel & either (const id) (#section . #current .~) (route uri)
         events = defaultEvents <> keyboardEvents
-    startApp events
-        $ (component model updateModel appView)
+    startApp events $
+        (component model updateModel appView)
             { subs = [routerSub $ either (const NoOp) SetCurrentSection]
             , mount = Just Setup
+#ifdef INTERACTIVE
+            , styles = [Href "/static/style.css" False, Href "/static/dashi.css" False]
+#endif
             }
 
 instance Eq (a -> b) where

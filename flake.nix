@@ -91,8 +91,8 @@
                 }
                 mkdir -p "$out"
                 cd "$out"
-                cp -r "${hfinal.${pname}.staticAssets}" static
-                chmod -R +w static
+                cp -r "${hfinal.${pname}.staticAssets}"/* .
+                chmod -R +w .
                 pushd "${hfinal.${pname}}/bin/${pname}.jsexe/"
                 webpack --config "${pkgs.writeText "webpack.config.js" /*javascript*/ ''
                   module.exports = {
@@ -117,11 +117,8 @@
                 compare "main.js" $(cat all.js | wc -c) $(cat "$mainjs" | wc -c)
                 compare "main.js.gz" $(gzip -c all.js | wc -c) $(gzip -c "$mainjs" | wc -c)
                 popd
-                cd static
-                rm -fr browser_wasi_shim
+                rm -fr static/browser_wasi_shim
                 sed -i "s/\?v=0/\?v=$(md5sum main.js | cut -d' ' -f1)/" index.html
-                cd ..
-                mv static/{index.html,404.html,favicon.ico,apple-touch-icon.png} .
               '';
           };
         })
@@ -161,9 +158,9 @@
                 }
                 mkdir -p "$out"
                 cd "$out"
-                cp -r "${hfinal.${pname}.staticAssets}" static
-                cd static
+                cp -r "${hfinal.${pname}.staticAssets}"/* .
                 chmod -R +w .
+                cd static
                 cp "${hfinal.${pname}}/bin/${pname}.wasm" app.wasm
                 chmod +w app.wasm
                 "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
@@ -171,7 +168,6 @@
                 sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
 
                 compress app.wasm{,} "wasm-opt -all -O2 -o app.wasm{,} ; wasm-tools strip -o app.wasm{,}"
-                sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html main.js
 
                 substituteInPlace ghc_wasm_jsffi.js --replace-fail "node:timers" timers
                 entries="./main.js ./ghc_wasm_jsffi.js ./browser_wasi_shim/*.js"
@@ -186,7 +182,7 @@
                 ''}" --mode production --output-path . --entry $entries
                 rm -fr ghc_wasm_jsffi.js browser_wasi_shim
                 cd ..
-                mv static/{index.html,404.html,favicon.ico,apple-touch-icon.png} .
+                sed -i "s/\?v=0/\?v=$(md5sum app.wasm | cut -d' ' -f1)/" index.html static/main.js
               '';
           };
         })
@@ -222,19 +218,75 @@
         wasmPkgs = extendHaskellPackages pkgs inputs.nix-wasm.legacyPackages.${system};
         packages = ps: [ ps.${pname} ];
         ghc = "ghc912";
-        pkg = pkgs: pkgs.haskell.packages.${ghc}.${pname};
-        dist = pkgs: (pkg pkgs).dist;
-        server = drv: pkgs.writeShellApplication {
-          name = "${drv.name}-server";
-          runtimeInputs = with pkgs; [ http-server ];
-          text = ''http-server "${drv}" --brotli --gzip'';
+        caddyConfig = {
+          apps.http = {
+            http_port = 8080;
+            servers.srv0 = {
+              listen = [ ":8080" ];
+              routes = [
+                {
+                  match = [{ host = [ "localhost" "127.0.0.1" ]; }];
+                  handle = [
+                    {
+                      handler = "subroute";
+                      routes = [{
+                        handle = [
+                          {
+                            handler = "vars";
+                            root = wasmPkgs.haskellPackages.${pname}.staticAssets;
+                          }
+                          {
+                            handler = "encode";
+                            encodings = { gzip = { }; zstd = { }; };
+                          }
+                          { handler = "file_server"; }
+                        ];
+                      }];
+                      errors.routes = [
+                        {
+                          handle = [
+                            {
+                              handler = "encode";
+                              encodings = { gzip = { }; zstd = { }; };
+                            }
+                            {
+                              handler = "reverse_proxy";
+                              upstreams = [{ dial = "localhost:8081"; }];
+                            }
+                          ];
+                        }
+                      ];
+                    }
+                  ];
+                  terminal = true;
+                }
+              ];
+            };
+          };
         };
       in
       {
-        packages.${system} = {
-          default = pkgs.linkFarmFromDrvs pname ([ (pkg pkgs) ] ++ map dist [ jsPkgs wasmPkgs ]);
-          jsServer = server (dist jsPkgs);
-          wasmServer = server (dist wasmPkgs);
+        packages.${system} = rec {
+          default = wasmPkgs.haskell.packages.${ghc}.${pname}.dist;
+          wasmServer = pkgs.writeShellApplication {
+            name = "${pname}-wasm-server";
+            runtimeInputs = [ pkgs.http-server ];
+            text = ''
+              http-server "${default}" --brotli --gzip
+            '';
+          };
+          wasmDevServer = pkgs.writeShellApplication {
+            name = "${pname}-wasm-dev-server";
+            runtimeInputs = [
+              pkgs.caddy
+              wasmPkgs.cabal-install
+            ];
+            text = ''
+              caddy run --config "${(pkgs.formats.json {}).generate "caddy.json" caddyConfig}" &
+              wasm32-wasi-cabal repl exe:${pname} -finteractive --repl-options='-fghci-browser -fghci-browser-port=8081'
+              kill %%
+            '';
+          };
         };
         legacyPackages.${system} = pkgs // {
           inherit jsPkgs wasmPkgs;
