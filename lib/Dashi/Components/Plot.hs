@@ -84,6 +84,18 @@ contract Padding{..} r =
   where
     (absolutePadding -> padX, absolutePadding -> padY) = rectSize r
 
+data Ticks num
+    = Numeric
+    | Time
+    | Custom [num]
+
+data Axis num = Axis
+    { showAxis :: Bool
+    , showGrid :: Bool
+    , ticks :: Ticks num
+    , renderTick :: num -> MisoString
+    }
+
 data Plot num = Plot
     { width :: Int
     -- ^ The overall width of the canvas, including padding and plot area
@@ -93,18 +105,10 @@ data Plot num = Plot
     -- ^ The space from the edge of the canvas to the plot area
     , domainTransform :: Rect num -> Rect num
     -- ^ The transformation of the domain, e.g. padding or forcing a 0 baseline.
-    , showAxes :: Bool
-    -- ^ Whether to render plot axes
-    --     TODO: separate X and Y
-    , showGrid :: Bool
-    -- ^ Whether to render plot grid
-    --     TODO: separate X and Y
     , series :: [Series num]
     -- ^ The series to plot
-    , showX :: num -> MisoString
-    -- ^ The function to render ticks on the X axis
-    , showY :: num -> MisoString
-    -- ^ The function to render ticks on the Y axis
+    , xAxis :: Axis num
+    , yAxis :: Axis num
     }
 
 instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action where
@@ -124,8 +128,8 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
                 : attrs
             )
             . mconcat
-            $ [ if showGrid then gridElements else []
-              , if showAxes then axisElements else []
+            $ [ gridElements
+              , axisElements
               , plotElements
               ]
       where
@@ -155,53 +159,58 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         gridElements =
             toSVG [Svg.stroke_ (axisColour 0.5), Svg.strokeWidth_ "1"]
                 . translateDomain paddedViewBox domain
-                $ [Shape $ Line Point{x, y = t} Point{x, y = b} | hasNonBarPlots, x <- ticksX]
-                <> [Shape $ Line Point{x = l, y} Point{x = r, y} | y <- ticksY]
+                $ xElements
+                <> yElements
           where
             Rect{topLeft = Point{x = l, y = t}, bottomRight = Point{x = r, y = b}} = domain
+            xElements =
+                [ Shape $ Line Point{x, y = t} Point{x, y = b}
+                | hasNonBarPlots
+                , xAxis.showGrid
+                , x <- ticksX
+                ]
+            yElements = [Shape $ Line Point{x = l, y} Point{x = r, y} | yAxis.showGrid, y <- ticksY]
 
         axisElements :: [View model action]
         axisElements =
             mconcat
                 . mconcat
-                $ [ mkAxis <$> inViewBox [yAxis, xAxis]
-                  , concatMap mkTickX ticksX
-                  , concatMap mkTickY ticksY
-                  ]
+                $ [mkLine (inViewBox xLine) : concatMap mkTickX ticksX | xAxis.showAxis]
+                <> [mkLine (inViewBox yLine) : concatMap mkTickY ticksY | yAxis.showAxis]
           where
             Rect{..} = domain
             topRight' = Point{x = bottomRight.x, y = topLeft.y}
             bottomLeft' = Point{x = topLeft.x, y = bottomRight.y}
-            mkAxis :: (ToSVG s num) => s -> [View model action]
-            mkAxis = toSVG [Svg.stroke_ (axisColour 1), Svg.strokeWidth_ "1"]
-            xAxis, yAxis :: Line num
-            xAxis = Line topLeft topRight'
-            yAxis = Line topLeft bottomLeft'
+            mkLine :: (ToSVG s num) => s -> [View model action]
+            mkLine = toSVG [Svg.stroke_ (axisColour 1), Svg.strokeWidth_ "1"]
+            xLine, yLine :: Line num
+            xLine = Line topLeft topRight'
+            yLine = Line topLeft bottomLeft'
             inViewBox :: (Shape s num) => s -> s
             inViewBox = translateDomain paddedViewBox domain
 
             mkTickX, mkTickY :: num -> [[View model action]]
             mkTickX x =
-                [ mkAxis $ Line p (offsetPoint id (+ 5) p)
+                [ mkLine $ Line p (offsetPoint id (+ 5) p)
                 , toSVG
                     [Svg.dominantBaseline_ "hanging"]
                     Text
                         { position = offsetPoint id (+ 8) p
                         , anchor = Middle
-                        , content = showX x
+                        , content = xAxis.renderTick x
                         }
                 ]
               where
                 p = inViewBox Point{x, y = topLeft.y}
 
             mkTickY y =
-                [ mkAxis $ Line (offsetPoint (subtract 5) id p) p
+                [ mkLine $ Line (offsetPoint (subtract 5) id p) p
                 , toSVG
                     [Svg.dominantBaseline_ "middle"]
                     Text
                         { position = offsetPoint (subtract 8) id p
                         , anchor = End
-                        , content = showY y
+                        , content = yAxis.renderTick y
                         }
                 ]
               where
@@ -289,39 +298,70 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         ticksX, ticksY :: [num]
         ticksX =
             if hasNonBarPlots
-                then calculateTicks x $ width `div` 100
+                then calculateTicks x xAxis.ticks $ width `div` 100
                 else
                     List.sort . List.nubOrd $ concatMap (fmap x . Vector.toList . values) series
-        ticksY = calculateTicks y $ height `div` 80
+        ticksY = calculateTicks y yAxis.ticks $ height `div` 80
 
-        -- "Nice Numbers" algorithm to find human-readable tick values
-        calculateTicks :: (Point num -> num) -> Int -> [num]
-        calculateTicks dim targetCount
-            | dMin >= dMax = [dMin]
-            | otherwise = (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
+        calculateTicks :: (Point num -> num) -> Ticks num -> Int -> [num]
+        calculateTicks dim ticks targetCount =
+            case ticks of
+                Custom ts -> filter (\v -> v >= dMin && v <= dMax) ts
+                Numeric -> numericTicks
+                Time -> timeTicks
           where
             (dMin, dMax) = minMax dim domain
             range = dMax - dMin
-            roughStep = range / fromIntegral (max 1 targetCount)
 
-            -- Calculate magnitude of the step (power of 10)
-            e = floor @Double @Int (logBase 10 $ realToFrac roughStep)
-            e10 = max 1 $ 10 ^^ e
-            fraction = roughStep / e10
+            numericTicks =
+                (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
+              where
+                roughStep = range / fromIntegral (max 1 targetCount)
 
-            -- Round to nearest nice step (1, 2, 5, 10)
-            niceFraction
-                | fraction < 1.5 = 1
-                | fraction < 3.5 = 2
-                | fraction < 7.5 = 5
-                | otherwise = 10
+                e = floor @Double @Int (logBase 10 $ realToFrac roughStep)
+                e10 = max 1 $ 10 ^^ e
+                fraction = roughStep / e10
 
-            niceStep = niceFraction * e10
+                niceFraction
+                    | fraction < 1.5 = 1
+                    | fraction < 3.5 = 2
+                    | fraction < 7.5 = 5
+                    | otherwise = 10
 
-            -- Calculate start and end indices
-            startIdx, endIdx :: Int
-            startIdx = ceiling $ dMin / niceStep
-            endIdx = floor $ dMax / niceStep
+                niceStep = niceFraction * e10
+
+                startIdx, endIdx :: Int
+                startIdx = ceiling $ dMin / niceStep
+                endIdx = floor $ dMax / niceStep
+
+            timeTicks = (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
+              where
+                second, minute, hour, day :: num
+                second = 1
+                minute = 60 * second
+                hour = 60 * minute
+                day = 24 * hour
+                week = 7 * day
+                year = 365.25 * day
+
+                possibleSteps =
+                    mconcat
+                        [ [1, 2, 5, 10, 15, 30]
+                        , (minute *) <$> [1, 2, 5, 10, 15, 30]
+                        , (hour *) <$> [1, 2, 3, 4, 6, 8, 12]
+                        , (day *) <$> [1, 2, 5]
+                        , (week *) <$> [1, 2, 4, 8, 12]
+                        , [year]
+                        ]
+
+                niceStep =
+                    List.minimumOn
+                        (\step -> abs $ range / step - fromIntegral targetCount)
+                        possibleSteps
+
+                startIdx, endIdx :: Int
+                startIdx = ceiling $ dMin / niceStep
+                endIdx = floor $ dMax / niceStep
 
         minMax :: (Point num -> num) -> Rect num -> (num, num)
         minMax dim rect = (dim . topLeft $ rect, dim . bottomRight $ rect)

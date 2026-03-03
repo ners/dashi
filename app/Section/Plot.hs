@@ -15,6 +15,7 @@ import Data.Vector.Strict qualified as Vector
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
 import Miso.State qualified as State
+import System.IO.Unsafe (unsafePerformIO)
 
 data Model
     = Model
@@ -23,7 +24,7 @@ data Model
     , time :: Double
     , hz :: Int
     , fps :: Vector (Point Double)
-    , showAxes :: Bool
+    , showAxis :: Bool
     , showGrid :: Bool
     }
     deriving stock (Generic, Eq, Show)
@@ -36,7 +37,7 @@ initialModel =
         , time = 0
         , hz = 60
         , fps = mempty
-        , showAxes = True
+        , showAxis = True
         , showGrid = True
         }
 
@@ -47,7 +48,7 @@ data Action
     | UpdateWidth
     | SetWidth Int
     | SetHz Int
-    | SetShowAxes Bool
+    | SetShowAxis Bool
     | SetShowGrid Bool
     | Start
     | Stop
@@ -68,7 +69,7 @@ getPlotWidth =
     |]
 
 tick' :: Sink Action -> IO ()
-tick' sink = sink . Tick . (/ 1000) =<< now
+tick' sink = sink . Tick =<< [js| return Date.now() / 1000; |]
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
@@ -97,7 +98,7 @@ update UpdateWidth = do
             Just w -> sink (SetWidth w)
 update (SetWidth w) = #width .= w
 update (SetHz hz) = #hz .= hz
-update (SetShowAxes b) = #showAxes .= b
+update (SetShowAxis b) = #showAxis .= b
 update (SetShowGrid b) = #showGrid .= b
 update Start = do
     #running .= True
@@ -120,8 +121,8 @@ view Model{..} =
                 Switch
                     { name = "showaxes"
                     , label = [text "Show axes"]
-                    , checked = showAxes
-                    , onChange = SetShowAxes
+                    , checked = showAxis
+                    , onChange = SetShowAxis
                     }
             , widget @(Switch Model Action)
                 Switch
@@ -141,13 +142,11 @@ view Model{..} =
             Plot
                 { width
                 , height = Dashi.Prelude.min width 500
-                , showAxes
-                , showGrid
                 , padding =
                     Just
                         SymmetricPadding
-                            { yPadding = Absolute $ bool 1 20 showAxes
-                            , xPadding = Absolute $ bool 1 25 showAxes
+                            { yPadding = Absolute $ bool 1 20 showAxis
+                            , xPadding = Absolute $ bool 1 25 showAxis
                             }
                 , domainTransform = (top .~ 120) . (bottom .~ 0)
                 , series =
@@ -158,22 +157,32 @@ view Model{..} =
                         , plotType = LinePlot
                         }
                     ]
-                , showX = toMisoString
-                , showY = toMisoString
+                , xAxis =
+                    Axis
+                        { showAxis
+                        , showGrid
+                        , ticks = Time
+                        , renderTick = \t -> unsafePerformIO [js| return new Date(${t} * 1000).toLocaleTimeString(); |]
+                        }
+                , yAxis =
+                    Axis
+                        { showAxis
+                        , showGrid
+                        , ticks = Numeric
+                        , renderTick = toMisoString
+                        }
                 }
         , widget @(Plot Double)
             Plot
                 { width
                 , height = Dashi.Prelude.min width 300
-                , showAxes
-                , showGrid
                 , padding =
                     Just
                         Padding
                             { topPadding = Absolute 0
                             , rightPadding = Absolute 0
-                            , bottomPadding = Absolute $ bool 0 25 showAxes
-                            , leftPadding = Absolute $ bool 0 50 showAxes
+                            , bottomPadding = Absolute $ bool 0 25 showAxis
+                            , leftPadding = Absolute $ bool 0 50 showAxis
                             }
                 , domainTransform =
                     (#bottomRight . #y .~ 0)
@@ -216,11 +225,23 @@ view Model{..} =
                         , plotType = BarPlot{barWidth = 0.2}
                         }
                     ]
-                , showX = \case
-                    d | d < 1 -> "Newest"
-                    d | d < 2 -> "Outdated"
-                    d | d < 3 -> "Unique"
-                    _ -> "Problematic"
-                , showY = toMisoString
+                , xAxis =
+                    Axis
+                        { showAxis
+                        , showGrid
+                        , ticks = Time
+                        , renderTick = \case
+                            d | d < 1 -> "Newest"
+                            d | d < 2 -> "Outdated"
+                            d | d < 3 -> "Unique"
+                            _ -> "Problematic"
+                        }
+                , yAxis =
+                    Axis
+                        { showAxis
+                        , showGrid
+                        , ticks = Numeric
+                        , renderTick = toMisoString
+                        }
                 }
         ]
