@@ -12,6 +12,6 @@ result-*
 browser_wasi_shim
 index.html
 
-!/static/index.html
-!/static/main.js
-!/static/style.css
+!/dashi/static/index.html
+!/dashi/static/main.js
+!/dashi/static/style.css

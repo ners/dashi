@@ -40,7 +40,7 @@ let
     }
     ''
       tmpPng="$(mktemp --suffix=.png)"
-      rsvg-convert "${./static/icon.svg}" \
+      rsvg-convert "${./dashi/static/icon.svg}" \
         --width 64 \
         --output "$tmpPng"
       convert "$tmpPng" -define icon:auto-resize=64,48,32,16 "$out"
@@ -53,7 +53,7 @@ let
       ];
     }
     ''
-      rsvg-convert "${./static/icon.svg}" \
+      rsvg-convert "${./dashi/static/icon.svg}" \
         --background-color '#3457D5' \
         --width 180 \
         --output "$out"
@@ -85,7 +85,7 @@ in
 runCommand "dashi-static-assets" { } ''
   mkdir -p "$out"
   cd "$out"
-  cp -r "${./static}" ./static
+  cp -r "${./dashi/static}" ./static
   cd static
   chmod -R +w .
   cp "${inputs.mdi-webfont}"/*.woff2 .
