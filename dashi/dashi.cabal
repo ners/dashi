@@ -66,7 +66,6 @@ common common
   build-depends:
     base,
     extra,
-    generic-lens,
     miso,
     vector,
 
@@ -104,12 +103,15 @@ library
     Dashi.Style.Colour
     Dashi.Style.Root
     Dashi.Style.Tokens
+    Dashi.Style.Uchu
     Dashi.Style.Util
     Dashi.Util
 
   build-depends:
     Color,
     clay,
+    generic-lens,
+    color-uchu,
     lens,
     text,
     web-font-mdi,
@@ -139,6 +141,7 @@ executable dashi
     Section.Breadcrumbs
     Section.Button
     Section.Checkbox
+    Section.Colours
     Section.DesignTokens
     Section.Form
     Section.Icon
@@ -160,7 +163,9 @@ executable dashi
 
   build-depends:
     dashi,
+    color-uchu,
     fluent-bundle,
+    generic-lens,
     fluent-syntax,
 
 executable dashi-style

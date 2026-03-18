@@ -56,7 +56,7 @@ instance Token Background where
               ]
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue (Background Default state) =
         complementaryLightDark
             . ColorOKLCHA 0.2422 0.0735 260.41

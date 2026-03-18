@@ -6,6 +6,7 @@ module Dashi.Prelude
     , module Control.Monad
     , module Dashi.Components.Widget
     , module Data.Bool
+    , module Data.Fixed
     , module Data.Foldable
     , module Data.Maybe
     , module Data.Semigroup
@@ -25,6 +26,7 @@ import Control.Lens.Operators
 import Control.Monad
 import Dashi.Components.Widget
 import Data.Bool
+import Data.Fixed
 import Data.Foldable (for_)
 import Data.Generics.Labels ()
 import Data.Maybe

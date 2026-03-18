@@ -41,7 +41,7 @@ instance Token Background where
     tokenAttr (Background state) = tokenAttr state
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue (Background state) =
         tokenValue (Colour.Text Default) <&> \(ColorOKLCHA l c h _) ->
             ColorOKLCHA l c h $ case state of

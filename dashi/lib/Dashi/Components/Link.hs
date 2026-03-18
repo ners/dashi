@@ -21,7 +21,7 @@ instance Token Text where
     tokenName Text = "text-link"
 
 instance ValueToken Text where
-    type ValueType Text = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Text = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue Text = tokenValue $ Colour.Text Primary
 
 data Link model action = Link

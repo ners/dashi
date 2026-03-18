@@ -1,0 +1,92 @@
+cabal-version: 3.0
+name: color-uchu
+version: 0.1.0.0
+synopsis: the color palette for internet lovers
+homepage: https://github.com/ners/dashi
+license: Apache-2.0
+license-file: LICENCE.md
+author: ners
+maintainer: ners@gmx.ch
+bug-reports: https://github.com/ners/dashi/issues
+category: System
+build-type: Simple
+extra-source-files:
+  CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/ners/dashi
+
+common common
+  default-language: Haskell2010
+  ghc-options:
+    -Weverything
+    -Wno-unsafe
+    -Wno-all-missed-specialisations
+    -Wno-missing-export-lists
+    -Wno-missing-import-lists
+    -Wno-missing-kind-signatures
+    -Wno-missing-role-annotations
+    -Wno-missing-safe-haskell-mode
+    -Wno-orphans
+
+  default-extensions:
+    ApplicativeDo
+    BlockArguments
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveGeneric
+    DerivingStrategies
+    DerivingVia
+    ExplicitNamespaces
+    FlexibleContexts
+    FlexibleInstances
+    ImportQualifiedPost
+    LambdaCase
+    MultiParamTypeClasses
+    NamedFieldPuns
+    NoImplicitPrelude
+    OverloadedLabels
+    OverloadedRecordDot
+    OverloadedStrings
+    PackageImports
+    PatternSynonyms
+    RankNTypes
+    RecordWildCards
+    RecursiveDo
+    ScopedTypeVariables
+    StandaloneDeriving
+    StrictData
+    TypeAbstractions
+    TypeApplications
+    TypeFamilies
+    TypeSynonymInstances
+    ViewPatterns
+
+  build-depends:
+    Color,
+    base,
+
+library
+  import: common
+  exposed-modules:
+    Graphics.Color.Uchu
+    Graphics.Color.Uchu.Class
+    Graphics.Color.Uchu.Extended
+    Graphics.Color.Uchu.Extended.Color
+    Graphics.Color.Uchu.Extended.OKLCH
+    Graphics.Color.Uchu.Palette
+    Graphics.Color.Uchu.Simple
+    Graphics.Color.Uchu.Simple.Color
+    Graphics.Color.Uchu.Simple.OKLCH
+
+  hs-source-dirs: src
+
+executable app
+  import: common
+  hs-source-dirs: app
+  main-is: Main.hs
+  build-depends:
+    color-uchu,
+    pretty-simple,

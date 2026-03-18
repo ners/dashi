@@ -6,6 +6,7 @@ module Dashi.Style.Colour
     , module Graphics.Color.Space
     , module Graphics.Color.Space.OKLAB.LCH
     , module Graphics.Color.Space.RGB.SRGB
+    , module Graphics.Color.Adaptation.VonKries
     )
 where
 
@@ -13,14 +14,21 @@ import Clay ((@=))
 import Clay qualified
 import Control.Lens (Iso', iso)
 import Dashi.Style.Tokens
+import Data.Bifunctor (first)
 import Data.Bool (bool)
+import Data.Char (toUpper)
+import Data.Either.Extra (maybeToEither)
+import Data.Fixed (Fixed, HasResolution, Milli, showFixed)
 import Data.Functor ((<&>))
 import Data.List qualified as List
 import Data.String (IsString, fromString)
+import Data.Word (Word8)
+import Graphics.Color.Adaptation.VonKries (convert)
 import Graphics.Color.Space
     ( Alpha
     , ColorSpace
     , Elevator
+    , Linearity (..)
     , addAlpha
     , convertColor
     , dropAlpha
@@ -30,11 +38,10 @@ import Graphics.Color.Space
     )
 import Graphics.Color.Space.OKLAB.LCH
 import Graphics.Color.Space.RGB.SRGB
-import Miso.JSON (FromJSON (..), ToJSON (..), withText, Parser (..))
+import Miso.JSON (FromJSON (..), Parser (..), ToJSON (..), withText)
 import Miso.Prelude
-import Miso.String (ToMisoString (..), FromMisoString (..))
-import Data.Either.Extra (maybeToEither)
-import Data.Bifunctor (first)
+import Miso.String (FromMisoString (..), ToMisoString (..))
+import Numeric (showHex)
 
 type Colour = Color OKLCH
 
@@ -45,8 +52,8 @@ data Scheme = Light | Dark
 
 instance FromMisoString Scheme where
     fromMisoStringEither s =
-        maybeToEither "invalid colour scheme" $
-            List.find ((s ==) . tokenName) [minBound .. maxBound]
+        maybeToEither "invalid colour scheme"
+            $ List.find ((s ==) . tokenName) [minBound .. maxBound]
 
 instance ToMisoString Scheme where
     toMisoString = tokenName
@@ -72,7 +79,9 @@ sameLightDark :: c -> LightDark c
 sameLightDark c = LightDark c c
 
 complementaryLightDark
-    :: (Num e) => Color (Alpha OKLCH) e -> LightDark (Color (Alpha OKLCH) e)
+    :: (Num e)
+    => Color (Alpha OKLCH) e
+    -> LightDark (Color (Alpha OKLCH) e)
 complementaryLightDark light@(ColorOKLCHA l c h a) = LightDark light $ ColorOKLCHA (1 - l) c h a
 
 flipLightDark :: LightDark c -> LightDark c
@@ -91,8 +100,11 @@ convertAlphaColor
     => Color (Alpha cs') e -> Color (Alpha cs) e
 convertAlphaColor c = addAlpha (convertColor . dropAlpha $ c) (getAlpha c)
 
+fn' :: (IsString s) => String -> [String] -> s
+fn' name args = fromString . mconcat $ [name, "(", unwords args, ")"]
+
 fn :: (IsString s) => String -> [ShowS] -> s
-fn name args = fromString . mconcat $ [name, "(", unwords (showMilli <$> args), ")"]
+fn name args = fn' name (showMilli <$> args)
   where
     showMilli :: ShowS -> String
     showMilli = shorten . take 8 . ($ "")
@@ -113,16 +125,27 @@ instance (Num e, Elevator e) => Clay.Val (Color (Alpha (SRGB l)) e) where
             $ [toShowS r, toShowS g, toShowS b]
             <> if a == 1 then [] else [showChar '/', toShowS a]
 
-instance (Elevator e) => Clay.Val (Color OKLCH e) where
-    value :: Color OKLCH e -> Clay.Value
-    value (ColorOKLCH l c h) = fn "oklch" [toShowS l, toShowS c, toShowS h]
+-- instance (Elevator e) => Clay.Val (Color OKLCH e) where
+--     value :: Color OKLCH e -> Clay.Value
+--     value (ColorOKLCH l c h) = fn "oklch" [toShowS l, toShowS c, toShowS h]
 
-instance (Elevator e) => Clay.Val (Color (Alpha OKLCH) e) where
-    value :: Color (Alpha OKLCH) e -> Clay.Value
+instance (HasResolution a) => Clay.Val (Color OKLCH (Fixed a)) where
+    value :: Color OKLCH (Fixed a) -> Clay.Value
+    value (ColorOKLCH l c h) = fn' "oklch" [showFixed True l, showFixed True c, showFixed True h]
+
+-- instance (Elevator e) => Clay.Val (Color (Alpha OKLCH) e) where
+--     value :: Color (Alpha OKLCH) e -> Clay.Value
+--     value (ColorOKLCHA l c h a) =
+--         fn "oklch"
+--             $ [toShowS l, toShowS c, toShowS h]
+--             <> if a == 1 then [] else [showChar '/', toShowS a]
+
+instance (HasResolution a) => Clay.Val (Color (Alpha OKLCH) (Fixed a)) where
+    value :: Color (Alpha OKLCH) (Fixed a) -> Clay.Value
     value (ColorOKLCHA l c h a) =
-        fn "oklch"
-            $ [toShowS l, toShowS c, toShowS h]
-            <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn' "oklch"
+            $ [showFixed True l, showFixed True c, showFixed True h]
+            <> ['/' : showFixed True a | a /= 1]
 
 instance (Clay.Val c, Eq c) => Clay.Val (LightDark c) where
     value :: LightDark c -> Clay.Value
@@ -130,28 +153,51 @@ instance (Clay.Val c, Eq c) => Clay.Val (LightDark c) where
         | light == dark = Clay.value light
         | otherwise = "light-dark(" <> Clay.value light <> "," <> Clay.value dark <> ")"
 
-instance (Num e, Elevator e) => ToMisoString (Color (SRGB l) e) where
-    toMisoString :: Color (SRGB l) e -> MisoString
+-- instance (Num e, Elevator e) => ToMisoString (Color (SRGB l) e) where
+--     toMisoString :: Color (SRGB l) e -> MisoString
+--     toMisoString (ColorSRGB ((255 *) -> r) ((255 *) -> g) ((255 *) -> b)) =
+--         fn "rgb" [toShowS r, toShowS g, toShowS b]
+
+instance (HasResolution a) => ToMisoString (Color (SRGB l) (Fixed a)) where
+    toMisoString :: Color (SRGB l) (Fixed a) -> MisoString
     toMisoString (ColorSRGB ((255 *) -> r) ((255 *) -> g) ((255 *) -> b)) =
-        fn "rgb" [toShowS r, toShowS g, toShowS b]
+        fn' "rgb" [showFixed True r, showFixed True g, showFixed True b]
 
-instance (Num e, Elevator e) => ToMisoString (Color (Alpha (SRGB l)) e) where
-    toMisoString :: Color (Alpha (SRGB l)) e -> MisoString
+-- instance (Num e, Elevator e) => ToMisoString (Color (Alpha (SRGB l)) e) where
+--     toMisoString :: Color (Alpha (SRGB l)) e -> MisoString
+--     toMisoString (ColorSRGBA ((255 *) -> r) ((255 *) -> g) ((255 *) -> b) a) =
+--         fn "rgb"
+--             $ [toShowS r, toShowS g, toShowS b]
+--             <> if a == 1 then [] else [showChar '/', toShowS a]
+
+instance (HasResolution a) => ToMisoString (Color (Alpha (SRGB l)) (Fixed a)) where
+    toMisoString :: Color (Alpha (SRGB l)) (Fixed a) -> MisoString
     toMisoString (ColorSRGBA ((255 *) -> r) ((255 *) -> g) ((255 *) -> b) a) =
-        fn "rgb"
-            $ [toShowS r, toShowS g, toShowS b]
-            <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn' "rgb"
+            $ [showFixed True r, showFixed True g, showFixed True b]
+            <> ['/' : showFixed True a | a /= 1]
 
-instance (Elevator e) => ToMisoString (Color OKLCH e) where
-    toMisoString :: Color OKLCH e -> MisoString
-    toMisoString (ColorOKLCH l c h) = fn "oklch" [toShowS l, toShowS c, toShowS h]
+-- instance (Elevator e) => ToMisoString (Color OKLCH e) where
+--     toMisoString :: Color OKLCH e -> MisoString
+--     toMisoString (ColorOKLCH l c h) = fn "oklch" [toShowS l, toShowS c, toShowS h]
 
-instance (Elevator e) => ToMisoString (Color (Alpha OKLCH) e) where
-    toMisoString :: Color (Alpha OKLCH) e -> MisoString
+instance (HasResolution a) => ToMisoString (Color OKLCH (Fixed a)) where
+    toMisoString :: Color OKLCH (Fixed a) -> MisoString
+    toMisoString (ColorOKLCH l c h) = fn' "oklch" [showFixed True l, showFixed True c, showFixed True h]
+
+-- instance (Elevator e) => ToMisoString (Color (Alpha OKLCH) e) where
+--     toMisoString :: Color (Alpha OKLCH) e -> MisoString
+--     toMisoString (ColorOKLCHA l c h a) =
+--         fn "oklch"
+--             $ [toShowS l, toShowS c, toShowS h]
+--             <> if a == 1 then [] else [showChar '/', toShowS a]
+
+instance (HasResolution a) => ToMisoString (Color (Alpha OKLCH) (Fixed a)) where
+    toMisoString :: Color (Alpha OKLCH) (Fixed a) -> MisoString
     toMisoString (ColorOKLCHA l c h a) =
-        fn "oklch"
-            $ [toShowS l, toShowS c, toShowS h]
-            <> if a == 1 then [] else [showChar '/', toShowS a]
+        fn' "oklch"
+            $ [showFixed True l, showFixed True c, showFixed True h]
+            <> ['/' : showFixed True a | a /= 1]
 
 instance (ToMisoString c, Eq c) => ToMisoString (LightDark c) where
     toMisoString :: LightDark c -> MisoString
@@ -163,6 +209,13 @@ instance (ToMisoString c, Eq c) => ToMisoString (LightDark c) where
 toClayColor :: (Clay.Val (Color cs e)) => Color cs e -> Clay.Color
 toClayColor = Clay.Other . Clay.value
 
+rgbHex :: (ColorSpace cs i e) => Color cs e -> MisoString
+rgbHex c = "#" <> channel r <> channel g <> channel b
+  where
+    ColorSRGB r g b = convert @_ @_ @_ @(SRGB 'NonLinear) c
+    channel :: Double -> MisoString
+    channel = toMisoString . fmap toUpper . flip showHex "" . round @_ @Word8 . (* 255)
+
 newtype Text = Text Appearance
     deriving newtype (Eq, Bounded, Enum)
 
@@ -170,12 +223,12 @@ instance Token Text where
     tokenName (Text appearance) = "text-" <> tokenName appearance
 
 instance ValueToken Text where
-    type ValueType Text = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Text = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue (Text Default) = complementaryLightDark $ ColorOKLCHA 0.197 0.008 264 1
     tokenValue (Text Subtle) = flip setAlpha 0.75 <$> tokenValue (Text Default)
     tokenValue (Text appearance) = LightDark (ColorOKLCHA l c h 1) (ColorOKLCHA l c h 1)
       where
-        l, c, h :: Double
+        l, c, h :: Milli
         l =
             case appearance of
                 Warning -> 0.695
@@ -196,7 +249,7 @@ instance Token InverseText where
     tokenName InverseText = "text-inverse"
 
 instance ValueToken InverseText where
-    type ValueType InverseText = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType InverseText = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue InverseText = tokenValue (Text Default) <&> \(ColorOKLCHA _ c h a) -> ColorOKLCHA 1 c h a
 
 newtype Background = Background Appearance
@@ -206,7 +259,7 @@ instance Token Background where
     tokenName (Background appearance) = "background-" <> tokenName appearance
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue (Background Default) = LightDark (ColorOKLCHA 0.932 0.004 256 1) (ColorOKLCHA 0.256 0.011 264 1)
     tokenValue (Background Subtle) = flip setAlpha 0 <$> tokenValue (Background Default)
     tokenValue (Background appearance) =
@@ -224,7 +277,7 @@ instance Token Border where
     tokenName BorderDanger = "border-danger-color"
 
 instance ValueToken Border where
-    type ValueType Border = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Border = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue Border = complementaryLightDark $ ColorOKLCHA 0.1733 0.0136 159.53 0.3
     tokenValue BorderFocused = tokenValue $ Text Primary
     tokenValue BorderDanger = tokenValue $ Text Danger

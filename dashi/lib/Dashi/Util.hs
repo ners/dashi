@@ -7,7 +7,6 @@ import Clay (Refinement)
 import Clay.Selector (Refinement (Refinement))
 import Dashi.Prelude
 import Data.Char (isUpper, toLower, toUpper)
-import Data.Fixed (Fixed, HasResolution)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import GHC.Float (FFFormat (..), formatRealFloat)
@@ -52,7 +51,9 @@ pascalWords = iso (breakAll isUpper) (mconcat . fmap capitalise)
 breakAll :: (Char -> Bool) -> MisoString -> [MisoString]
 breakAll f t
     | Just (c, cs) <- MisoString.uncons r =
-        ls <> (breakAll f cs & _head %~ MisoString.cons c)
+        ls <> case breakAll f cs of
+            x : xs -> MisoString.cons c x : xs
+            [] -> [MisoString.singleton c]
     | otherwise = ls
   where
     (l, r) = MisoString.break f t

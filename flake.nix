@@ -80,6 +80,14 @@
             inherit (hprev.${pname}) staticAssets;
           };
         })
+        (hfinal: hprev: lib.optionalAttrs (hprev.ghc.targetPrefix != "") {
+          pretty-simple = hprev.pretty-simple.overrideAttrs (attrs: {
+            postPatch = ''
+              ${attrs.postPatch or ""}
+              ${lib.getExe pkgs.perl} -0pe 's/executable .*(\n+  .*)+\n+//' -i pretty-simple.cabal
+            '';
+          });
+        })
         (hfinal: hprev: lib.optionalAttrs (hprev.ghc.targetPrefix == "javascript-unknown-ghcjs-") {
           mkDerivation = args: hprev.mkDerivation (args // {
             enableExternalInterpreter = false;

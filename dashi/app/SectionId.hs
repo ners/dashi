@@ -18,6 +18,7 @@ data SectionId
 
 data FoundationId
     = Accessibility
+    | Colours
     | DesignTokens
     deriving stock (Eq, Show, Bounded, Enum)
 

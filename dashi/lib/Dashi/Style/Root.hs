@@ -9,6 +9,7 @@ import Clay hiding (Color, FontSize, fullWidth, var)
 import Dashi.Style.Colour ()
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
+import Dashi.Style.Uchu (Uchu)
 import Dashi.Style.Util
 import Data.Foldable (for_)
 import Data.Text (Text)
@@ -65,6 +66,7 @@ style = do
             "normal 400 14px/1.5 " <> var "font-family-sans-serif" []
         tokenDecl @Space
         tokenDecl @Radius
+        for_ @[] (allTokens @Uchu) \t -> ("--" <> tokenName t) ~: value (tokenValue t)
         tokenDecl @Colour.Text
         tokenDecl @Colour.InverseText
         tokenDecl @Colour.Background

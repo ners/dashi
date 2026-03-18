@@ -27,7 +27,6 @@ import Dashi.Style.Colour hiding (Background)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
-import Data.Fixed (Milli)
 import Data.Ord (clamp)
 import Miso.CSS (styleInline_)
 import Miso.Html.Element (input_)
@@ -41,7 +40,7 @@ instance Token Background where
     tokenName Background = "range-background-color"
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue Background = tokenValue (Text Default) <&> flip setAlpha 0.15
 
 data Thumb = Thumb
@@ -51,7 +50,7 @@ instance Token Thumb where
     tokenName Thumb = "range-thumb-color"
 
 instance ValueToken Thumb where
-    type ValueType Thumb = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Thumb = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue Thumb = tokenValue $ Text Default
 
 data Progress = Progress
@@ -61,7 +60,7 @@ instance Token Progress where
     tokenName Progress = "range-progress-color"
 
 instance ValueToken Progress where
-    type ValueType Progress = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Progress = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue Progress = tokenValue (Text Default) <&> flip setAlpha 0.5
 
 data Range action = Range

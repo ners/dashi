@@ -37,7 +37,7 @@ instance Token Background where
     tokenName Background = "progress-background-color"
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue Background = tokenValue (Text Default) <&> flip setAlpha 0.075
 
 newtype Progress = Progress Appearance
@@ -54,7 +54,7 @@ instance Token Progress where
               ]
 
 instance ValueToken Progress where
-    type ValueType Progress = LightDark (Color (Alpha OKLCH) Double)
+    type ValueType Progress = LightDark (Color (Alpha OKLCH) Milli)
     tokenValue (Progress Default) = tokenValue BorderFocused
     tokenValue (Progress Primary) = tokenValue BorderFocused
     tokenValue (Progress appearance) = tokenValue (Text appearance)

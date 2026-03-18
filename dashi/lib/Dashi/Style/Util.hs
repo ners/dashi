@@ -69,16 +69,25 @@ borderRadiusAll = ("border-radius" ~::)
 varName :: (IsString s, Semigroup s) => s -> s
 varName = ("--dashi-" <>)
 
-var :: (Val v, Other v) => Text -> [v] -> v
-var name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> ")"
+var' :: (Val v, Other v) => Text -> [v] -> v
+var' name' defaults = other . fromText $ "var(" <> Text.intercalate "," parts <> ")"
   where
-    parts = varName name' : (plain . unValue . value <$> defaults)
+    parts = name' : (plain . unValue . value <$> defaults)
+
+var :: (Val v, Other v) => Text -> [v] -> v
+var = var' . varName
 
 token :: (Token t, Val (ValueType t), Other (ValueType t)) => t -> ValueType t
 token t = var (tokenName t) []
 
+token' :: (Token t, Val (ValueType t), Other (ValueType t)) => t -> ValueType t
+token' t = var' (tokenName t) []
+
 colorToken :: (Token t) => t -> Clay.Color
 colorToken t = var (tokenName t) []
+
+colorToken' :: (Token t) => t -> Clay.Color
+colorToken' t = var' (tokenName t) []
 
 (~:) :: Key Text -> Value -> Css
 k ~: v = key (cast k) v

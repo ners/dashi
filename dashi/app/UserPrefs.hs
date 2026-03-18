@@ -26,7 +26,8 @@ initial = do
 
 get :: IO UserPrefs
 get = eitherM (const initial) pure $ try @SomeException do
-    Just (fromMisoStringEither -> Right colourScheme) <- getLocalStorage "colour-scheme"
+    Just (fromMisoStringEither -> Right colourScheme) <-
+        getLocalStorage "colour-scheme"
     Just (fromMisoStringEither -> Right language) <- getLocalStorage "language"
     pure UserPrefs{..}
 

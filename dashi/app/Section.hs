@@ -11,6 +11,7 @@ import Section.Avatar qualified as Avatar
 import Section.Breadcrumbs qualified as Breadcrumbs
 import Section.Button qualified as Button
 import Section.Checkbox qualified as Checkbox
+import Section.Colours qualified as Colours
 import Section.DesignTokens qualified as DesignTokens
 import Section.Form qualified as Form
 import Section.Icon qualified as Icon
@@ -49,6 +50,7 @@ view Model{..} =
     div_ [key_ currentStr, id_ currentStr] . pure $ case current of
         Overview -> mount_ Overview.overview
         Foundations Accessibility -> mount_ Accessibility.accessibility
+        Foundations Colours -> mount_ Colours.colours
         Foundations DesignTokens -> mount_ DesignTokens.tokens
         Components Avatar -> mount_ Avatar.avatar
         Components Breadcrumbs -> mount_ Breadcrumbs.breadcrumbs

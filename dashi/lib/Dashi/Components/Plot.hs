@@ -22,8 +22,8 @@ data PlotType num = LinePlot | BarPlot {barWidth :: num}
     deriving stock (Eq, Show)
 
 data Series num = Series
-    { strokeColour :: Maybe (Color (Alpha OKLCH) Double)
-    , fillColour :: Maybe (Color (Alpha OKLCH) Double)
+    { strokeColour :: Maybe (Color (Alpha OKLCH) Micro)
+    , fillColour :: Maybe (Color (Alpha OKLCH) Micro)
     , values :: Vector (Point num)
     , plotType :: PlotType num
     }
@@ -290,7 +290,7 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         domain :: Rect num
         domain = swapY . domainTransform . swapY $ boundingBox seriesBoundingBoxes
 
-        axisColour :: Double -> MisoString
+        axisColour :: Micro -> MisoString
         axisColour = toMisoString . ColorOKLCHA 0.7 0 0
 
         hasNonBarPlots = not $ all (isBarPlot . plotType) series
