@@ -52,12 +52,19 @@
           (file: any file.hasExt [ "cabal" "hs" "md" ])
           root;
       };
+      projects =
+        with lib;
+        genAttrs' (fileset.toList (fileset.fileFilter (file: file.hasExt "cabal") ./.)) (
+          file: nameValuePair (removeSuffix ".cabal" (baseNameOf file)) (dirOf file)
+        );
+      pnames = lib.attrNames projects;
       pname = "dashi";
       haskell-overlay = pkgs: with pkgs.haskell.lib.compose; lib.composeManyExtensions [
         inputs.fluent-hs.overlays.haskell
         (inputs.web-font-mdi.overlays.haskell pkgs)
+        (hfinal: hprev: lib.mapAttrs (pname: dir: hfinal.callCabal2nix pname (sourceFilter dir) { }) projects)
         (hfinal: hprev: {
-          ${pname} = hfinal.callCabal2nix pname (sourceFilter ./.) { } // {
+          ${pname} = hprev.${pname} // {
             staticAssets = pkgs.callPackage ./static-assets.nix { inherit inputs; };
           };
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
@@ -216,7 +223,7 @@
         pkgs = pkgs'.extend overlay;
         jsPkgs = extendHaskellPackages pkgs pkgs.pkgsCross.ghcjs;
         wasmPkgs = extendHaskellPackages pkgs inputs.nix-wasm.legacyPackages.${system};
-        packages = ps: [ ps.${pname} ];
+        packages = ps: map (pname: ps.${pname}) pnames;
         ghc = "ghc912";
         caddyConfig = {
           apps.http = {
@@ -303,6 +310,7 @@
               inherit packages;
               nativeBuildInputs = with pkgs; [
                 cabal-install
+                ghcid
                 haskell.packages.${ghc}.haskell-language-server
               ];
             })

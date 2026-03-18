@@ -26,15 +26,15 @@ initial = do
 
 get :: IO UserPrefs
 get = eitherM (const initial) pure $ try @SomeException do
-    Right colourScheme <- getLocalStorage "colour-scheme"
-    Right language <- getLocalStorage "language"
+    Just (fromMisoStringEither -> Right colourScheme) <- getLocalStorage "colour-scheme"
+    Just (fromMisoStringEither -> Right language) <- getLocalStorage "language"
     pure UserPrefs{..}
 
 set :: UserPrefs -> IO ()
 set UserPrefs{..} = do
     consoleLog "UserPrefs.set"
-    setLocalStorage "colour-scheme" colourScheme
-    setLocalStorage "language" language
+    setLocalStorage "colour-scheme" $ toMisoString colourScheme
+    setLocalStorage "language" $ toMisoString language
 
 modify :: (UserPrefs -> UserPrefs) -> IO ()
 modify f = set . f =<< get

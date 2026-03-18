@@ -30,9 +30,11 @@ import Graphics.Color.Space
     )
 import Graphics.Color.Space.OKLAB.LCH
 import Graphics.Color.Space.RGB.SRGB
-import Miso.JSON (FromJSON (..), ToJSON (..), withText)
+import Miso.JSON (FromJSON (..), ToJSON (..), withText, Parser (..))
 import Miso.Prelude
-import Miso.String (ToMisoString (..))
+import Miso.String (ToMisoString (..), FromMisoString (..))
+import Data.Either.Extra (maybeToEither)
+import Data.Bifunctor (first)
 
 type Colour = Color OKLCH
 
@@ -41,16 +43,19 @@ type AlphaColour = Color (Alpha OKLCH)
 data Scheme = Light | Dark
     deriving stock (Eq, Show, Bounded, Enum)
 
+instance FromMisoString Scheme where
+    fromMisoStringEither s =
+        maybeToEither "invalid colour scheme" $
+            List.find ((s ==) . tokenName) [minBound .. maxBound]
+
+instance ToMisoString Scheme where
+    toMisoString = tokenName
+
 instance FromJSON Scheme where
-    parseJSON = withText "Colour.Scheme" \s ->
-        oneOf
-            [ pure scheme
-            | scheme <- [minBound .. maxBound]
-            , s == tokenName scheme
-            ]
+    parseJSON = withText "Colour.Scheme" $ Parser . first toMisoString . fromMisoStringEither
 
 instance ToJSON Scheme where
-    toJSON = toJSON @MisoString . tokenName
+    toJSON = toJSON . toMisoString
 
 isDark :: Iso' Bool Scheme
 isDark = iso (bool Light Dark) (== Dark)

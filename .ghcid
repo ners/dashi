@@ -1,5 +1,5 @@
 --warnings
 --directory=.
 --color=always
---command "PORT=8080 cabal repl --repl-options=-fno-break-on-exception --repl-options=-fno-break-on-error --repl-options=-v1 --repl-options=-ferror-spans --repl-options=-j --repl-options=-fdiagnostics-color=always --enable-multi-repl exe:dashi lib:dashi"
+--command "PORT=8080 wasm32-wasi-cabal repl --repl-options=-fno-break-on-exception --repl-options=-fno-break-on-error --repl-options=-v1 --repl-options=-ferror-spans --repl-options=-j --repl-options=-fdiagnostics-color=always --enable-multi-repl exe:dashi lib:dashi"
 --test=Main.main

@@ -11,3 +11,7 @@ result-*
 *.woff2
 browser_wasi_shim
 index.html
+
+!/static/index.html
+!/static/main.js
+!/static/style.css
