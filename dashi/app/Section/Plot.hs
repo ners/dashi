@@ -3,7 +3,9 @@
 module Section.Plot where
 
 import Control.Concurrent (threadDelay)
+import Dashi.Components.Button (Button (..), ButtonSize (..))
 import Dashi.Components.Heading
+import Dashi.Components.Icon (MDI (MdiPause, MdiPlay))
 import Dashi.Components.Plot
 import Dashi.Components.Range
 import Dashi.Components.Switch
@@ -117,7 +119,14 @@ view Model{..} =
             ]
         , div_
             [class_ "controls"]
-            [ widget @(Switch Model Action)
+            [ widget @(Button Model Action)
+                Button
+                    { label = [widget $ if running then MdiPause else MdiPlay]
+                    , onClick = Just $ if running then Stop else Start
+                    , size = IconButton
+                    , appearance = Subtle
+                    }
+            , widget @(Switch Model Action)
                 Switch
                     { name = "showaxes"
                     , label = [text "Show axes"]
