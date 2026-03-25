@@ -3,11 +3,22 @@
 
 module Dashi.Components.Plot where
 
-import Clay ((-:), (?))
+import Clay
+    ( byClass
+    , em
+    , opacity
+    , (#)
+    , (-:)
+    , (?)
+    , (|>)
+    )
 import Clay qualified
+import Dashi.Components.Spinner (Spinner (..))
+import Dashi.Components.Util
 import Dashi.Diagram
-import Dashi.Prelude hiding (none, transform, (&))
+import Dashi.Prelude hiding (has, none, transform, (#), (&), (|>))
 import Dashi.Style.Colour (Alpha)
+import Dashi.Style.Util
 import Data.Function ((&))
 import Data.List qualified as List
 import Data.List.Extra qualified as List
@@ -131,6 +142,7 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
             $ [ gridElements
               , axisElements
               , plotElements
+              , [widget Spinner | hasAriaBusy attrs]
               ]
       where
         width', height' :: num
@@ -368,8 +380,14 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
 
     style =
         ".plot" ? do
+            Clay.position Clay.relative
             "text" ? do
                 "fill" -: "currentColor"
                 Clay.userSelect Clay.none
                 Clay.opacity 0.75
-                Clay.fontSize $ Clay.em 0.8
+                Clay.fontSize $ em 0.8
+            ".spinner" ? do
+                "transform" -: "translateX(50%) translateY(50%)"
+            has ".spinner"
+                Clay.& (self |> (self # Clay.not (byClass "spinner")))
+                ? opacity 0.25

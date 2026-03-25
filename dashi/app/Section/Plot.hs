@@ -9,6 +9,7 @@ import Dashi.Components.Icon (MDI (MdiPause, MdiPlay))
 import Dashi.Components.Plot
 import Dashi.Components.Range
 import Dashi.Components.Switch
+import Dashi.Components.Util (ariaBusy_)
 import Dashi.Diagram (Point (..), bottom, top)
 import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Colour
@@ -28,6 +29,7 @@ data Model
     , fps :: Vector (Point Double)
     , showAxis :: Bool
     , showGrid :: Bool
+    , busy :: Bool
     }
     deriving stock (Generic, Eq, Show)
 
@@ -41,6 +43,7 @@ initialModel =
         , fps = mempty
         , showAxis = True
         , showGrid = True
+        , busy = False
         }
 
 data Action
@@ -52,6 +55,7 @@ data Action
     | SetHz Int
     | SetShowAxis Bool
     | SetShowGrid Bool
+    | SetBusy Bool
     | Start
     | Stop
 
@@ -102,6 +106,7 @@ update (SetWidth w) = #width .= w
 update (SetHz hz) = #hz .= hz
 update (SetShowAxis b) = #showAxis .= b
 update (SetShowGrid b) = #showGrid .= b
+update (SetBusy b) = #busy .= b
 update Start = do
     #running .= True
     withSink tick'
@@ -140,6 +145,13 @@ view Model{..} =
                     , checked = showGrid
                     , onChange = SetShowGrid
                     }
+            , widget @(Switch Model Action)
+                Switch
+                    { name = "setbusy"
+                    , label = [text "Busy"]
+                    , checked = busy
+                    , onChange = SetBusy
+                    }
             , div_
                 []
                 [ widget @(Range Action)
@@ -147,7 +159,8 @@ view Model{..} =
                 , text $ toMisoString hz <> "\xA0Hz"
                 ]
             ]
-        , widget @(Plot Double)
+        , widget' @(Plot Double)
+            [ariaBusy_ busy]
             Plot
                 { width
                 , height = Dashi.Prelude.min width 500
@@ -181,7 +194,8 @@ view Model{..} =
                         , renderTick = toMisoString
                         }
                 }
-        , widget @(Plot Double)
+        , widget' @(Plot Double)
+            [ariaBusy_ busy]
             Plot
                 { width
                 , height = Dashi.Prelude.min width 300
