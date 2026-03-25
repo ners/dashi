@@ -20,6 +20,7 @@ source-repository head
 flag interactive
   default:
     False
+
   manual:
     True
 
