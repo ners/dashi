@@ -39,6 +39,13 @@ import UserPrefs qualified
 foreign export javascript "hs_start" main :: IO ()
 #endif
 
+initialComponentStyles :: [CSS]
+#ifdef INTERACTIVE
+initialComponentStyles = [Href "/static/style.css" False, Href "/static/dashi.css" False]
+#else
+initialComponentStyles = []
+#endif
+
 main :: IO ()
 main = do
     uri <- getURI
@@ -46,13 +53,13 @@ main = do
         updateModel = liftM2 (>>) traceAction appUpdate
         model = emptyModel & either (const id) (#section . #current .~) (route uri)
         events = defaultEvents <> keyboardEvents
-    startApp events $
-        (component model updateModel appView)
+        initialComponent = component model updateModel appView
+    startApp
+        events
+        initialComponent
             { subs = [routerSub $ either (const NoOp) SetCurrentSection]
             , mount = Just Setup
-#ifdef INTERACTIVE
-            , styles = [Href "/static/style.css" False, Href "/static/dashi.css" False]
-#endif
+            , styles = initialComponentStyles
             }
 
 instance Eq (a -> b) where
