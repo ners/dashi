@@ -326,7 +326,9 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
             range = dMax - dMin
 
             numericTicks =
-                (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
+                if range == 0
+                    then mempty
+                    else (niceStep *) . fromIntegral <$> [startIdx .. endIdx]
               where
                 roughStep = range / fromIntegral (max 1 targetCount)
 
