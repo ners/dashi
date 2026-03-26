@@ -1,0 +1,28 @@
+loops:
+  dashi:
+    description: Work on `dashi`
+    hooks:
+      before-all: |
+        workdir=.feedback
+        rm -fr $workdir
+        nix build .#wasmPkgs.haskellPackages.dashi.staticAssets
+        cp -r "$(realpath ./result)" "$workdir"
+        chmod -R +w "$workdir"
+
+        ln -s "$(wasm32-wasi-cabal list-bin exe:dashi)" "$workdir/static/app.wasm"
+
+        pushd "$workdir"/static
+        rm *.css *.ftl *.js
+        ln -s ../../dashi/static/*.css .
+        ln -s ../../dashi/static/*.ftl .
+        ln -s ../../dashi/static/*.js .
+
+        "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
+        # hold @MagicRB accountable for this crime
+        sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
+        cabal run dashi-style > dashi.css
+        popd
+    script: |
+      cabal run dashi-style > .feedback/static/dashi.css
+      wasm32-wasi-cabal build lib:dashi exe:dashi
+      http-server .feedback --brotli --gzip

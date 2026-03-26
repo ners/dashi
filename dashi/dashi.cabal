@@ -111,8 +111,8 @@ library
   build-depends:
     Color,
     clay,
-    generic-lens,
     color-uchu,
+    generic-lens,
     lens,
     text,
     web-font-mdi,
@@ -121,9 +121,10 @@ executable dashi
   import: common
   ghc-options: -O2
 
-  if flag (interactive)
+  if flag(interactive)
     cpp-options:
       -DINTERACTIVE
+
   if (impl(ghcjs) || arch(javascript))
     ld-options: -sEXPORTED_RUNTIME_METHODS=HEAP8
   elif arch(wasm32)
@@ -131,7 +132,6 @@ executable dashi
       -no-hs-main
       -optl-mexec-model=reactor
       "-optl-Wl,--export=hs_start"
-
   hs-source-dirs: app
   main-is: Main.hs
   other-modules:
@@ -163,11 +163,11 @@ executable dashi
     UserPrefs
 
   build-depends:
-    dashi,
     color-uchu,
+    dashi,
     fluent-bundle,
-    generic-lens,
     fluent-syntax,
+    generic-lens,
 
 executable dashi-style
   default-language: Haskell2010

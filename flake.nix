@@ -67,6 +67,15 @@
           ${pname} = hprev.${pname} // {
             staticAssets = pkgs.callPackage ./static-assets.nix { inherit inputs; };
           };
+          feedback = hfinal.callCabal2nix "feedback"
+            (pkgs.fetchFromGitHub
+              {
+                owner = "NorfairKing";
+                repo = "feedback";
+                rev = "5ec59759d4252f8d1c38c8b5e5580f543390a40e";
+                hash = "sha256-kW0KtUZxF8xeccwCEfakS9PxrcVICVTuMH2QofYZYdI=";
+              } + "/feedback")
+            { };
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           miso = enableCabalFlag "template-haskell" (hfinal.callCabal2nix "miso" inputs.miso { });
           miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
@@ -233,52 +242,6 @@
         wasmPkgs = extendHaskellPackages pkgs inputs.nix-wasm.legacyPackages.${system};
         packages = ps: map (pname: ps.${pname}) pnames;
         ghc = "ghc912";
-        caddyConfig = {
-          apps.http = {
-            http_port = 8080;
-            servers.srv0 = {
-              listen = [ ":8080" ];
-              routes = [
-                {
-                  match = [{ host = [ "localhost" "127.0.0.1" ]; }];
-                  handle = [
-                    {
-                      handler = "subroute";
-                      routes = [{
-                        handle = [
-                          {
-                            handler = "vars";
-                            root = wasmPkgs.haskellPackages.${pname}.staticAssets;
-                          }
-                          {
-                            handler = "encode";
-                            encodings = { gzip = { }; zstd = { }; };
-                          }
-                          { handler = "file_server"; }
-                        ];
-                      }];
-                      errors.routes = [
-                        {
-                          handle = [
-                            {
-                              handler = "encode";
-                              encodings = { gzip = { }; zstd = { }; };
-                            }
-                            {
-                              handler = "reverse_proxy";
-                              upstreams = [{ dial = "localhost:8081"; }];
-                            }
-                          ];
-                        }
-                      ];
-                    }
-                  ];
-                  terminal = true;
-                }
-              ];
-            };
-          };
-        };
       in
       {
         packages.${system} = rec {
@@ -288,18 +251,6 @@
             runtimeInputs = [ pkgs.http-server ];
             text = ''
               http-server "${default}" --brotli --gzip
-            '';
-          };
-          wasmDevServer = pkgs.writeShellApplication {
-            name = "${pname}-wasm-dev-server";
-            runtimeInputs = [
-              pkgs.caddy
-              wasmPkgs.cabal-install
-            ];
-            text = ''
-              caddy run --config "${(pkgs.formats.json {}).generate "caddy.json" caddyConfig}" &
-              wasm32-wasi-cabal repl exe:${pname} -finteractive --repl-options='-fghci-browser -fghci-browser-port=8081'
-              kill %%
             '';
           };
         };
@@ -320,6 +271,9 @@
                 cabal-install
                 ghcid
                 haskell.packages.${ghc}.haskell-language-server
+                haskellPackages.feedback
+                http-server
+                nodejs
               ];
             })
           ];
