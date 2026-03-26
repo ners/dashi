@@ -110,6 +110,37 @@ html, body {
   gap: var(--dashi-space-xs);
 }
 
+#foundations-colours ul {
+  list-style-type: none;
+}
+
+#foundations-colours .palette {
+  display: grid;
+  gap: var(--dashi-space-xs);
+  grid-template-columns: repeat(auto-fill, minmax(17em, 1fr));
+  grid-template-rows: masonry;
+}
+
+#foundations-colours .palette .colour .shade {
+  padding: var(--dashi-space-xs) var(--dashi-space-s);
+}
+
+#foundations-colours .palette .colour .shade {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#foundations-colours .palette .colour .codes {
+  font-size: var(--dashi-font-size-s);
+  text-align: right;
+  visibility: hidden;
+}
+
+#foundations-colours .palette .colour .shade:hover .codes {
+  visibility: visible;
+}
+
 #components-avatar .grid {
   grid-template-columns: repeat(3, auto);
 }
