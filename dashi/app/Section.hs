@@ -14,6 +14,7 @@ import Section.Checkbox qualified as Checkbox
 import Section.Colours qualified as Colours
 import Section.DesignTokens qualified as DesignTokens
 import Section.Form qualified as Form
+import Section.Heading qualified as Heading
 import Section.Icon qualified as Icon
 import Section.Link qualified as Link
 import Section.Message qualified as Message
@@ -55,19 +56,20 @@ view Model{..} =
         Components Avatar -> mount_ Avatar.avatar
         Components Breadcrumbs -> mount_ Breadcrumbs.breadcrumbs
         Components Button -> mount_ Button.button
+        Components Checkbox -> mount_ Checkbox.checkbox
         Components Form -> mount_ $ Form.form #form form
+        Components Heading -> mount_ Heading.heading
         Components Icon -> mount_ Icon.icon
         Components Link -> mount_ Link.link
         Components Message -> mount_ Message.message
-        Components Checkbox -> mount_ Checkbox.checkbox
         Components Pagination -> mount_ Pagination.pagination
         Components Plot -> mount_ Plot.plot
         Components ProgressBar -> mount_ ProgressBar.progressBar
         Components Radio -> mount_ Radio.radio
         Components Range -> mount_ Range.range
         Components Select -> mount_ Select.select
-        Components Switch -> mount_ Switch.switch
         Components Spinner -> mount_ Spinner.spinner
+        Components Switch -> mount_ Switch.switch
         Components Tabs -> mount_ Tabs.tabs
         Components TextField -> mount_ TextField.textField
   where

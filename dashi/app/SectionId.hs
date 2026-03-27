@@ -28,6 +28,7 @@ data ComponentId
     | Button
     | Checkbox
     | Form
+    | Heading
     | Icon
     | Link
     | Message

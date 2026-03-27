@@ -145,6 +145,7 @@ executable dashi
     Section.Colours
     Section.DesignTokens
     Section.Form
+    Section.Heading
     Section.Icon
     Section.Link
     Section.Message

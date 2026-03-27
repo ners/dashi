@@ -44,7 +44,7 @@ data SizeToken
     | Medium
     | Large
     | XLarge
-    deriving stock (Eq, Ord, Bounded, Enum)
+    deriving stock (Eq, Ord, Bounded, Enum, Show)
 
 instance Token SizeToken where
     tokenName XSmall = "xs"
