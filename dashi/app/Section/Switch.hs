@@ -8,6 +8,8 @@ import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (disabled_)
+import Miso.Router (Router (toURI))
+import SectionId (ComponentId (Checkbox), SectionId (Components), sectionLink)
 
 data Model = Model
     deriving stock (Generic, Eq, Show)
@@ -15,13 +17,16 @@ data Model = Model
 initialModel :: Model
 initialModel = Model
 
-data Action = NoOp
+data Action
+    = NoOp
+    | Navigate SectionId
 
 switch :: Component parent Model Action
 switch = component initialModel update view
 
 update :: Action -> Effect parent Model Action
 update NoOp = pure ()
+update (Navigate s) = io_ . pushURI . toURI $ s
 
 view :: Model -> View Model Action
 view Model =
@@ -31,6 +36,13 @@ view Model =
         , p_
             []
             [text "A switch is used to view or toggle between enabled or disabled states."]
+        , p_
+            []
+            [ text
+                "Switches should provide an immediate noticeable effect that doesn’t require the user to click a button to apply the new state. For options that require a button press to apply the state, use a "
+            , sectionLink Navigate $ Components Checkbox
+            , " instead."
+            ]
         , div_
             []
             [ widget @(Switch Model Action)
