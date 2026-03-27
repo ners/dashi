@@ -4,13 +4,12 @@ module Dashi.Components.Link where
 
 import Clay hiding (Color, action, href, label)
 import Dashi.Prelude hiding ((&))
-import Dashi.Style.Colour (LightDark)
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Pseudo (pressable)
 import Dashi.Style.Root (tokenDecl)
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
-import Dashi.Style.Util (color', pressable)
-import Graphics.Color.Space (Alpha)
-import Graphics.Color.Space.OKLAB.LCH
+import Dashi.Style.Uchu (Uchu (..))
+import Dashi.Style.Util (color')
 import Miso.Html.Element (a_)
 import Miso.Html.Property (href_)
 
@@ -21,8 +20,8 @@ instance Token Text where
     tokenName Text = "text-link"
 
 instance ValueToken Text where
-    type ValueType Text = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue Text = tokenValue $ Colour.Text Primary
+    type ValueType Text = Uchu
+    tokenValue Text = Blue
 
 data Link model action = Link
     { href :: MisoString
@@ -38,4 +37,4 @@ instance Widget (Link model action) model action where
             "@href" & do
                 color' Text
                 hover & textDecoration underline
-                byToken Subtle & color' (Colour.Text Subtle)
+                byToken Subtle & color' (TextColour Subtle)

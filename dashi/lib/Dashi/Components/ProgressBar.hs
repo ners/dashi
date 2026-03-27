@@ -16,9 +16,11 @@ import Clay hiding
     , var
     )
 import Dashi.Prelude hiding (max, (&))
-import Dashi.Style.Colour hiding (Background)
+import Dashi.Style.Border (BorderColour (BorderFocusedColour))
+import Dashi.Style.Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
+import Dashi.Style.Uchu (Uchu (..))
 import Dashi.Style.Util
     ( backgroundColor'
     , borderRadiusAll'
@@ -37,8 +39,8 @@ instance Token Background where
     tokenName Background = "progress-background-color"
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue Background = tokenValue (Text Default) <&> flip setAlpha 0.075
+    type ValueType Background = LightDark Uchu
+    tokenValue Background = LightDark Yin1 Yin9
 
 newtype Progress = Progress Appearance
     deriving newtype (Eq, Bounded, Enum)
@@ -54,10 +56,14 @@ instance Token Progress where
               ]
 
 instance ValueToken Progress where
-    type ValueType Progress = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue (Progress Default) = tokenValue BorderFocused
-    tokenValue (Progress Primary) = tokenValue BorderFocused
-    tokenValue (Progress appearance) = tokenValue (Text appearance)
+    type ValueType Progress = LightDark Uchu
+    tokenValue (Progress Default) = tokenValue BorderFocusedColour
+    tokenValue (Progress Subtle) = LightDark Yin9 Yin2
+    tokenValue (Progress Primary) = sameLightDark Blue
+    tokenValue (Progress Success) = sameLightDark Green6
+    tokenValue (Progress Warning) = sameLightDark Orange
+    tokenValue (Progress Danger) = sameLightDark Red
+    tokenValue (Progress Discovery) = sameLightDark Purple
 
 data Value
     = Determinate {value :: Int, max :: Int}

@@ -18,18 +18,38 @@ import Dashi.Components.Icon ()
 import Dashi.Components.Spinner (Spinner (Spinner))
 import Dashi.Components.Util
 import Dashi.Prelude hiding (none, transform, (#), (&))
-import Dashi.Style.Colour (LightDark, complementaryLightDark)
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Border (BorderColour (BorderColour))
+import Dashi.Style.Colour (LightDark (..), sameLightDark)
+import Dashi.Style.Pseudo (pressable)
 import Dashi.Style.Root (tokenDecl)
+import Dashi.Style.Text
+    ( TextColour (TextColour)
+    )
 import Dashi.Style.Tokens
+import Dashi.Style.Uchu (Uchu (..), UchuAlpha (..))
+import Dashi.Style.Uchu qualified as Uchu
 import Dashi.Style.Util
 import Data.List qualified as List
 import Data.Vector.Strict qualified as Vector
 import GHC.IsList (IsList (fromList))
-import Graphics.Color.Model (Alpha, setAlpha)
-import Graphics.Color.Space.OKLAB.LCH
 import Miso.Html.Element (button_, label_)
 import Miso.Html.Event qualified as Html
+
+newtype Foreground = Foreground Appearance
+    deriving newtype (Bounded, Enum, Eq)
+
+instance Token Foreground where
+    tokenName (Foreground appearance) =
+        fromString
+            . List.intercalate "-"
+            . catMaybes
+            $ [Just "button-foreground", nonDefaultTokenName appearance]
+
+instance ValueToken Foreground where
+    type ValueType Foreground = LightDark (UchuAlpha Micro)
+    tokenValue (Foreground Default) = tokenValue $ TextColour Default
+    tokenValue (Foreground Subtle) = tokenValue $ TextColour Subtle
+    tokenValue (Foreground _) = flip UchuAlpha 1 <$> sameLightDark Yang
 
 data Background = Background Appearance InputState
     deriving stock (Eq)
@@ -56,18 +76,28 @@ instance Token Background where
               ]
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
+    type ValueType Background = LightDark (UchuAlpha Milli)
     tokenValue (Background Default state) =
-        complementaryLightDark
-            . ColorOKLCHA 0.2422 0.0735 260.41
-            $ 0.1
-            * (fromIntegral . succ . fromEnum) state
-    tokenValue (Background Subtle DefaultState) = flip setAlpha 0 <$> tokenValue (Background Default DefaultState)
+        flip UchuAlpha alpha <$> LightDark Yin2 Yin8
+      where
+        alpha = 0.25 * (fromIntegral . succ . fromEnum) state
+    tokenValue (Background Subtle DefaultState) = Uchu.setAlpha 0 <$> tokenValue (Background Default DefaultState)
     tokenValue (Background Subtle state) = tokenValue $ Background Default state
-    tokenValue (Background appearance state) =
-        tokenValue (Colour.Text appearance) <&> \(ColorOKLCHA l c h _) ->
-            let l' = l - (fromIntegral . fromEnum $ state) * 0.15
-             in ColorOKLCHA l' c h 1
+    tokenValue (Background Primary DefaultState) = flip UchuAlpha 1 <$> sameLightDark Blue4
+    tokenValue (Background Primary HoveredState) = flip UchuAlpha 1 <$> sameLightDark Blue5
+    tokenValue (Background Primary ActiveState) = flip UchuAlpha 1 <$> sameLightDark Blue6
+    tokenValue (Background Success DefaultState) = flip UchuAlpha 1 <$> sameLightDark Green4
+    tokenValue (Background Success HoveredState) = flip UchuAlpha 1 <$> sameLightDark Green5
+    tokenValue (Background Success ActiveState) = flip UchuAlpha 1 <$> sameLightDark Green6
+    tokenValue (Background Warning DefaultState) = flip UchuAlpha 1 <$> sameLightDark Orange4
+    tokenValue (Background Warning HoveredState) = flip UchuAlpha 1 <$> sameLightDark Orange5
+    tokenValue (Background Warning ActiveState) = flip UchuAlpha 1 <$> sameLightDark Orange6
+    tokenValue (Background Danger DefaultState) = flip UchuAlpha 1 <$> sameLightDark Red4
+    tokenValue (Background Danger HoveredState) = flip UchuAlpha 1 <$> sameLightDark Red5
+    tokenValue (Background Danger ActiveState) = flip UchuAlpha 1 <$> sameLightDark Red6
+    tokenValue (Background Discovery DefaultState) = flip UchuAlpha 1 <$> sameLightDark Purple4
+    tokenValue (Background Discovery HoveredState) = flip UchuAlpha 1 <$> sameLightDark Purple5
+    tokenValue (Background Discovery ActiveState) = flip UchuAlpha 1 <$> sameLightDark Purple6
 
 data ButtonSize
     = DefaultSize
@@ -93,8 +123,7 @@ data Button model action = Button
 appearanceStyle :: Appearance -> Css
 appearanceStyle appearance = do
     when (appearance == Subtle) $ "box-shadow" -: "none"
-    when (elem @[] appearance [Primary, Success, Warning, Danger, Discovery])
-        $ color' Colour.InverseText
+    color' $ Foreground appearance
     backgroundColor' $ Background appearance DefaultState
     sconcat [ariaBusy False, Clay.not disabled] & do
         hover & backgroundColor' (Background appearance HoveredState)
@@ -129,7 +158,9 @@ instance Widget (Button model action) model action where
         isBusy = hasAriaBusy attrs
 
     style = do
-        ":root" ? tokenDecl @Background
+        ":root" ? do
+            tokenDecl @Foreground
+            tokenDecl @Background
         sconcat [Clay.button, input # ("type" @= "submit"), ".button"] ? do
             pressable
             userSelect none
@@ -137,10 +168,10 @@ instance Widget (Button model action) model action where
             boxShadow
                 . fromList
                 $ [ bsInset
-                        . bsColor (colorToken Colour.Border)
+                        . bsColor (colorToken BorderColour)
                         $ shadowWithBlur nil nil (var "border-width" [])
                   ]
-            color' $ Colour.Text Subtle
+            color' $ TextColour Subtle
             borderRadiusAll' Small
             paddingYX' XSmall Medium
             fontWeight $ weight 550

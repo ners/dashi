@@ -19,13 +19,13 @@ import Clay hiding
 import Clay qualified
 import Dashi.Components.Util (ariaInvalid_)
 import Dashi.Prelude hiding ((#), (&))
-import Dashi.Style.Colour (LightDark)
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Border (BorderColour (..))
+import Dashi.Style.Colour (LightDark (..))
+import Dashi.Style.Pseudo (focusable)
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
+import Dashi.Style.Uchu (Uchu (..), UchuAlpha (..))
 import Dashi.Style.Util
-import Graphics.Color.Space (Alpha)
-import Graphics.Color.Space.OKLAB.LCH
 import Miso.Html.Element (input_, textarea_)
 import Miso.Html.Event qualified as Html
 import Miso.Html.Property (name_, type_, value_)
@@ -41,12 +41,12 @@ instance Token Background where
     tokenAttr (Background state) = tokenAttr state
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue (Background state) =
-        tokenValue (Colour.Text Default) <&> \(ColorOKLCHA l c h _) ->
-            ColorOKLCHA l c h $ case state of
-                HoveredState -> 0.05
-                _ -> 0
+    type ValueType Background = LightDark (UchuAlpha Milli)
+    tokenValue (Background state) = flip UchuAlpha alpha <$> LightDark Yin Yang
+      where
+        alpha
+            | state == HoveredState = 0.05
+            | otherwise = 0
 
 data Type
     = Text
@@ -86,21 +86,22 @@ instance Widget (TextField action) model action where
             display block
             fullWidth
             focusable
-            border (token BorderWidth) solid (colorToken Colour.Border)
-            byToken Subtle & borderColor transparent
+            border (token BorderWidth) solid (colorToken BorderColour)
+            byToken Subtle & do
+                borderColor transparent
             paddingAll' XSmall
             borderRadiusAll' Small
             transition "background" (sec 0.2) easeOut 0
             backgroundColor' $ Background DefaultState
             hover <> Clay.not focusVisible & do
-                borderColor' Colour.Border
+                borderColor' BorderColour
                 backgroundColor' $ Background HoveredState
             focusVisible & do
-                borderColor' Colour.BorderFocused
+                borderColor' BorderFocusedColour
                 backgroundColor' $ Background ActiveState
             isOneOf [":user-invalid", "aria-invalid" @= "true"]
                 & ":not(:focus-visible)"
-                & borderColor' Colour.BorderDanger
+                & borderColor' BorderDangerColour
         textarea ? do
             "resize" -: "vertical"
             minHeight $ em 10

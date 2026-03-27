@@ -1,3 +1,7 @@
+:root {
+  --dashi-background-default: light-dark(var(--uchu-yin-1), var(--uchu-yin-9));
+}
+
 html, body {
   width: 100vw;
   max-width: 100vw;
@@ -52,7 +56,7 @@ html, body {
       background: #000;
       z-index: 1;
       padding: var(--dashi-space-m);
-      background-color: light-dark(oklch(0.98 0.004 256), oklch(0.3 0.011 264));
+      background-color: light-dark(var(--uchu-yang), var(--uchu-yin-8));
       box-shadow: 0 8px 9pt #1e1f2126,0 0 1px #1e1f214f;
       &:has(> [hidden]) {
         display: none;
@@ -79,7 +83,7 @@ html, body {
           width: 100%;
         }
         &:not([aria-current]) a {
-          color: var(--dashi-text-subtle);
+          color: var(--dashi-text-subtle-color);
         }
         &[aria-current] a {
           color: inherit;
@@ -177,6 +181,10 @@ html, body {
     flex: 1;
     gap: var(--dashi-space-s);
   }
+  button {
+    height: 2.1em;
+    width: 2.1em;
+  }
   input[type=range] {
     flex: 1;
   }
@@ -186,7 +194,7 @@ section {
   display: flex;
   flex-direction: column;
   gap: var(--dashi-space-s);
-  background-color: light-dark(oklch(0.98 0.004 256), oklch(0.17 0.011 264));
+  background-color: light-dark(var(--uchu-yang), var(--uchu-yin));
   padding: var(--dashi-space-l);
   border-radius: var(--dashi-radius-m);
 }

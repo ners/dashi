@@ -13,7 +13,7 @@ import Dashi.Components.Icon
     )
 import Dashi.Components.Util (ariaCurrent_)
 import Dashi.Prelude hiding ((#), (&), (|>))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util (ariaCurrent, color')
 import Miso.Html.Element (div_, span_)
@@ -76,11 +76,11 @@ instance Widget (Pagination action) model action where
                 minWidth $ em 2.5
                 ariaCurrent True & do
                     Button.appearanceStyle Default
-                    color' $ Colour.Text Primary
+                    color' $ TextColour Primary
             ".ellipsis" ? do
                 iconStyle
                 before & content (iconContent MdiDotsHorizontal)
-                color' $ Colour.Text Subtle
+                color' $ TextColour Subtle
                 lineHeight $ unitless 1.6
                 width $ em 1.67
                 opacity 0.5

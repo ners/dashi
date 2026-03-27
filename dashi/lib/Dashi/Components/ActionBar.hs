@@ -18,7 +18,7 @@ import Clay hiding
     , type_
     )
 import Clay qualified
-import Dashi.Prelude hiding (Left, Right, has, (#), (&), (**))
+import Dashi.Prelude hiding (Left, Right, has, (#), (&), (**), (|>))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (div_)
@@ -75,4 +75,8 @@ instance Widget (ActionBar model action) model action where
                 "" ? byTokens \case
                     Left -> pure ()
                     Centre -> pure ()
-                    Right -> textAlign end
+                    Right -> alignItems flexEnd
+            self |> star ? do
+                display flex
+                flexDirection row
+                gap' XSmall

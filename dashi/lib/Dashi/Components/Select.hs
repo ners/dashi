@@ -7,7 +7,7 @@ module Dashi.Components.Select where
 
 import Clay hiding (label, name, selected, value)
 import Dashi.Prelude hiding ((&))
-import Dashi.Style.Util
+import Dashi.Style.Pseudo (pressable)
 import Miso.Html.Element (option_, select_)
 import Miso.Html.Property (disabled_, name_, selected_, value_)
 

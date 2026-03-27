@@ -6,8 +6,11 @@
 module Dashi.Style.Root where
 
 import Clay hiding (Color, FontSize, fullWidth, var)
+import Dashi.Style.Background (BackgroundColour (BackgroundColour))
+import Dashi.Style.Border (BorderColour)
 import Dashi.Style.Colour ()
 import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Text (InverseTextColour, TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Uchu (Uchu)
 import Dashi.Style.Util
@@ -66,11 +69,11 @@ style = do
             "normal 400 14px/1.5 " <> var "font-family-sans-serif" []
         tokenDecl @Space
         tokenDecl @Radius
-        for_ @[] (allTokens @Uchu) \t -> ("--" <> tokenName t) ~: value (tokenValue t)
-        tokenDecl @Colour.Text
-        tokenDecl @Colour.InverseText
-        tokenDecl @Colour.Background
-        tokenDecl @Colour.Border
+        for_ @[] (allTokens @Uchu) \t -> tokenName t ~: value (tokenValue t)
+        tokenDecl @TextColour
+        tokenDecl @InverseTextColour
+        tokenDecl @BackgroundColour
+        tokenDecl @BorderColour
         tokenDecl @FontSize
         tokenDecl @BorderWidth
     star ? do
@@ -102,8 +105,8 @@ style = do
         byTokens @Colour.Scheme \scheme -> "color-scheme" -: tokenName scheme
     body ? do
         font $ var @Value "font-body" []
-        backgroundColor' $ Colour.Background Default
-        color' $ Colour.Text Default
+        backgroundColor' $ BackgroundColour Default
+        color' $ TextColour Default
         has ("#dashi-loading" # onlyChild) & do
             height $ vh 100
             display flex

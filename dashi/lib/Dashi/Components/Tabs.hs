@@ -6,7 +6,9 @@ module Dashi.Components.Tabs where
 import Clay hiding (label, name, selected, span_, type_)
 import Dashi.Components.Util (ariaCurrent_, ariaRole_)
 import Dashi.Prelude hiding (none, (&))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Border (BorderColour (BorderColour, BorderFocusedColour))
+import Dashi.Style.Pseudo (pressable)
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (li_, ul_)
@@ -35,13 +37,13 @@ instance Widget (Tabs t model action) model action where
             display flex
             flexDirection row
             listStyleType none
-            borderBottom (em 0.1) solid (colorToken Colour.Border)
+            borderBottom (em 0.1) solid (colorToken BorderColour)
             li ? do
                 pressable
                 paddingYX' XSmall Small
                 fontWeight $ weight 500
                 position relative
-                color' $ Colour.Text Subtle
+                color' $ TextColour Subtle
                 after & do
                     content $ stringContent ""
                     display block
@@ -51,9 +53,9 @@ instance Widget (Tabs t model action) model action where
                     bottom . em $ -0.2
                     borderBottom (em 0.3) solid transparent
                 ariaCurrent True & do
-                    color' $ Colour.Text Primary
-                    after & borderBottomColor (colorToken Colour.BorderFocused)
+                    color' $ TextColour Primary
+                    after & borderBottomColor (colorToken BorderFocusedColour)
                 hover <> Clay.not @Refinement "@aria-current" & do
-                    borderBottomColor $ colorToken Colour.Border
-                    after & borderBottomColor (colorToken Colour.Border)
+                    borderBottomColor $ colorToken BorderColour
+                    after & borderBottomColor (colorToken BorderColour)
                 pure ()

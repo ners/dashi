@@ -1,10 +1,16 @@
+{-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-missing-role-annotations #-}
+
 module Dashi.Style.Uchu where
 
+import Clay qualified
 import Dashi.Style.Colour ()
+import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
+import Dashi.Style.Util (colorToken')
 import Dashi.Util (breakAll, uncapitalise)
 import Data.Char (isDigit, isUpper)
-import Data.Fixed (Micro)
+import Data.Fixed (Fixed, HasResolution, Micro, showFixed)
 import Data.String (IsString (fromString))
 import Graphics.Color.Space
 import Graphics.Color.Space.OKLAB.LCH (OKLCH)
@@ -242,7 +248,7 @@ instance Token Uchu where
     tokenName =
         fromString
             . fromMisoString
-            . ("uchu-" <>)
+            . ("--uchu-" <>)
             . MisoString.intercalate "-"
             . fmap uncapitalise
             . breakAll (\c -> isUpper c || isDigit c)
@@ -252,3 +258,39 @@ instance Token Uchu where
 instance ValueToken Uchu where
     type ValueType Uchu = Color OKLCH Micro
     tokenValue = uchu
+
+instance Clay.Val Uchu where
+    value :: Uchu -> Clay.Value
+    value = Clay.value . colorToken'
+
+data UchuAlpha a = UchuAlpha Uchu a
+
+instance (Num a, Eq a) => Eq (UchuAlpha a) where
+    (UchuAlpha u1 a1) == (UchuAlpha u2 a2)
+        | a1 == 0 && a2 == 0 = True
+        | otherwise = u1 == u2 && a1 == a2
+
+uchuAlpha :: (Fractional e) => UchuAlpha e -> Color (Alpha OKLCH) e
+uchuAlpha (UchuAlpha u a) = addAlpha (uchu u) a
+
+setAlpha :: a -> UchuAlpha a -> UchuAlpha a
+setAlpha a (UchuAlpha u _) = UchuAlpha u a
+
+instance (HasResolution e) => Clay.Val (UchuAlpha (Fixed e)) where
+    value :: UchuAlpha (Fixed e) -> Clay.Value
+    value (UchuAlpha u a)
+        | a == 0 = "transparent"
+        | a == 1 = fromString var
+        | otherwise =
+            Colour.fn'
+                "oklch"
+                [ "from"
+                , var
+                , "l"
+                , "c"
+                , "h"
+                , "/"
+                , showFixed True a
+                ]
+      where
+        var = "var(" <> tokenName u <> ")"

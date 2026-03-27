@@ -17,7 +17,6 @@ import Clay.Selector
     )
 import Clay.Stylesheet (App (Root), Rule (Nested), key, rule, runS)
 import Dashi.Style.Colour ()
-import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Dashi.Util
 import Data.String (IsString (..))
@@ -112,11 +111,6 @@ instance Font Value
 fontFamily' :: Value -> Css
 fontFamily' = fontFamily [] . pure . other
 
-focusable :: Css
-focusable =
-    focusVisible
-        & outline solid (var "outline-width" []) (colorToken Colour.BorderFocused)
-
 underlinedOnHover :: Css
 underlinedOnHover = do
     hover & star ? textDecoration underline
@@ -124,11 +118,6 @@ underlinedOnHover = do
 
 focusVisible :: Refinement
 focusVisible = ":focus-visible"
-
-pressable :: Css
-pressable = do
-    cursor pointer
-    focusable
 
 color' :: (Token t) => t -> Css
 color' = color . colorToken

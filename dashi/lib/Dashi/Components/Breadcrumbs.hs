@@ -5,7 +5,7 @@ module Dashi.Components.Breadcrumbs where
 import Clay hiding (Color, action, href, label, span_)
 import Dashi.Components.Icon (MDI (MdiChevronRight), iconContent, iconStyle)
 import Dashi.Prelude hiding (has, (#), (&), (|>))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util (color', fontSize', has, paddingYX, token)
 import Data.List qualified as List
@@ -24,7 +24,7 @@ instance Widget (Breadcrumbs model action) model action where
             display flex
             flexDirection row
             ".separator" ? do
-                color' (Colour.Text Subtle)
+                color' (TextColour Subtle)
                 paddingYX nil (token $ Space XSmall)
                 iconStyle
                 fontSize' Medium

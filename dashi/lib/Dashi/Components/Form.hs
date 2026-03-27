@@ -23,7 +23,7 @@ import Dashi.Components.Message
     )
 import Dashi.Components.Radio (RadioGroup)
 import Dashi.Prelude hiding (has, (#), (&), (**))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (fieldset_, label_, legend_, span_)
@@ -99,7 +99,7 @@ instance {-# OVERLAPPING #-} Widget (FormField () model action) model action whe
             & do
                 fontWeight $ weight 300
                 content $ stringContent "*"
-                color' $ Colour.Text Danger
+                color' $ TextColour Danger
                 marginLeft . token $ Space XSmall
 
 instance

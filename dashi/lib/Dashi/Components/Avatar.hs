@@ -16,7 +16,8 @@ import Clay hiding
 import Clay qualified
 import Dashi.Components.Icon ()
 import Dashi.Prelude hiding (Image, has, rem, span, (#), (&))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Background (BackgroundColour (BackgroundColour))
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (div_, img_, span_)
@@ -72,9 +73,9 @@ instance Widget Avatar model action where
                 lineHeight $ rem sizeEm
                 Clay.fontSize (rem $ sizeEm / 3)
             overflow hidden
-            backgroundColor' (Colour.Background Primary)
+            backgroundColor' (BackgroundColour Primary)
             fontWeight $ weight 600
-            color' $ Colour.Text Subtle
+            color' $ TextColour Subtle
             display inlineFlex
             alignItems center
             justifyContent center
@@ -109,7 +110,7 @@ instance Widget AvatarItem model action where
             ".avatar" ? ("grid-area" -: "avatar")
             ".primary" ? fontWeight (weight 500)
             ".secondary" ? do
-                color' $ Colour.Text Subtle
+                color' $ TextColour Subtle
                 fontSize' Small
             display flex
             columnGap' Small

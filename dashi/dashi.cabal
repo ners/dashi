@@ -101,8 +101,12 @@ library
     Dashi.Layout.Page
     Dashi.Prelude
     Dashi.Style
+    Dashi.Style.Background
+    Dashi.Style.Border
     Dashi.Style.Colour
+    Dashi.Style.Pseudo
     Dashi.Style.Root
+    Dashi.Style.Text
     Dashi.Style.Tokens
     Dashi.Style.Uchu
     Dashi.Style.Util

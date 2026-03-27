@@ -23,9 +23,10 @@ import Clay hiding
     , var
     )
 import Dashi.Prelude hiding (max, none, (#))
-import Dashi.Style.Colour hiding (Background)
+import Dashi.Style.Colour
 import Dashi.Style.Root (tokenDecl)
 import Dashi.Style.Tokens
+import Dashi.Style.Uchu (Uchu (..))
 import Dashi.Style.Util
 import Data.Ord (clamp)
 import Miso.CSS (styleInline_)
@@ -40,8 +41,8 @@ instance Token Background where
     tokenName Background = "range-background-color"
 
 instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue Background = tokenValue (Text Default) <&> flip setAlpha 0.15
+    type ValueType Background = LightDark Uchu
+    tokenValue Background = LightDark Yin2 Yin8
 
 data Thumb = Thumb
     deriving stock (Eq, Bounded, Enum)
@@ -50,8 +51,8 @@ instance Token Thumb where
     tokenName Thumb = "range-thumb-color"
 
 instance ValueToken Thumb where
-    type ValueType Thumb = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue Thumb = tokenValue $ Text Default
+    type ValueType Thumb = LightDark Uchu
+    tokenValue Thumb = LightDark Yin9 Yin1
 
 data Progress = Progress
     deriving stock (Eq, Bounded, Enum)
@@ -60,8 +61,8 @@ instance Token Progress where
     tokenName Progress = "range-progress-color"
 
 instance ValueToken Progress where
-    type ValueType Progress = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue Progress = tokenValue (Text Default) <&> flip setAlpha 0.5
+    type ValueType Progress = LightDark Uchu
+    tokenValue Progress = LightDark Yin6 Yin4
 
 data Range action = Range
     { value :: Int

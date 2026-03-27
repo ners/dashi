@@ -1,6 +1,5 @@
 loops:
-  dashi:
-    description: Work on `dashi`
+  default:
     hooks:
       before-all: |
         workdir=.feedback
@@ -20,9 +19,9 @@ loops:
         "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
         # hold @MagicRB accountable for this crime
         sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
-        cabal run dashi-style > dashi.css
         popd
     script: |
-      cabal run dashi-style > .feedback/static/dashi.css
+      cabal build dashi-style
+      eval "$(cabal list-bin exe:dashi-style)" > .feedback/static/dashi.css
       wasm32-wasi-cabal build lib:dashi exe:dashi
       http-server .feedback --brotli --gzip

@@ -18,8 +18,7 @@ import Data.Bifunctor (first)
 import Data.Bool (bool)
 import Data.Char (toUpper)
 import Data.Either.Extra (maybeToEither)
-import Data.Fixed (Fixed, HasResolution, Milli, showFixed)
-import Data.Functor ((<&>))
+import Data.Fixed (Fixed, HasResolution, showFixed)
 import Data.List qualified as List
 import Data.String (IsString, fromString)
 import Data.Word (Word8)
@@ -215,69 +214,3 @@ rgbHex c = "#" <> channel r <> channel g <> channel b
     ColorSRGB r g b = convert @_ @_ @_ @(SRGB 'NonLinear) c
     channel :: Double -> MisoString
     channel = toMisoString . fmap toUpper . flip showHex "" . round @_ @Word8 . (* 255)
-
-newtype Text = Text Appearance
-    deriving newtype (Eq, Bounded, Enum)
-
-instance Token Text where
-    tokenName (Text appearance) = "text-" <> tokenName appearance
-
-instance ValueToken Text where
-    type ValueType Text = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue (Text Default) = complementaryLightDark $ ColorOKLCHA 0.197 0.008 264 1
-    tokenValue (Text Subtle) = flip setAlpha 0.75 <$> tokenValue (Text Default)
-    tokenValue (Text appearance) = LightDark (ColorOKLCHA l c h 1) (ColorOKLCHA l c h 1)
-      where
-        l, c, h :: Milli
-        l =
-            case appearance of
-                Warning -> 0.695
-                _ -> 0.65
-        c = 0.18
-        h =
-            case appearance of
-                Primary -> 255
-                Success -> 165
-                Warning -> 44
-                Danger -> 33
-                Discovery -> 320
-
-data InverseText = InverseText
-    deriving stock (Eq, Bounded, Enum)
-
-instance Token InverseText where
-    tokenName InverseText = "text-inverse"
-
-instance ValueToken InverseText where
-    type ValueType InverseText = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue InverseText = tokenValue (Text Default) <&> \(ColorOKLCHA _ c h a) -> ColorOKLCHA 1 c h a
-
-newtype Background = Background Appearance
-    deriving newtype (Eq, Bounded, Enum)
-
-instance Token Background where
-    tokenName (Background appearance) = "background-" <> tokenName appearance
-
-instance ValueToken Background where
-    type ValueType Background = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue (Background Default) = LightDark (ColorOKLCHA 0.932 0.004 256 1) (ColorOKLCHA 0.256 0.011 264 1)
-    tokenValue (Background Subtle) = flip setAlpha 0 <$> tokenValue (Background Default)
-    tokenValue (Background appearance) =
-        tokenValue (Text appearance) <&> \(ColorOKLCHA l c h _) -> ColorOKLCHA l c h 0.15
-
-data Border
-    = Border
-    | BorderFocused
-    | BorderDanger
-    deriving stock (Eq, Bounded, Enum)
-
-instance Token Border where
-    tokenName Border = "border-color"
-    tokenName BorderFocused = "border-focused-color"
-    tokenName BorderDanger = "border-danger-color"
-
-instance ValueToken Border where
-    type ValueType Border = LightDark (Color (Alpha OKLCH) Milli)
-    tokenValue Border = complementaryLightDark $ ColorOKLCHA 0.1733 0.0136 159.53 0.3
-    tokenValue BorderFocused = tokenValue $ Text Primary
-    tokenValue BorderDanger = tokenValue $ Text Danger

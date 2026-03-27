@@ -19,7 +19,8 @@ import Clay qualified
 import Dashi.Components.Icon (iconContent, iconStyle)
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Prelude hiding (has, (#), (&), (|>))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Border (BorderColour (..))
+import Dashi.Style.Pseudo (pressable)
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Coerce (coerce)
@@ -52,8 +53,8 @@ instance Widget (Checkbox model action) model action where
         checkboxOrRadio ? do
             pressable
             iconStyle
-            color' Colour.Border
-            checked & color' Colour.BorderFocused
+            color' BorderColour
+            checked & color' BorderFocusedColour
         Clay.label # has (self |> checkboxOrRadio) ? do
             pressable
             display flex

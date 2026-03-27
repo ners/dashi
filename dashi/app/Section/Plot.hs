@@ -129,7 +129,7 @@ view Model{..} =
                     { label = [widget $ if running then MdiPause else MdiPlay]
                     , onClick = Just $ if running then Stop else Start
                     , size = IconButton
-                    , appearance = Subtle
+                    , appearance = Default
                     }
             , widget @(Switch Model Action)
                 Switch

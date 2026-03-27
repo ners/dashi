@@ -16,7 +16,9 @@ import Dashi.Components.Icon
 import Dashi.Components.Icon qualified as Components
 import Dashi.Components.Util (selectable_)
 import Dashi.Prelude hiding (has, none, (#), (&))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Background (BackgroundColour (BackgroundColour))
+import Dashi.Style.Pseudo (pressable)
+import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (a_, div_, span_)
@@ -52,8 +54,8 @@ sizeStyle InlineMessage = do
     display inlineFlex
     flexDirection row
     alignItems center
-    ".title" ? color' (Colour.Text Default)
-    ".secondary" ? color' (Colour.Text Subtle)
+    ".title" ? color' (TextColour Default)
+    ".secondary" ? color' (TextColour Subtle)
     fontWeight $ weight 500
     gap' XSmall
 sizeStyle FormMessage = do
@@ -101,9 +103,9 @@ defaultIcon Discovery = Just MdiHelpCircle
 
 appearanceStyle :: Appearance -> Css
 appearanceStyle appearance = do
-    byToken FormMessage & color' (Colour.Text appearance)
-    byToken SectionMessage & backgroundColor' (Colour.Background appearance)
-    ".mdi" ? color' (Colour.Text appearance)
+    byToken FormMessage & color' (TextColour appearance)
+    byToken SectionMessage & backgroundColor' (BackgroundColour appearance)
+    ".mdi" ? color' (TextColour appearance)
 
 instance Widget Message model action where
     widget' attrs Message{..} =

@@ -7,7 +7,8 @@ import Clay hiding (checked, label, name, selected, span_, type_)
 import Clay qualified
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Prelude hiding ((#), (&))
-import Dashi.Style.Colour qualified as Colour
+import Dashi.Style.Border (BorderColour (BorderColour, BorderFocusedColour))
+import Dashi.Style.Text (InverseTextColour (InverseTextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Coerce (coerce)
@@ -45,19 +46,19 @@ instance Widget (Switch model action) model action where
                 knobSize = heightEm
             width $ em widthEm
             height $ em heightEm
-            backgroundColor' Colour.Border
+            backgroundColor' BorderColour
             border (em 0.1) solid transparent
             borderRadiusAll' XLarge
             transition "all" (sec 0.15) easeInOut 0
             before & do
                 important . content $ stringContent ""
-                backgroundColor' Colour.InverseText
+                backgroundColor' InverseTextColour
                 display block
                 aspectRatio 1
                 height $ pct 100
                 borderRadiusAll' XLarge
                 transition "margin" (sec 0.075) easeInOut 0
             Clay.checked & do
-                backgroundColor' Colour.BorderFocused
+                backgroundColor' BorderFocusedColour
                 before & do
                     "margin-inline-start" ~:: em (widthEm - knobSize)
