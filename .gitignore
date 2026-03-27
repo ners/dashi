@@ -1,6 +1,7 @@
 dist-newstyle
 .envrc
 .direnv
+.feedback
 result
 result-*
 
