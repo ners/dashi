@@ -149,6 +149,7 @@
         (hfinal: hprev: lib.optionalAttrs (hprev.ghc.targetPrefix == "wasm32-wasi-") {
           ${pname} = appendBuildFlag "--ghc-options=-DWASM" hprev.${pname} // {
             inherit (hprev.${pname}) staticAssets;
+            staticAssetsNoCss = hprev.${pname}.staticAssets.override { withCss = false; };
             dist = pkgs.runCommand "${pname}-wasm-dist"
               {
                 nativeBuildInputs = with pkgs; [

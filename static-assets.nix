@@ -8,6 +8,7 @@
 , dashi
 , clean-css-cli
 , gzip
+, withCss ? true
 }:
 
 let
@@ -90,7 +91,9 @@ runCommand "dashi-static-assets" { } ''
   chmod -R +w .
   cp "${inputs.mdi-webfont}"/*.woff2 .
   cp -r "${browser_wasi_shim}" browser_wasi_shim
-  cp "${dashi-css}" dashi.css
+  ${lib.optionalString withCss ''
+    cp "${dashi-css}" dashi.css
+  ''}
   cd ..
   cp "${favicon}" favicon.ico
   cp "${apple-touch-icon}" apple-touch-icon.png
