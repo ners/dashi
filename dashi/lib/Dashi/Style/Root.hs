@@ -9,7 +9,6 @@ import Clay hiding (Color, FontSize, fullWidth, var)
 import Dashi.Style.Background (BackgroundColour (BackgroundColour))
 import Dashi.Style.Border (BorderColour)
 import Dashi.Style.Colour ()
-import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Text (InverseTextColour, TextColour (TextColour))
 import Dashi.Style.Tokens
 import Dashi.Style.Uchu (Uchu)
@@ -102,7 +101,6 @@ style = do
     html ? do
         overflowX hidden
         overflowY auto
-        byTokens @Colour.Scheme \scheme -> "color-scheme" -: tokenName scheme
     body ? do
         font $ var @Value "font-body" []
         backgroundColor' $ BackgroundColour Default

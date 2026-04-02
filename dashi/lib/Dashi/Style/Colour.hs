@@ -10,14 +10,12 @@ module Dashi.Style.Colour
     )
 where
 
-import Clay ((@=))
 import Clay qualified
 import Control.Lens (Iso', iso)
-import Dashi.Style.Tokens
 import Data.Bifunctor (first)
 import Data.Bool (bool)
 import Data.Char (toUpper)
-import Data.Either.Extra (maybeToEither)
+import Data.Either.Extra (eitherToMaybe, maybeToEither)
 import Data.Fixed (Fixed, HasResolution, showFixed)
 import Data.List qualified as List
 import Data.String (IsString, fromString)
@@ -52,10 +50,11 @@ data Scheme = Light | Dark
 instance FromMisoString Scheme where
     fromMisoStringEither s =
         maybeToEither "invalid colour scheme"
-            $ List.find ((s ==) . tokenName) [minBound .. maxBound]
+            $ List.find ((s ==) . toMisoString) [minBound .. maxBound]
 
 instance ToMisoString Scheme where
-    toMisoString = tokenName
+    toMisoString Light = "light"
+    toMisoString Dark = "dark"
 
 instance FromJSON Scheme where
     parseJSON = withText "Colour.Scheme" $ Parser . first toMisoString . fromMisoStringEither
@@ -63,14 +62,14 @@ instance FromJSON Scheme where
 instance ToJSON Scheme where
     toJSON = toJSON . toMisoString
 
-isDark :: Iso' Bool Scheme
-isDark = iso (bool Light Dark) (== Dark)
+instance FromJSVal Scheme where
+    fromJSVal = fmap (eitherToMaybe . fromMisoStringEither =<<) . fromJSVal
 
-instance Token Scheme where
-    tokenName Light = "light"
-    tokenName Dark = "dark"
-    tokenAttr = textProp "data-theme" . tokenName
-    byToken = ("data-theme" @=) . tokenName
+instance ToJSVal Scheme where
+    toJSVal = toJSVal . toMisoString
+
+isDark :: Iso' Scheme Bool
+isDark = iso (== Dark) (bool Light Dark)
 
 data LightDark c = LightDark {light :: c, dark :: c}
 

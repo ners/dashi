@@ -7,6 +7,7 @@
 module Main where
 
 import Control.Monad.Extra (unlessM)
+import Dashi.ColourScheme qualified as ColourScheme
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
@@ -152,8 +153,7 @@ appUpdate (SetColourScheme scheme) = do
     #userPrefs . #colourScheme .= scheme
     io_ do
         UserPrefs.modify $ #colourScheme .~ scheme
-        Property name value <- pure $ tokenAttr scheme
-        [js| document.documentElement.setAttribute(${name}, ${value}) |]
+        ColourScheme.set scheme
 appUpdate (SetCurrentSection sectionId) = do
     io_
         . unlessM ((Just sectionId ==) <$> getCurrentSection)

@@ -20,7 +20,7 @@ initial :: IO UserPrefs
 initial = do
     colourScheme <-
         [js| return window.matchMedia("(prefers-color-scheme: dark)").matches |]
-            <&> (^. Colour.Scheme.isDark)
+            <&> (^. from Colour.Scheme.isDark)
     language <- [js| return navigator.language || navigator.userLanguage || "en" |]
     pure UserPrefs{..}
 
@@ -33,7 +33,6 @@ get = eitherM (const initial) pure $ try @SomeException do
 
 set :: UserPrefs -> IO ()
 set UserPrefs{..} = do
-    consoleLog "UserPrefs.set"
     setLocalStorage "colour-scheme" $ toMisoString colourScheme
     setLocalStorage "language" $ toMisoString language
 

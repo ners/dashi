@@ -75,6 +75,7 @@ library
   hs-source-dirs: lib
   exposed-modules:
     Dashi
+    Dashi.ColourScheme
     Dashi.Components.ActionBar
     Dashi.Components.Avatar
     Dashi.Components.Breadcrumbs
