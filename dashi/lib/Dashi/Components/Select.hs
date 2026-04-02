@@ -5,7 +5,7 @@
 
 module Dashi.Components.Select where
 
-import Clay hiding (label, name, selected, value)
+import Clay hiding (label, name, none, selected, value)
 import Dashi.Prelude hiding ((&))
 import Dashi.Style.Pseudo (pressable)
 import Miso.Html.Element (option_, select_)
@@ -32,15 +32,15 @@ instance Widget (Option model action) model action where
 instance (Eq o) => Widget (Select o model action) model action where
     widget' attrs Select{..} =
         select_ (name_ name : attrs)
-            $ option_ [value_ "", disabled_, selected_ True] []
-            : [ widget
+            $ [option_ [value_ "", disabled_, selected_ True] [] | none selected options]
+            <> [ widget
                     Option
                         { value = value o
                         , label = label o
                         , selected = selected o
                         }
-              | o <- options
-              ]
+               | o <- options
+               ]
     style =
         Clay.select ? do
             pressable
