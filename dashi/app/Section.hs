@@ -29,10 +29,11 @@ import Section.Spinner qualified as Spinner
 import Section.Switch qualified as Switch
 import Section.Tabs qualified as Tabs
 import Section.TextField qualified as TextField
+import Section.Unknown qualified as Unknown
 import SectionId
 
 data Model = Model
-    { current :: SectionId
+    { current :: Maybe SectionId
     , form :: Form.Model
     }
     deriving stock (Generic, Eq, Show)
@@ -40,7 +41,7 @@ data Model = Model
 initialModel :: Model
 initialModel =
     Model
-        { current = Overview
+        { current = Nothing
         , form = Form.initialModel
         }
 
@@ -48,7 +49,7 @@ data Action = NoOp
 
 view :: Model -> View Model Action
 view Model{..} =
-    div_ [key_ currentStr, id_ currentStr] . pure $ case current of
+    div_ [key_ currentKey, id_ currentKey] . pure $ flip (maybe Unknown.unknown) current \case
         Overview -> mount_ Overview.overview
         Foundations Accessibility -> mount_ Accessibility.accessibility
         Foundations Colours -> mount_ Colours.colours
@@ -73,9 +74,9 @@ view Model{..} =
         Components Tabs -> mount_ Tabs.tabs
         Components TextField -> mount_ TextField.textField
   where
-    currentStr :: MisoString
-    currentStr =
-        toMisoString . MisoString.replace " " "-" . MisoString.toLower . ishow $ current
+    currentKey = maybe "unknown" sectionKey current
+    sectionKey :: SectionId -> MisoString
+    sectionKey = toMisoString . MisoString.replace " " "-" . MisoString.toLower . ishow
 
 section :: Lens' parent Model -> Model -> Component parent Model Action
 section l model =

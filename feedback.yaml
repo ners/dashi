@@ -15,6 +15,13 @@ loops:
           rm -fr "$(basename $f)"
           ln -s "$f" .
         done
+        rm *.html
+        pushd ..
+        for f in ../dashi/static/*.html; do
+          rm -fr "$(basename $f)"
+          ln -s "$f" .
+        done
+        popd
 
         "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
         # hold @MagicRB accountable for this crime

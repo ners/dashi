@@ -45,7 +45,7 @@ main = do
     uri <- getURI
     let updateModel :: Action -> Effect parent Model Action
         updateModel = liftM2 (>>) traceAction appUpdate
-        model = emptyModel & either (const id) (#section . #current .~) (route uri)
+        model = emptyModel & #section . #current .~ eitherToMaybe (route uri)
         events = defaultEvents <> keyboardEvents
         initialComponent = component model updateModel appView
     startApp
@@ -152,7 +152,7 @@ appUpdate (SetCurrentSection sectionId) = do
         . pushURI
         . toURI
         $ sectionId
-    #section . #current .= sectionId
+    #section . #current ?= sectionId
 
 appView :: Model -> View Model Action
 appView model =
@@ -214,7 +214,10 @@ appView model =
             , aside = Nothing
             }
 
-routesToUl :: SectionId -> [(SectionId, [MisoString])] -> View Model Action
+routesToUl
+    :: Maybe SectionId
+    -> [(SectionId, [MisoString])]
+    -> View Model Action
 routesToUl current routes = ul_ [] $ groupToLi <$> groups
   where
     groups =
@@ -222,10 +225,11 @@ routesToUl current routes = ul_ [] $ groupToLi <$> groups
     textLabel :: MisoString -> View Model Action
     textLabel = text . capitalise . unpascal
     groupToLi
-        :: (Maybe MisoString, [(SectionId, [MisoString])]) -> View Model Action
+        :: (Maybe MisoString, [(SectionId, [MisoString])])
+        -> View Model Action
     groupToLi (Just _, [(r, [])]) =
         li_
-            [aria_ "current" "page" | r == current]
+            [aria_ "current" "page" | Just r == current]
             [ sectionLink SetCurrentSection r
             ]
     groupToLi (groupLabel, group) =

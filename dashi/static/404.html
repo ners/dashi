@@ -2,12 +2,22 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark">
     <script>
-      sessionStorage.redirect = location.href.split("/").slice(3).join("/");
-      location.replace("/");
+      const path = location.href.split("/").slice(3);
+      const newLocation = path.join("/");
+      const isStatic = path[0] === "static";
+      const hasExtensions = newLocation.indexOf('.') > -1;
+      if (isStatic || hasExtensions) {
+        document.addEventListener('DOMContentLoaded', function() {
+          document.getElementsByTagName('body')[0].innerHTML = '<pre>Error 404</pre>';
+        })
+      } else {
+        sessionStorage.redirect = newLocation;
+        location.replace("/");
+      }
     </script>
   </head>
   <body>
-    Redirecting...
   </body>
 </html>

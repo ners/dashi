@@ -154,6 +154,7 @@ executable dashi
     Section.Switch
     Section.Tabs
     Section.TextField
+    Section.Unknown
     SectionId
     UserPrefs
 

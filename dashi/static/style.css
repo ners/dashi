@@ -190,6 +190,10 @@ html, body {
   }
 }
 
+#unknown {
+  text-align: center;
+}
+
 section {
   display: flex;
   flex-direction: column;

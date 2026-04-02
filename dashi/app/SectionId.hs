@@ -65,11 +65,13 @@ instance Router SectionId where
         fmap (CaptureOrPathToken . MisoString.toLower . MisoString.strip)
             . breakAll (== ' ')
             . ishow
-    routeParser = Parser \_ tokens ->
-        maybeToList
-            $ List.firstJust
-                (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens)
-                [minBound .. maxBound]
+    routeParser = Parser \_ -> \case
+        [IndexToken] -> pure (Overview, [])
+        tokens ->
+            maybeToList
+                $ List.firstJust
+                    (\r -> (r,) <$> List.stripPrefix (fromRoute @SectionId r) tokens)
+                    [minBound .. maxBound]
 
 sectionTitle :: SectionId -> MisoString
 sectionTitle = capitalise . unpascal . last . MisoString.words . ishow
