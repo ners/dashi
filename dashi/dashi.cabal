@@ -17,13 +17,6 @@ source-repository head
   type: git
   location: https://github.com/ners/dashi
 
-flag interactive
-  default:
-    False
-
-  manual:
-    True
-
 common common
   default-language: GHC2021
   ghc-options:
@@ -125,10 +118,6 @@ library
 executable dashi
   import: common
   ghc-options: -O2
-
-  if flag(interactive)
-    cpp-options:
-      -DINTERACTIVE
 
   if (impl(ghcjs) || arch(javascript))
     ld-options: -sEXPORTED_RUNTIME_METHODS=HEAP8

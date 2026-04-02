@@ -36,15 +36,8 @@ import SectionId (SectionId, sectionLink)
 import UserPrefs (UserPrefs (..))
 import UserPrefs qualified
 
-#if defined(WASM) && !defined(INTERACTIVE)
+#ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
-#endif
-
-initialComponentStyles :: [CSS]
-#ifdef INTERACTIVE
-initialComponentStyles = [Href "/static/style.css" False, Href "/static/dashi.css" False]
-#else
-initialComponentStyles = []
 #endif
 
 main :: IO ()
@@ -60,7 +53,6 @@ main = do
         initialComponent
             { subs = [routerSub $ either (const NoOp) SetCurrentSection]
             , mount = Just Setup
-            , styles = initialComponentStyles
             }
 
 instance Eq (a -> b) where
