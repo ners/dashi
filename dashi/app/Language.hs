@@ -27,7 +27,7 @@ code French = "fr"
 code Italian = "it"
 
 fromCode :: MisoString -> Maybe Language
-fromCode s = List.find ((s ==) . code) [minBound .. maxBound]
+fromCode (MisoString.break (== '-') -> (s, _)) = List.find ((s ==) . code) [minBound .. maxBound]
 
 instance FromMisoString Language where
     fromMisoStringEither s =
