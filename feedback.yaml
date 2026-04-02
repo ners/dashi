@@ -11,17 +11,22 @@ loops:
         ln -s "$(wasm32-wasi-cabal list-bin exe:dashi)" "$workdir/static/app.wasm"
 
         pushd "$workdir"/static
-        rm *.css *.ftl *.js
-        ln -s ../../dashi/static/*.css .
-        ln -s ../../dashi/static/*.ftl .
-        ln -s ../../dashi/static/*.js .
+        for f in ../../dashi/static/*; do
+          rm -fr "$(basename $f)"
+          ln -s "$f" .
+        done
 
         "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input app.wasm --output ghc_wasm_jsffi.js
         # hold @MagicRB accountable for this crime
         sed -i 's/var runBatch = /var initialSyncDepth = 0; &/' ghc_wasm_jsffi.js
         popd
     script: |
+      set -ex
+      workdir=.feedback
       cabal build dashi-style
-      eval "$(cabal list-bin exe:dashi-style)" > .feedback/static/dashi.css
+      until [ -e $workdir/static ]; do
+        sleep 1
+      done
+      eval "$(cabal list-bin exe:dashi-style)" > $workdir/static/dashi.css
       wasm32-wasi-cabal build lib:dashi exe:dashi
       http-server .feedback --brotli --gzip
