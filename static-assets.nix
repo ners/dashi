@@ -6,7 +6,8 @@
 , imagemagick
 , librsvg
 , dashi
-, clean-css-cli
+, csso-cli
+, brotli
 , gzip
 , withCss ? true
 }:
@@ -62,9 +63,8 @@ let
   dashi-css = runCommand "dashi.css"
     {
       nativeBuildInputs = [
-        # TODO: switch to csso-cli when merged
-        # https://github.com/NixOS/nixpkgs/pull/480441
-        clean-css-cli
+        brotli
+        csso-cli
         dashi
         gzip
       ];
@@ -73,14 +73,26 @@ let
       function compare() {
         echo "$1: $(numfmt --to=si --suffix=B $2) -> $(numfmt --to=si --suffix=B $3) ($(( $3 * 100 / $2 - 100 ))%)"
       }
-      dashi-style > "$out"
-      size1="$(cat "$out" | wc -l)"
-      gzip1="$(gzip -c "$out" | wc -c)"
-      cleancss --output "$out"{,}
-      size2="$(cat "$out" | wc -c)"
-      gzip2="$(gzip -c "$out" | wc -c)"
-      compare "$name" $size1 $size2
-      compare "$name.gz" $gzip1 $gzip2
+      function compress() {
+          f1="$1"
+          shift
+          f2="$1"
+          shift
+          size1="$(cat $f1 | wc -c)"
+          gzip1="$(gzip -c $f1 | wc -c)"
+          brotli1="$(brotli -c $f1 | wc -c)" || true
+          eval "$*"
+          size2="$(cat $f2 | wc -c)"
+          gzip2="$(gzip -c $f2 | wc -c)"
+          brotli2="$(brotli -c $f2 | wc -c)" || true
+          compare $f2 $size1 $size2
+          compare $f2.gz $gzip1 $gzip2
+          compare $f2.br $brotli1 $brotli2
+      }
+      mkdir "$out"
+      cd "$out"
+      dashi-style > dashi.css
+      compress dashi{,.min}.css "csso --input dashi.css --output dashi.min.css"
     '';
 in
 runCommand "dashi-static-assets" { } ''
@@ -92,7 +104,7 @@ runCommand "dashi-static-assets" { } ''
   cp "${inputs.mdi-webfont}"/*.woff2 .
   cp -r "${browser_wasi_shim}" browser_wasi_shim
   ${lib.optionalString withCss ''
-    cp "${dashi-css}" dashi.css
+    cp "${dashi-css}"/* .
   ''}
   cd ..
   cp "${favicon}" favicon.ico
