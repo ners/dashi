@@ -48,7 +48,9 @@ viewMessage (appearance, Just -> secondary) =
 
 viewWithLegend
     :: (Widget w model action)
-    => [Attribute action] -> FormField w model action -> View model action
+    => [Attribute action]
+    -> FormField w model action
+    -> View model action
 viewWithLegend attrs FormField{..} =
     fieldset_ [class_ "form-field"]
         $ [legend_ [] legend | not . null $ legend]
@@ -57,7 +59,9 @@ viewWithLegend attrs FormField{..} =
 
 viewWithLabel
     :: (Widget w model action)
-    => [Attribute action] -> FormField w model action -> View model action
+    => [Attribute action]
+    -> FormField w model action
+    -> View model action
 viewWithLabel attrs FormField{..} =
     fieldset_ [class_ "form-field"]
         $ label_

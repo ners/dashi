@@ -212,6 +212,6 @@ form, .section.message {
   max-width: 50em;
 }
 
-section h3 {
+section > h3 {
   margin-top: var(--dashi-space-s);
 }

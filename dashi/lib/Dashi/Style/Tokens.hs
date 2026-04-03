@@ -76,15 +76,15 @@ instance ValueToken Radius where
     type ValueType Radius = Size LengthUnit
     tokenValue = em . (0.1 *) . (2 ^) . fromEnum . radiusSize
 
-newtype FontSize = FontSize {fontSize :: SizeToken}
+newtype FontSize = FontSize SizeToken
     deriving newtype (Eq, Ord, Bounded, Enum)
 
 instance Token FontSize where
-    tokenName = fromString . ("font-size-" <>) . tokenName . fontSize
+    tokenName (FontSize fontSize) = fromString $ "font-size-" <> tokenName fontSize
 
 instance ValueToken FontSize where
     type ValueType FontSize = Size Percentage
-    tokenValue FontSize{..} = pct $ case fontSize of
+    tokenValue (FontSize fontSize) = pct $ case fontSize of
         XSmall -> 60
         Small -> 85
         Medium -> 100

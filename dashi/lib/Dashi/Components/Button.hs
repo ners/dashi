@@ -86,12 +86,12 @@ instance ValueToken Background where
     tokenValue (Background Primary DefaultState) = flip UchuAlpha 1 <$> sameLightDark Blue4
     tokenValue (Background Primary HoveredState) = flip UchuAlpha 1 <$> sameLightDark Blue5
     tokenValue (Background Primary ActiveState) = flip UchuAlpha 1 <$> sameLightDark Blue6
-    tokenValue (Background Success DefaultState) = flip UchuAlpha 1 <$> sameLightDark Green4
-    tokenValue (Background Success HoveredState) = flip UchuAlpha 1 <$> sameLightDark Green5
-    tokenValue (Background Success ActiveState) = flip UchuAlpha 1 <$> sameLightDark Green6
-    tokenValue (Background Warning DefaultState) = flip UchuAlpha 1 <$> sameLightDark Orange4
-    tokenValue (Background Warning HoveredState) = flip UchuAlpha 1 <$> sameLightDark Orange5
-    tokenValue (Background Warning ActiveState) = flip UchuAlpha 1 <$> sameLightDark Orange6
+    tokenValue (Background Success DefaultState) = flip UchuAlpha 1 <$> sameLightDark Green5
+    tokenValue (Background Success HoveredState) = flip UchuAlpha 1 <$> sameLightDark Green6
+    tokenValue (Background Success ActiveState) = flip UchuAlpha 1 <$> sameLightDark Green7
+    tokenValue (Background Warning DefaultState) = flip UchuAlpha 1 <$> sameLightDark Orange5
+    tokenValue (Background Warning HoveredState) = flip UchuAlpha 1 <$> sameLightDark Orange6
+    tokenValue (Background Warning ActiveState) = flip UchuAlpha 1 <$> sameLightDark Orange7
     tokenValue (Background Danger DefaultState) = flip UchuAlpha 1 <$> sameLightDark Red4
     tokenValue (Background Danger HoveredState) = flip UchuAlpha 1 <$> sameLightDark Red5
     tokenValue (Background Danger ActiveState) = flip UchuAlpha 1 <$> sameLightDark Red6
@@ -169,7 +169,8 @@ instance Widget (Button model action) model action where
                 . fromList
                 $ [ bsInset
                         . bsColor (colorToken BorderColour)
-                        $ shadowWithBlur nil nil (var "border-width" [])
+                        . shadowWithBlur nil nil
+                        $ var "border-width" []
                   ]
             color' $ TextColour Subtle
             borderRadiusAll' Small

@@ -2,11 +2,11 @@
 
 module Dashi.Components.Heading where
 
-import Clay hiding (element, size)
+import Clay hiding (FontSize, element, fontSize, size)
+import Clay qualified
 import Dashi.Components.Icon ()
 import Dashi.Prelude hiding (element)
-import Dashi.Style.Tokens
-import Dashi.Style.Util
+import Dashi.Style.Tokens hiding (FontSize)
 import Miso.Html.Element (h1_, h2_, h3_, h4_, h5_)
 
 selector :: SizeToken -> Selector
@@ -27,6 +27,21 @@ element Medium = h3_
 element Large = h2_
 element XLarge = h1_
 
+newtype FontSize = FontSize SizeToken
+    deriving newtype (Eq, Ord, Bounded, Enum)
+
+instance Token FontSize where
+    tokenName (FontSize fontSize) = fromString $ "heading-" <> tokenName fontSize <> "-font-size"
+
+instance ValueToken FontSize where
+    type ValueType FontSize = Size Percentage
+    tokenValue (FontSize fontSize) = pct $ case fontSize of
+        XSmall -> 85
+        Small -> 100
+        Medium -> 125
+        Large -> 150
+        XLarge -> 200
+
 data Heading = Heading SizeToken MisoString
 
 instance Widget Heading model action where
@@ -34,4 +49,4 @@ instance Widget Heading model action where
     style = do
         sconcat (selector <$> allTokens) ? fontWeight (weight 600)
         for_ @[] allTokens \size ->
-            selector size ? fontSize' size
+            selector size ? Clay.fontSize (tokenValue $ FontSize size)

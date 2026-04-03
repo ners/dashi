@@ -12,8 +12,8 @@ import Dashi.Components.Switch
 import Dashi.Components.Util (ariaBusy_)
 import Dashi.Diagram (Point (..), bottom, top)
 import Dashi.Prelude hiding (update, view)
-import Dashi.Style.Colour
 import Dashi.Style.Tokens
+import Dashi.Style.Uchu
 import Data.Vector.Strict qualified as Vector
 import Miso.Html.Element (div_, p_, section_)
 import Miso.Html.Property (class_)
@@ -173,8 +173,8 @@ view Model{..} =
                 , domainTransform = (top .~ 120) . (bottom .~ 0)
                 , series =
                     [ Series
-                        { strokeColour = Just $ ColorOKLCHA 0.7 0.16 250 0.8
-                        , fillColour = Just $ ColorOKLCHA 0.7 0.16 250 0.3
+                        { strokeColour = Just . uchuAlpha $ UchuAlpha Blue 0.8
+                        , fillColour = Just . uchuAlpha $ UchuAlpha Blue 0.3
                         , values = fps
                         , plotType = LinePlot
                         }
@@ -220,7 +220,7 @@ view Model{..} =
                     [ -- Nixpkgs stable 25.11
                       Series
                         { strokeColour = Nothing
-                        , fillColour = Just $ ColorOKLCHA 0.55 0.12 264 0.75
+                        , fillColour = Just . uchuAlpha $ UchuAlpha Blue 1
                         , values =
                             Vector.fromList
                                 $ uncurry Point
@@ -230,7 +230,7 @@ view Model{..} =
                     , -- AUR
                       Series
                         { strokeColour = Nothing
-                        , fillColour = Just $ ColorOKLCHA 0.3211 0 0 0.75
+                        , fillColour = Just . uchuAlpha $ UchuAlpha Orange 1
                         , values =
                             Vector.fromList
                                 $ uncurry Point
@@ -240,7 +240,7 @@ view Model{..} =
                     , -- Ubuntu 26.04
                       Series
                         { strokeColour = Nothing
-                        , fillColour = Just $ ColorOKLCHA 0.6405 0.1941 37.76 0.75
+                        , fillColour = Just . uchuAlpha $ UchuAlpha Green 1
                         , values =
                             Vector.fromList
                                 $ uncurry Point

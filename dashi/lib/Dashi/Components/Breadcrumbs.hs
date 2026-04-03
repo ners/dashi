@@ -25,7 +25,7 @@ instance Widget (Breadcrumbs model action) model action where
             flexDirection row
             ".separator" ? do
                 color' (TextColour Subtle)
-                paddingYX nil (token $ Space XSmall)
+                paddingYX nil . token $ Space XSmall
                 iconStyle
                 fontSize' Medium
                 before & content (iconContent MdiChevronRight)
