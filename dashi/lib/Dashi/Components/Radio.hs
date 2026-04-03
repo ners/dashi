@@ -19,20 +19,25 @@ import Dashi.Components.Util (ariaRole_)
 import Dashi.Prelude hiding ((#), (&))
 import Dashi.Style.Util
 import Miso.Html.Element (fieldset_, input_, label_, span_)
-import Miso.Html.Property (name_, selected_, type_)
 import Web.Font.MDI (MDI (MdiRadioboxBlank, MdiRadioboxMarked))
+import Miso.Html.Event (onChange)
 
 data Radio model action = Radio
     { name :: MisoString
     , label :: [View model action]
     , selected :: Bool
+    , onSelect :: action
     }
 
 instance Widget (Radio model action) model action where
     widget' attrs Radio{..} =
         label_
             []
-            [ input_ $ type_ "radio" : name_ name : selected_ selected : attrs
+            [ input_ $ type_ "radio"
+                : name_ name
+                : checked_ selected
+                : onChange (const onSelect)
+                : attrs
             , span_ [] label
             ]
     style =
@@ -46,7 +51,8 @@ data RadioGroup o model action = RadioGroup
     { name :: MisoString
     , options :: [o]
     , label :: o -> [View model action]
-    , selected :: o -> Bool
+    , selected :: Maybe o
+    , onSelect :: o -> action
     }
 
 instance (Eq a) => Widget (RadioGroup a model action) model action where
@@ -59,7 +65,8 @@ instance (Eq a) => Widget (RadioGroup a model action) model action where
                     Radio
                         { name
                         , label = label o
-                        , selected = selected o
+                        , selected = selected == Just o
+                        , onSelect = onSelect o
                         }
 
     style =

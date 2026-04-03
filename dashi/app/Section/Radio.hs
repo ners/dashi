@@ -40,6 +40,7 @@ view Model =
                     { name = "radio"
                     , label = [text "Default radio"]
                     , selected = False
+                    , onSelect = NoOp
                     }
             ]
         , div_
@@ -50,6 +51,7 @@ view Model =
                     { name = "radio"
                     , label = [text "Disabled radio"]
                     , selected = False
+                    , onSelect = NoOp
                     }
             ]
         ]
