@@ -3,7 +3,12 @@
 module Dashi.Components.Breadcrumbs where
 
 import Clay hiding (Color, action, href, label, span_)
-import Dashi.Components.Icon (MDI (MdiChevronRight), iconContent, iconStyle)
+import Dashi.Components.Icon
+    ( Phosphor (CaretRight)
+    , Weight (Bold)
+    , iconContent
+    , iconFontFamilyOverride
+    )
 import Dashi.Prelude hiding (has, (#), (&), (|>))
 import Dashi.Style.Text (TextColour (TextColour))
 import Dashi.Style.Tokens
@@ -26,10 +31,10 @@ instance Widget (Breadcrumbs model action) model action where
             ".separator" ? do
                 color' (TextColour Subtle)
                 paddingYX nil . token $ Space XSmall
-                iconStyle
-                fontSize' Medium
-                before & content (iconContent MdiChevronRight)
+                iconFontFamilyOverride Bold
+                fontSize' Small
+                before & content (iconContent CaretRight)
                 alignSelf center
-            has ".mdi" & ".separator" ? do
+            has ".icon" & ".separator" ? do
                 position relative
-                top $ em 0.1
+                top . em $ -0.05

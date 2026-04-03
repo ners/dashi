@@ -112,8 +112,8 @@ library
     color-uchu,
     generic-lens,
     lens,
+    phosphor-icons,
     text,
-    web-font-mdi,
 
 executable dashi
   import: common
@@ -163,7 +163,6 @@ executable dashi
     dashi,
     fluent-bundle,
     fluent-syntax,
-    generic-lens,
 
 executable dashi-style
   default-language: Haskell2010

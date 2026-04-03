@@ -5,7 +5,8 @@ module Section.Button where
 import Dashi.Components.Button
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
-import Dashi.Components.Icon (MDI (..))
+import Dashi.Components.Icon (Icon (..), Weight (..))
+import Dashi.Components.Icon qualified as Icon
 import Dashi.Components.Util
 import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
@@ -58,13 +59,13 @@ view Model =
                        ]
                 | appearance <- [minBound .. maxBound]
                 , let appearanceStr = capitalise . tokenName $ appearance
-                      iconFor Default = MdiStar
-                      iconFor Primary = MdiSendVariant
-                      iconFor Subtle = MdiArrowLeft
-                      iconFor Success = MdiCheck
-                      iconFor Warning = MdiSecurity
-                      iconFor Danger = MdiTrashCan
-                      iconFor Discovery = MdiCreation
+                      iconFor Default = Icon Fill Icon.Star
+                      iconFor Primary = Icon Fill Icon.PaperPlaneTilt
+                      iconFor Subtle = Icon Bold Icon.CaretLeft
+                      iconFor Success = Icon Fill Icon.CheckFat
+                      iconFor Warning = Icon Fill Icon.Warning
+                      iconFor Danger = Icon Fill Icon.Trash
+                      iconFor Discovery = Icon Fill Icon.Sparkle
                 ]
           ]
 

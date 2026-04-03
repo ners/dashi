@@ -5,7 +5,9 @@ module Section.Breadcrumbs where
 import Dashi.Components.Breadcrumbs
 import Dashi.Components.Heading
 import Dashi.Components.Icon
-    ( MDI (MdiNumeric1Box, MdiNumeric2Circle, MdiNumeric3CircleOutline)
+    ( Icon (..)
+    , Phosphor (NumberCircleTwo, NumberSquareOne, NumberThree)
+    , Weight (Regular)
     , inlineIcon
     )
 import Dashi.Components.Link
@@ -54,12 +56,18 @@ view Model =
             $ Breadcrumbs
                 [ widget' @(Link Model Action)
                     [appearance_ Subtle]
-                    Link{href = "#", label = [inlineIcon MdiNumeric1Box, text "One"]}
+                    Link
+                        { href = "#"
+                        , label = [inlineIcon $ Icon Regular NumberSquareOne, text "One"]
+                        }
                 , widget' @(Link Model Action)
                     [appearance_ Subtle]
-                    Link{href = "#", label = [inlineIcon MdiNumeric2Circle, text "Two"]}
+                    Link
+                        { href = "#"
+                        , label = [inlineIcon $ Icon Regular NumberCircleTwo, text "Two"]
+                        }
                 , widget' @(Link Model Action)
                     [appearance_ Subtle]
-                    Link{href = "#", label = [inlineIcon MdiNumeric3CircleOutline, text "Three"]}
+                    Link{href = "#", label = [inlineIcon $ Icon Regular NumberThree, text "Three"]}
                 ]
         ]

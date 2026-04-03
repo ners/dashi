@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedLists #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 module Dashi.Components.Avatar where
 
@@ -14,7 +15,7 @@ import Clay hiding
     , url
     )
 import Clay qualified
-import Dashi.Components.Icon ()
+import Dashi.Components.Icon (Icon)
 import Dashi.Prelude hiding (Image, has, rem, span, (#), (&))
 import Dashi.Style.Background (BackgroundColour (BackgroundColour))
 import Dashi.Style.Text (TextColour (TextColour))
@@ -22,7 +23,6 @@ import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Miso.Html.Element (div_, img_, span_)
 import Miso.Html.Property (class_, src_)
-import Web.Font.MDI (MDI)
 
 data Shape
     = Circle
@@ -37,7 +37,7 @@ instance Token Shape where
 
 data Content
     = Image MisoString
-    | Icon MDI
+    | Icon Icon
     | Initials MisoString
 
 data Avatar = Avatar
@@ -52,7 +52,7 @@ instance Widget Avatar model action where
             (class_ "avatar" : tokenAttr shape : tokenAttr size : attrs)
             [ case content of
                 Image url -> image url
-                Icon mdi -> widget mdi
+                Icon icon -> widget icon
                 Initials str -> text str
             ]
       where

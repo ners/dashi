@@ -10,6 +10,7 @@ import Dashi.Components.Button (Button)
 import Dashi.Components.Checkbox (Checkbox, CheckboxGroup)
 import Dashi.Components.Form (FormField)
 import Dashi.Components.Heading (Heading)
+import Dashi.Components.Icon (Icon)
 import Dashi.Components.Link (Link)
 import Dashi.Components.Message (Message)
 import Dashi.Components.Pagination (Pagination)
@@ -24,7 +25,6 @@ import Dashi.Components.TextField (TextField)
 import Dashi.Components.Widget qualified as Widget
 import Dashi.Layout.Page (Page)
 import Dashi.Style.Root qualified as Root
-import Web.Font.MDI (MDI)
 import Prelude
 
 style :: forall value model action. (value ~ (), model ~ (), action ~ ()) => Css
@@ -51,7 +51,7 @@ style = do
     Widget.style @Avatar @model @action
     Widget.style @AvatarItem @model @action
     Widget.style @Heading
-    Widget.style @MDI
+    Widget.style @Icon
     Widget.style @Message
     Widget.style @(Plot Double) @model @action
     Widget.style @ProgressBar @model @action

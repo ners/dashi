@@ -18,22 +18,9 @@
       url = "github:haskell-miso/miso";
       flake = false;
     };
-    miso-diagrams = {
-      url = "github:haskell-miso/miso-diagrams";
+    phosphor-icons-web = {
+      url = "github:phosphor-icons/web/v2.1.2";
       flake = false;
-    };
-    mdi = {
-      url = "github:Templarian/MaterialDesign";
-      flake = false;
-    };
-    mdi-webfont = {
-      url = "github:Templarian/MaterialDesign-Webfont?dir=fonts";
-      flake = false;
-    };
-    web-font-mdi = {
-      url = "github:ners/web-font-mdi";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.mdi.follows = "mdi";
     };
   };
 
@@ -61,7 +48,6 @@
       pname = "dashi";
       haskell-overlay = pkgs: with pkgs.haskell.lib.compose; lib.composeManyExtensions [
         inputs.fluent-hs.overlays.haskell
-        (inputs.web-font-mdi.overlays.haskell pkgs)
         (hfinal: hprev: lib.mapAttrs (pname: dir: hfinal.callCabal2nix pname (sourceFilter dir) { }) projects)
         (hfinal: hprev: {
           ${pname} = hprev.${pname} // {
@@ -78,10 +64,6 @@
             { };
           jsaddle-wasm = addBuildDepend hfinal.parser-regex hprev.jsaddle-wasm;
           miso = enableCabalFlag "template-haskell" (hfinal.callCabal2nix "miso" inputs.miso { });
-          miso-diagrams = hfinal.callCabal2nix "miso-diagrams" inputs.miso-diagrams { };
-          plots = doJailbreak (unmarkBroken hprev.plots);
-          pointfree-fancy = doJailbreak (unmarkBroken hprev.pointfree-fancy);
-          polyvariadic = doJailbreak (unmarkBroken hprev.polyvariadic);
           sandwich = dontCheck hprev.sandwich;
         })
         (hfinal: hprev: lib.optionalAttrs (hprev.ghc.targetPrefix == "") {
@@ -241,7 +223,6 @@
         pkgs = pkgs'.extend overlay;
         jsPkgs = extendHaskellPackages pkgs pkgs.pkgsCross.ghcjs;
         wasmPkgs = extendHaskellPackages pkgs inputs.nix-wasm.legacyPackages.${system};
-        packages = ps: map (pname: ps.${pname}) pnames;
         ghc = "ghc912";
       in
       {
@@ -261,13 +242,13 @@
         devShells.${system}.default = pkgs.mkShell {
           inputsFrom = [
             (wasmPkgs.haskellPackages.shellFor {
-              inherit packages;
+              packages = ps: [ ps.${pname} ];
               nativeBuildInputs = with wasmPkgs; [
                 cabal-install
               ];
             })
             (pkgs.haskell.packages.${ghc}.shellFor {
-              inherit packages;
+              packages = ps: map (pname: ps.${pname}) pnames;
               nativeBuildInputs = with pkgs; [
                 cabal-install
                 ghcid

@@ -157,36 +157,44 @@ html, body {
 }
 
 #components-icon .grid {
-  grid-template-columns: repeat(auto-fill, minmax(1.5em, 1fr));
-  grid-template-rows: masonry;
+  font-size: 150%;
+  grid-template-columns: repeat(auto-fill, minmax(1em, 1fr));
 }
 
-#components-plot .controls {
+.controls {
   display: flex;
   margin-top: var(--dashi-space-s);
 
-  @media (max-width: calc(32rem - 1px)) {
+  @media (width < 40em) {
     flex-direction: column;
     gap: var(--dashi-space-s);
   }
-  @media (min-width: 32rem) {
+  @media (width >= 40em) {
     flex-direction: row;
     gap: var(--dashi-space-m);
   }
+}
 
+#components-plot .controls {
   div {
     display: flex;
-    flex-direction: row;
     align-items: center;
     flex: 1;
     gap: var(--dashi-space-s);
   }
-  button {
-    height: 2.1em;
-    width: 2.1em;
-  }
   input[type=range] {
     flex: 1;
+  }
+}
+
+#components-icon .controls {
+  margin-bottom: var(--dashi-space-s);
+}
+
+#components-icon .controls [aria-role=radiogroup] {
+  @media (width >= 40em) {
+    flex-direction: row;
+    column-gap: var(--dashi-space-m);
   }
 }
 

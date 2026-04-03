@@ -5,15 +5,11 @@ module Dashi.Components.Message where
 
 import Clay hiding (Background, i, icon, size, span_, title)
 import Dashi.Components.Icon
-    ( MDI
-        ( MdiAlert
-        , MdiAlertRhombus
-        , MdiCheckCircle
-        , MdiHelpCircle
-        , MdiInformation
-        )
+    ( Icon (..)
+    , Phosphor (CheckCircle, Info, Question, WarningDiamond)
+    , Weight (..)
     )
-import Dashi.Components.Icon qualified as Components
+import Dashi.Components.Icon qualified as Icon
 import Dashi.Components.Util (selectable_)
 import Dashi.Prelude hiding (has, none, (#), (&))
 import Dashi.Style.Background (BackgroundColour (BackgroundColour))
@@ -35,14 +31,14 @@ instance Token MessageSize where
     tokenName FormMessage = "form"
     tokenName SectionMessage = "section"
 
-data Icon
+data MessageIcon
     = DefaultIcon
-    | CustomIcon Components.Icon
+    | CustomIcon Icon
 
 data Message = Message
     { size :: MessageSize
     , appearance :: Appearance
-    , icon :: Maybe Icon
+    , icon :: Maybe MessageIcon
     , title :: Maybe MisoString
     , secondary :: Maybe MisoString
     }
@@ -58,15 +54,18 @@ sizeStyle InlineMessage = do
     ".secondary" ? color' (TextColour Subtle)
     fontWeight $ weight 500
     gap' XSmall
+    ".icon" ? do
+        position relative
+        top . em $ -0.025
 sizeStyle FormMessage = do
     display flex
     flexDirection row
     alignItems center
     gap' XSmall
-    ".mdi" ? do
+    ".icon" ? do
         fontSize' Large
         position relative
-        top . em $ -0.05
+        top . em $ -0.01
     fontSize' Small
 sizeStyle SectionMessage = do
     borderRadiusAll' Medium
@@ -80,9 +79,7 @@ sizeStyle SectionMessage = do
             [ ["icon", "title"]
             , ["icon", "secondary"]
             ]
-        ".mdi" ? do
-            "grid-area" -: "icon"
-            alignSelf baseline
+        ".icon" ? ("grid-area" -: "icon")
         ".title" ? ("grid-area" -: "title")
         ".secondary" ? ("grid-area" -: "secondary")
         rowGap' XSmall
@@ -91,21 +88,27 @@ sizeStyle SectionMessage = do
     ".title" ? do
         fontSize' Large
         fontWeight $ weight 700
+    ".icon" ? do
+        fontSize (pct 150)
+        alignSelf baseline
+    Clay.not (has ".title") & ".icon" ? do
+        position relative
+        top . em $ -0.05
 
-defaultIcon :: Appearance -> Maybe Components.Icon
+defaultIcon :: Appearance -> Maybe Icon
 defaultIcon Default = Nothing
-defaultIcon Primary = Just MdiInformation
+defaultIcon Primary = Just $ Icon Fill Info
 defaultIcon Subtle = Nothing
-defaultIcon Success = Just MdiCheckCircle
-defaultIcon Warning = Just MdiAlert
-defaultIcon Danger = Just MdiAlertRhombus
-defaultIcon Discovery = Just MdiHelpCircle
+defaultIcon Success = Just $ Icon Fill CheckCircle
+defaultIcon Warning = Just $ Icon Fill Icon.Warning
+defaultIcon Danger = Just $ Icon Fill WarningDiamond
+defaultIcon Discovery = Just $ Icon Fill Question
 
 appearanceStyle :: Appearance -> Css
 appearanceStyle appearance = do
     byToken FormMessage & color' (TextColour appearance)
     byToken SectionMessage & backgroundColor' (BackgroundColour appearance)
-    ".mdi" ? color' (TextColour appearance)
+    ".icon" ? color' (TextColour appearance)
 
 instance Widget Message model action where
     widget' attrs Message{..} =

@@ -27,7 +27,7 @@ import Miso.Html.Element
     , section_
     , ul_
     )
-import Miso.Html.Property (class_, href_)
+import Miso.Html.Property (class_, href_, target_)
 import Miso.String qualified as MisoString
 import Text.Printf (printf)
 
@@ -54,7 +54,7 @@ view Model =
             []
             [ text
                 "Dashi builds on top of the "
-            , a_ [href_ "https://uchu.style"] [text "the uchū colour palette"]
+            , a_ [href_ "https://uchu.style", target_ "blank"] [text "uchū colour palette"]
             , text " to create consistency in apps."
             ]
         , widget $ Heading Medium "Simple"

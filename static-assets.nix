@@ -94,6 +94,10 @@ let
       dashi-style > dashi.css
       compress dashi{,.min}.css "csso --input dashi.css --output dashi.min.css"
     '';
+  phosphor = runCommand "phosphor" { } ''
+    mkdir "$out"
+    cp "${inputs.phosphor-icons-web}"/src/*/*.{woff{,2},ttf} "$out"
+  '';
 in
 runCommand "dashi-static-assets" { } ''
   mkdir -p "$out"
@@ -101,7 +105,7 @@ runCommand "dashi-static-assets" { } ''
   cp -r "${./dashi/static}" ./static
   cd static
   chmod -R +w .
-  cp "${inputs.mdi-webfont}"/*.woff2 .
+  cp -r "${phosphor}" phosphor
   cp -r "${browser_wasi_shim}" browser_wasi_shim
   ${lib.optionalString withCss ''
     cp "${dashi-css}"/* .

@@ -5,7 +5,7 @@ module Section.Plot where
 import Control.Concurrent (threadDelay)
 import Dashi.Components.Button (Button (..), ButtonSize (..))
 import Dashi.Components.Heading
-import Dashi.Components.Icon (MDI (MdiPause, MdiPlay))
+import Dashi.Components.Icon (Icon (..), Phosphor (Pause, Play), Weight (Fill))
 import Dashi.Components.Plot
 import Dashi.Components.Range
 import Dashi.Components.Switch
@@ -126,7 +126,7 @@ view Model{..} =
             [class_ "controls"]
             [ widget @(Button Model Action)
                 Button
-                    { label = [widget $ if running then MdiPause else MdiPlay]
+                    { label = [widget . Icon Fill $ if running then Pause else Play]
                     , onClick = Just $ if running then Stop else Start
                     , size = IconButton
                     , appearance = Default

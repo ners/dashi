@@ -132,8 +132,8 @@ appearanceStyle appearance = do
 sizeStyle :: ButtonSize -> Css
 sizeStyle DefaultSize = pure ()
 sizeStyle IconButton = do
-    paddingYX' XSmall XSmall
-    Clay.label ? Clay.span # ".mdi" ? transform none
+    paddingAll' XSmall
+    Clay.label ? Clay.span # ".icon" ? transform none
 sizeStyle CompactButton = do
     paddingYX (em 0.125) (token $ Space Medium)
     Clay.span ? transform (translateY nil)
@@ -186,9 +186,9 @@ instance Widget (Button model action) model action where
                 gap' XSmall
                 lineHeight $ unitless 1.6
                 Clay.pointerEvents none
-                Clay.span # ":not(.mdi)" ? transform (translateY . em $ -0.1)
-                Clay.span # ".mdi" ? transform (translateY . em $ 0.05)
-            ".mdi" ? fontSize' Large
+                Clay.span # ":not(.icon)" ? transform (translateY . em $ -0.1)
+                Clay.span # ".icon" ? transform (translateY . em $ 0.05)
+            ".icon" ? fontSize' Large
             ".spinner" ? do
                 opacity 1
                 position absolute

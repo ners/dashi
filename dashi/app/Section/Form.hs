@@ -10,7 +10,11 @@ import Dashi.Components.Button qualified as Button
 import Dashi.Components.Checkbox
 import Dashi.Components.Form
 import Dashi.Components.Heading
-import Dashi.Components.Icon (MDI (MdiSecurity))
+import Dashi.Components.Icon
+    ( Icon (..)
+    , Phosphor (ShieldCheckered)
+    , Weight (Fill)
+    )
 import Dashi.Components.Message
 import Dashi.Components.TextField
 import Dashi.Components.TextField qualified as TextField
@@ -118,7 +122,7 @@ view Model{..} =
                             Message
                                 { size = FormMessage
                                 , appearance = Subtle
-                                , icon = Just . CustomIcon $ MdiSecurity
+                                , icon = Just . CustomIcon $ Icon Fill ShieldCheckered
                                 , title = Nothing
                                 , secondary = Just "Your inputs will not be stored"
                                 }

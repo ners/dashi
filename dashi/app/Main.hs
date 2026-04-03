@@ -11,11 +11,12 @@ import Dashi.ColourScheme qualified as ColourScheme
 import Dashi.Components.Button (Button (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Heading
-import Dashi.Components.Icon (MDI (..))
+import Dashi.Components.Icon (Icon (..))
+import Dashi.Components.Icon qualified as Icon
 import Dashi.Components.Select (Select (..))
 import Dashi.Components.Util
 import Dashi.Layout.Page (Page (..))
-import Dashi.Prelude hiding (init, (#))
+import Dashi.Prelude hiding (List, init, (#))
 import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Colour qualified as Colour.Scheme
 import Dashi.Style.Tokens hiding (Token)
@@ -166,7 +167,7 @@ appView model =
                         Button
                             { size = Button.IconButton
                             , appearance = Subtle
-                            , label = [widget $ if model.navOpen then MdiMenuClose else MdiMenuOpen]
+                            , label = [widget $ Icon Icon.Regular Icon.List]
                             , onClick = Just . SetNavOpen . not $ model.navOpen
                             }
                     , img_ [src_ "/static/icon.svg"]
@@ -190,9 +191,9 @@ appView model =
                             { size = Button.IconButton
                             , appearance = Subtle
                             , label =
-                                [ widget $ case model.userPrefs.colourScheme of
-                                    Colour.Scheme.Light -> MdiWhiteBalanceSunny
-                                    Colour.Scheme.Dark -> MdiWeatherNight
+                                [ widget . Icon Icon.Fill $ case model.userPrefs.colourScheme of
+                                    Colour.Scheme.Light -> Icon.Sun
+                                    Colour.Scheme.Dark -> Icon.Moon
                                 ]
                             , onClick = Just . SetColourScheme . cycleSucc $ model.userPrefs.colourScheme
                             }

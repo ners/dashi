@@ -16,7 +16,13 @@ import Clay hiding
     , type_
     )
 import Clay qualified
-import Dashi.Components.Icon (iconContent, iconStyle)
+import Dashi.Components.Icon
+    ( Phosphor (CheckSquare, Square)
+    , Weight (..)
+    , iconContent
+    , iconFontFamilyOverride
+    , iconStyle
+    )
 import Dashi.Components.Util (ariaRole_)
 import Dashi.Prelude hiding (has, (#), (&), (|>))
 import Dashi.Style.Border (BorderColour (..))
@@ -28,7 +34,6 @@ import GHC.IsList (fromList)
 import Miso.Html.Element (fieldset_, input_, label_, span_)
 import Miso.Html.Event qualified as Html
 import Miso.Html.Property (checked_, name_, type_)
-import Web.Font.MDI (MDI (MdiCheckboxBlankOutline, MdiCheckboxMarked))
 
 data Checkbox model action = Checkbox
     { name :: MisoString
@@ -52,9 +57,15 @@ instance Widget (Checkbox model action) model action where
         let checkboxOrRadio = input # isOneOf ["type" @= "checkbox", "type" @= "radio"]
         checkboxOrRadio ? do
             pressable
-            iconStyle
-            color' BorderColour
-            checked & color' BorderFocusedColour
+            before & do
+                iconStyle
+                iconFontFamilyOverride Bold
+                color' BorderColour
+                transition "color" (sec 0.075) easeInOut 0
+                fontSize . pct $ 150
+                checked & do
+                    iconFontFamilyOverride Fill
+                    color' BorderFocusedColour
         Clay.label # has (self |> checkboxOrRadio) ? do
             pressable
             display flex
@@ -64,8 +75,8 @@ instance Widget (Checkbox model action) model action where
             width maxContent
         input # ("type" @= "checkbox") ? do
             borderRadiusAll' XSmall
-            before & content (iconContent MdiCheckboxBlankOutline)
-            checked <> before & content (iconContent MdiCheckboxMarked)
+            before & content (iconContent Square)
+            checked <> before & content (iconContent CheckSquare)
 
 data CheckboxGroup o model action = CheckboxGroup
     { name :: MisoString

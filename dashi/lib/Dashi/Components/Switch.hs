@@ -73,6 +73,7 @@ instance Widget (Switch model action) model action where
             tokenDecl @Foreground
             tokenDecl @Background
         input # ariaRole "switch" ? do
+            fontSize' Large
             display flex
             flexDirection row
             alignItems center
@@ -86,7 +87,9 @@ instance Widget (Switch model action) model action where
             borderRadiusAll' XLarge
             transition "all" (sec 0.15) easeInOut 0
             before & do
-                important . content $ stringContent ""
+                important . content . stringContent $ ""
+                important $ "font-size" -: "inherit"
+                top $ unitless 0
                 backgroundColor' Foreground
                 display block
                 aspectRatio 1

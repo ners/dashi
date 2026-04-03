@@ -17,8 +17,8 @@ import Clay hiding
 import Clay qualified hiding (not)
 import Dashi.Components.Checkbox (CheckboxGroup)
 import Dashi.Components.Message
-    ( Icon (DefaultIcon)
-    , Message (..)
+    ( Message (..)
+    , MessageIcon (DefaultIcon)
     , MessageSize (FormMessage)
     )
 import Dashi.Components.Radio (RadioGroup)

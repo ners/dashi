@@ -7,9 +7,11 @@ import Clay qualified
 import Dashi.Components.Button (Button (..), ButtonSize (..))
 import Dashi.Components.Button qualified as Button
 import Dashi.Components.Icon
-    ( MDI (MdiChevronLeft, MdiChevronRight, MdiDotsHorizontal)
+    ( Icon (..)
+    , Phosphor (..)
+    , Weight (..)
     , iconContent
-    , iconStyle
+    , iconFontFamilyOverride
     )
 import Dashi.Components.Util (ariaCurrent_)
 import Dashi.Prelude hiding ((#), (&), (|>))
@@ -29,9 +31,9 @@ instance Widget (Pagination action) model action where
     widget' attrs Pagination{..} =
         div_ (class_ "pagination" : attrs)
             $ mconcat
-                [ pure . button (Just MdiChevronLeft) $ pred currentPage
+                [ pure . button (Just $ Icon Bold ArrowLeft) $ pred currentPage
                 , pageButtons
-                , pure . button (Just MdiChevronRight) $ succ currentPage
+                , pure . button (Just $ Icon Bold ArrowRight) $ succ currentPage
                 ]
       where
         pageButtons :: [View model action]
@@ -48,7 +50,7 @@ instance Widget (Pagination action) model action where
         ellipsis :: View model action
         ellipsis = span_ [class_ "ellipsis"] []
         page = button Nothing
-        button :: Maybe MDI -> Int -> View model action
+        button :: Maybe Icon -> Int -> View model action
         button icon page' =
             let
                 current, disabled :: Bool
@@ -78,9 +80,9 @@ instance Widget (Pagination action) model action where
                     Button.appearanceStyle Default
                     color' $ TextColour Primary
             ".ellipsis" ? do
-                iconStyle
-                before & content (iconContent MdiDotsHorizontal)
+                iconFontFamilyOverride Fill
+                before & content (iconContent DotsThreeOutline)
                 color' $ TextColour Subtle
-                lineHeight $ unitless 1.6
-                width $ em 1.67
-                opacity 0.5
+                lineHeight $ unitless 2
+                width $ em 2.3
+                opacity 0.7
