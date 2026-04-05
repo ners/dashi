@@ -19,10 +19,10 @@ let
     src = fetchFromGitHub {
       owner = "haskell-wasm";
       repo = "browser_wasi_shim";
-      rev = "0e10ea9465a098d1ee2cf3e09ed050102f0ead1a";
-      hash = "sha256-j/UhO3RvTF0NFE8gfbKopjBDdBPn1UdS01PQJixJMZc=";
+      rev = "2f86b49dce50916e2984029c535321e34b234229";
+      hash = "sha256-tfq0gNw1wFMNALVAXzUg6CMRbvxNjM95bwp4Ncv4+W8=";
     };
-    npmDepsHash = "sha256-eehX/bQoMo0rfCq6GF4ood0+xbRagMK4gWGXlZtpfJ4=";
+    npmDepsHash = "sha256-mCrB6pYHdmd2xOoM66Kc/QRb1BLcfmEERA/YnnUPcYU=";
     installPhase = ''
       mv dist "$out"
     '';
