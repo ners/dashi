@@ -53,9 +53,15 @@ view Model =
         , p_
             []
             [ text
-                "Dashi builds on top of the "
+                "Colours establish hierarchy, convey meaning, and shape the overall tone of an interface. They guide attention, differentiate elements, and help users understand states and feedback at a glance."
+            ]
+        , p_
+            []
+            [ text
+                "Dashi uses the "
             , a_ [href_ "https://uchu.style", target_ "blank"] [text "uchū colour palette"]
-            , text " to create consistency in apps."
+            , text
+                ", a soothing pastel palette designed to give interfaces a calm, approachable, and cohesive appearance."
             ]
         , widget $ Heading Medium "Simple"
         , ul_

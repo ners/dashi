@@ -118,6 +118,11 @@ html, body {
   list-style-type: none;
 }
 
+#foundations-colours .colour {
+  display: flex;
+  flex-direction: column;
+}
+
 #foundations-colours .palette {
   display: grid;
   gap: var(--dashi-space-xs);
@@ -127,6 +132,14 @@ html, body {
 
 #foundations-colours .palette .colour .shade {
   padding: var(--dashi-space-xs) var(--dashi-space-s);
+  &:first-child {
+    border-top-left-radius: 0.25em;
+    border-top-right-radius: 0.25em;
+  }
+  &:last-child {
+    border-bottom-left-radius: 0.25em;
+    border-bottom-right-radius: 0.25em;
+  }
 }
 
 #foundations-colours .palette .colour .shade {
