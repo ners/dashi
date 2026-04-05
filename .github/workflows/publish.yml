@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ners/simply-nix@main
-      - uses: ryanccn/attic-action@v0
+      - uses: ryanccn/attic-action@v0.4
         with:
           endpoint: https://cache.ners.ch
           cache: haskell
