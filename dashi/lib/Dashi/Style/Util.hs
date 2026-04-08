@@ -59,6 +59,9 @@ marginAll = ("margin" ~::)
 paddingYX :: Size a -> Size a -> Css
 paddingYX y x = "padding" ~:: intercalate @Value " " [value y, value x]
 
+marginYX :: Size a -> Size a -> Css
+marginYX y x = "margin" ~:: intercalate @Value " " [value y, value x]
+
 paddingAll :: Size a -> Css
 paddingAll = ("padding" ~::)
 
@@ -133,6 +136,9 @@ paddingYX' y x = paddingYX (token $ Space y) (token $ Space x)
 
 paddingAll' :: SizeToken -> Css
 paddingAll' = paddingAll . token . Space
+
+marginYX' :: SizeToken -> SizeToken -> Css
+marginYX' y x = marginYX (token $ Space y) (token $ Space x)
 
 marginAll' :: SizeToken -> Css
 marginAll' = marginAll . token . Space

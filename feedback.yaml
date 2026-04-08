@@ -2,6 +2,7 @@ loops:
   default:
     hooks:
       before-all: |
+        set -ex
         workdir=.feedback
         rm -fr $workdir
         nix build .#wasmPkgs.haskellPackages.dashi.staticAssetsNoCss

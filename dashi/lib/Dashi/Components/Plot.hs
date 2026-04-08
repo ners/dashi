@@ -4,9 +4,25 @@
 module Dashi.Components.Plot where
 
 import Clay
-    ( byClass
+    ( alignItems
+    , borderColor
+    , borderStyle
+    , borderWidth
+    , byClass
+    , center
+    , display
     , em
+    , flex
+    , flexDirection
+    , li
+    , listStyleType
+    , nil
+    , none
     , opacity
+    , relative
+    , row
+    , solid
+    , transparent
     , (#)
     , (-:)
     , (?)
@@ -18,12 +34,18 @@ import Dashi.Components.Util
 import Dashi.Diagram
 import Dashi.Prelude hiding (has, none, transform, (#), (&), (|>))
 import Dashi.Style.Colour (Alpha)
+import Dashi.Style.Tokens
 import Dashi.Style.Util
 import Data.Function ((&))
+import Data.Functor (($>))
 import Data.List qualified as List
 import Data.List.Extra qualified as List
 import Data.Vector.Strict qualified as Vector
 import Graphics.Color.Space.OKLAB.LCH
+import Miso.CSS (styleInline_)
+import Miso.Html (ul_)
+import Miso.Html.Element (div_, li_)
+import Miso.Html.Property (class_)
 import Miso.Html.Property qualified as Svg
 import Miso.String qualified as MisoString
 import Miso.Svg qualified as Svg
@@ -121,30 +143,57 @@ data Plot num = Plot
     -- ^ The series to plot
     , xAxis :: Axis num
     , yAxis :: Axis num
+    , showLegend :: Bool
     }
 
 instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action where
     widget' attrs Plot{..} =
-        Svg.svg_
-            ( Svg.width_ (toMisoString width)
-                : Svg.height_ (toMisoString height)
-                : Svg.viewBox_
-                    ( MisoString.unwords
-                        [ toMisoString viewBox.topLeft.x
-                        , toMisoString viewBox.topLeft.y
-                        , toMisoString width
-                        , toMisoString height
-                        ]
+        div_
+            [class_ "plot-wrapper"]
+            $ ( Svg.svg_
+                    ( Svg.width_ (toMisoString width)
+                        : Svg.height_ (toMisoString height)
+                        : Svg.viewBox_
+                            ( MisoString.unwords
+                                [ toMisoString viewBox.topLeft.x
+                                , toMisoString viewBox.topLeft.y
+                                , toMisoString width
+                                , toMisoString height
+                                ]
+                            )
+                        : Svg.className "plot"
+                        : attrs
                     )
-                : Svg.className "plot"
-                : attrs
-            )
-            . mconcat
-            $ [ gridElements
-              , axisElements
-              , plotElements
-              , [widget Spinner | hasAriaBusy attrs]
-              ]
+                    . mconcat
+                    $ [ gridElements
+                      , axisElements
+                      , plotElements
+                      , [widget Spinner | hasAriaBusy attrs]
+                      ]
+              )
+            : mconcat
+                [ [ ul_
+                        [class_ "legend"]
+                        [ li_
+                            []
+                            [ div_
+                                [ class_ "key"
+                                , styleInline_
+                                    . MisoString.intercalate ";"
+                                    . catMaybes
+                                    $ [ ("background-color:" <>) . toMisoString <$> fillColour
+                                      , ("border-color:" <>) . toMisoString <$> strokeColour
+                                      , fillColour $> "aspect-ratio:1"
+                                      ]
+                                ]
+                                []
+                            , text label
+                            ]
+                        | Series{..} <- series
+                        ]
+                  | showLegend
+                  ]
+                ]
       where
         width', height' :: num
         width' = fromIntegral width
@@ -381,7 +430,26 @@ instance (RealFrac num, ToMisoString num) => Widget (Plot num) model action wher
         minMax :: (Point num -> num) -> Rect num -> (num, num)
         minMax dim rect = (dim . topLeft $ rect, dim . bottomRight $ rect)
 
-    style =
+    style = do
+        ".plot-wrapper" ? do
+            ".legend" ? do
+                marginYX (token $ Space Medium) nil
+                display flex
+                flexDirection row
+                gap' Medium
+                listStyleType none
+                li ? do
+                    display flex
+                    flexDirection row
+                    gap' XSmall
+                    alignItems center
+                ".key" ? do
+                    Clay.width . token $ Space Medium
+                    borderColor transparent
+                    borderWidth $ em 0.15
+                    borderStyle solid
+                    Clay.position relative
+                    Clay.top . em $ -0.05
         ".plot" ? do
             Clay.position Clay.relative
             "text" ? do

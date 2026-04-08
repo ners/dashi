@@ -29,6 +29,7 @@ data Model
     , fps :: Vector (Point Double)
     , showAxis :: Bool
     , showGrid :: Bool
+    , showLegend :: Bool
     , busy :: Bool
     }
     deriving stock (Generic, Eq, Show)
@@ -43,6 +44,7 @@ initialModel =
         , fps = mempty
         , showAxis = True
         , showGrid = True
+        , showLegend = True
         , busy = False
         }
 
@@ -55,6 +57,7 @@ data Action
     | SetHz Int
     | SetShowAxis Bool
     | SetShowGrid Bool
+    | SetShowLegend Bool
     | SetBusy Bool
     | Start
     | Stop
@@ -106,6 +109,7 @@ update (SetWidth w) = #width .= w
 update (SetHz hz) = #hz .= hz
 update (SetShowAxis b) = #showAxis .= b
 update (SetShowGrid b) = #showGrid .= b
+update (SetShowLegend b) = #showLegend .= b
 update (SetBusy b) = #busy .= b
 update Start = do
     #running .= True
@@ -161,6 +165,13 @@ view Model{..} =
                         }
                 , widget @(Switch Model Action)
                     Switch
+                        { name = "showlegend"
+                        , label = [text "Show legend"]
+                        , checked = showLegend
+                        , onChange = SetShowLegend
+                        }
+                , widget @(Switch Model Action)
+                    Switch
                         { name = "setbusy"
                         , label = [text "Busy"]
                         , checked = busy
@@ -205,6 +216,7 @@ view Model{..} =
                         , ticks = Numeric
                         , renderTick = toMisoString
                         }
+                , showLegend = showLegend
                 }
         , widget' @(Plot Double)
             [ariaBusy_ busy]
@@ -278,5 +290,6 @@ view Model{..} =
                         , ticks = Numeric
                         , renderTick = toMisoString
                         }
+                , showLegend = showLegend
                 }
         ]
