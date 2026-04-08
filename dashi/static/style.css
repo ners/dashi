@@ -175,25 +175,26 @@ html, body {
 }
 
 .controls {
-  display: flex;
-  margin-top: var(--dashi-space-s);
-
-  @media (width < 40em) {
-    flex-direction: column;
-    gap: var(--dashi-space-s);
-  }
-  @media (width >= 40em) {
-    flex-direction: row;
-    gap: var(--dashi-space-m);
-  }
+  margin: var(--dashi-space-s) 0;
 }
 
 #components-plot .controls {
-  div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dashi-space-m);
+  margin-bottom: 0;
+  fieldset {
     display: flex;
+    flex-direction: row;
     align-items: center;
     flex: 1;
     gap: var(--dashi-space-s);
+  }
+  @media (width < 40em) {
+    fieldset:has(input[type=checkbox]) {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(8em, 1fr));
+    }
   }
   input[type=range] {
     flex: 1;
@@ -201,10 +202,20 @@ html, body {
 }
 
 #components-icon .controls {
-  margin-bottom: var(--dashi-space-s);
+  display: flex;
+  flex-direction: row;
+  gap: var(--dashi-space-s);
+  @media (width < 60em) {
+    flex-direction: column;
+  }
 }
 
 #components-icon .controls [aria-role=radiogroup] {
+  @media (width < 40em) {
+    margin-top: var(--dashi-space-s);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8em, 1fr));
+  }
   @media (width >= 40em) {
     flex-direction: row;
     column-gap: var(--dashi-space-m);

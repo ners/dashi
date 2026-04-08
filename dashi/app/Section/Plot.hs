@@ -15,7 +15,7 @@ import Dashi.Prelude hiding (update, view)
 import Dashi.Style.Tokens
 import Dashi.Style.Uchu
 import Data.Vector.Strict qualified as Vector
-import Miso.Html.Element (div_, p_, section_)
+import Miso.Html.Element (div_, fieldset_, p_, section_)
 import Miso.Html.Property (class_)
 import Miso.State qualified as State
 import System.IO.Unsafe (unsafePerformIO)
@@ -124,39 +124,48 @@ view Model{..} =
             ]
         , div_
             [class_ "controls"]
-            [ widget @(Button Model Action)
-                Button
-                    { label = [widget . Icon Fill $ if running then Pause else Play]
-                    , onClick = Just $ if running then Stop else Start
-                    , size = IconButton
-                    , appearance = Default
-                    }
-            , widget @(Switch Model Action)
-                Switch
-                    { name = "showaxes"
-                    , label = [text "Show axes"]
-                    , checked = showAxis
-                    , onChange = SetShowAxis
-                    }
-            , widget @(Switch Model Action)
-                Switch
-                    { name = "showgrid"
-                    , label = [text "Show grid"]
-                    , checked = showGrid
-                    , onChange = SetShowGrid
-                    }
-            , widget @(Switch Model Action)
-                Switch
-                    { name = "setbusy"
-                    , label = [text "Busy"]
-                    , checked = busy
-                    , onChange = SetBusy
-                    }
-            , div_
+            [ fieldset_
                 []
-                [ widget @(Range Action)
-                    Range{value = hz, step = 5, min = 10, max = 120, onChange = SetHz}
+                [ widget @(Button Model Action)
+                    Button
+                        { label = [widget . Icon Fill $ if running then Pause else Play]
+                        , onClick = Just $ if running then Stop else Start
+                        , size = IconButton
+                        , appearance = Default
+                        }
+                , widget @(Range Action)
+                    Range
+                        { value = hz
+                        , step = 5
+                        , min = 10
+                        , max = 120
+                        , onChange = SetHz
+                        }
                 , text $ toMisoString hz <> "\xA0Hz"
+                ]
+            , fieldset_
+                []
+                [ widget @(Switch Model Action)
+                    Switch
+                        { name = "showaxes"
+                        , label = [text "Show axes"]
+                        , checked = showAxis
+                        , onChange = SetShowAxis
+                        }
+                , widget @(Switch Model Action)
+                    Switch
+                        { name = "showgrid"
+                        , label = [text "Show grid"]
+                        , checked = showGrid
+                        , onChange = SetShowGrid
+                        }
+                , widget @(Switch Model Action)
+                    Switch
+                        { name = "setbusy"
+                        , label = [text "Busy"]
+                        , checked = busy
+                        , onChange = SetBusy
+                        }
                 ]
             ]
         , widget' @(Plot Double)
@@ -166,9 +175,11 @@ view Model{..} =
                 , height = Dashi.Prelude.min width 500
                 , padding =
                     Just
-                        SymmetricPadding
-                            { yPadding = Absolute $ bool 1 20 showAxis
-                            , xPadding = Absolute $ bool 1 25 showAxis
+                        Padding
+                            { bottomPadding = Absolute $ bool 1 20 showAxis
+                            , rightPadding = Absolute 0
+                            , leftPadding = Absolute $ bool 1 25 showAxis
+                            , topPadding = Absolute $ bool 1 10 showAxis
                             }
                 , domainTransform = (top .~ 120) . (bottom .~ 0)
                 , series =
