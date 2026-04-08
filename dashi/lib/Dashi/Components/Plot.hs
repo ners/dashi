@@ -33,7 +33,8 @@ data PlotType num = LinePlot | BarPlot {barWidth :: num}
     deriving stock (Eq, Show)
 
 data Series num = Series
-    { strokeColour :: Maybe (Color (Alpha OKLCH) Micro)
+    { label :: MisoString
+    , strokeColour :: Maybe (Color (Alpha OKLCH) Micro)
     , fillColour :: Maybe (Color (Alpha OKLCH) Micro)
     , values :: Vector (Point num)
     , plotType :: PlotType num

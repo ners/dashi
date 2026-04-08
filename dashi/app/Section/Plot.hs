@@ -184,7 +184,8 @@ view Model{..} =
                 , domainTransform = (top .~ 120) . (bottom .~ 0)
                 , series =
                     [ Series
-                        { strokeColour = Just . uchuAlpha $ UchuAlpha Blue 0.8
+                        { label = "Frame rate"
+                        , strokeColour = Just . uchuAlpha $ UchuAlpha Blue 0.8
                         , fillColour = Just . uchuAlpha $ UchuAlpha Blue 0.3
                         , values = fps
                         , plotType = LinePlot
@@ -228,9 +229,9 @@ view Model{..} =
                                 , leftPadding = Absolute 0.5
                                 }
                 , series =
-                    [ -- Nixpkgs stable 25.11
-                      Series
-                        { strokeColour = Nothing
+                    [ Series
+                        { label = "Nixpkgs 25.11"
+                        , strokeColour = Nothing
                         , fillColour = Just . uchuAlpha $ UchuAlpha Blue 1
                         , values =
                             Vector.fromList
@@ -238,9 +239,9 @@ view Model{..} =
                                 <$> [(0, 64487), (1, 16519), (2, 23150), (3, 5553)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
-                    , -- AUR
-                      Series
-                        { strokeColour = Nothing
+                    , Series
+                        { label = "AUR"
+                        , strokeColour = Nothing
                         , fillColour = Just . uchuAlpha $ UchuAlpha Orange 1
                         , values =
                             Vector.fromList
@@ -248,9 +249,9 @@ view Model{..} =
                                 <$> [(0, 24379), (1, 9736), (2, 41177), (3, 315)]
                         , plotType = BarPlot{barWidth = 0.2}
                         }
-                    , -- Ubuntu 26.04
-                      Series
-                        { strokeColour = Nothing
+                    , Series
+                        { label = "Ubuntu 26.04"
+                        , strokeColour = Nothing
                         , fillColour = Just . uchuAlpha $ UchuAlpha Green 1
                         , values =
                             Vector.fromList
