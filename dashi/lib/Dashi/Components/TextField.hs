@@ -75,7 +75,7 @@ data TextField action = TextField
 
 instance Widget (TextField action) model action where
     widget' attrs TextField{..}
-        | type' == MultiLine = textarea_ attrs' . fmap text . maybeToList $ value
+        | type' == MultiLine = textarea_ attrs' $ fromMaybe "" value
         | otherwise =
             input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
       where

@@ -6,9 +6,14 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    ghc-wasm-meta = {
+      url = "github:haskell-wasm/ghc-wasm-meta/36b3e5aa04f8f0255290853a29b790e90e88090e";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-wasm = {
       url = "github:ners/nix-wasm";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.ghc-wasm-meta.follows = "ghc-wasm-meta";
     };
     fluent-hs = {
       url = "github:ners/fluent-hs";
