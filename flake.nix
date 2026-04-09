@@ -7,7 +7,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     ghc-wasm-meta = {
-      url = "github:haskell-wasm/ghc-wasm-meta/36b3e5aa04f8f0255290853a29b790e90e88090e";
+      url = "github:haskell-wasm/ghc-wasm-meta";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-wasm = {
@@ -228,11 +228,12 @@
         pkgs = pkgs'.extend overlay;
         jsPkgs = extendHaskellPackages pkgs pkgs.pkgsCross.ghcjs;
         wasmPkgs = extendHaskellPackages pkgs inputs.nix-wasm.legacyPackages.${system};
-        ghc = "ghc912";
+        wasmGhc = "ghc914";
+        vanillaGhc = "ghc912";
       in
       {
         packages.${system} = rec {
-          default = wasmPkgs.haskell.packages.${ghc}.${pname}.dist;
+          default = wasmPkgs.haskell.packages.${wasmGhc}.${pname}.dist;
           wasmServer = pkgs.writeShellApplication {
             name = "${pname}-wasm-server";
             runtimeInputs = [ pkgs.http-server ];
@@ -246,18 +247,18 @@
         };
         devShells.${system}.default = pkgs.mkShell {
           inputsFrom = [
-            (wasmPkgs.haskellPackages.shellFor {
+            (wasmPkgs.haskell.packages.${wasmGhc}.shellFor {
               packages = ps: [ ps.${pname} ];
               nativeBuildInputs = with wasmPkgs; [
                 cabal-install
               ];
             })
-            (pkgs.haskell.packages.${ghc}.shellFor {
+            (pkgs.haskell.packages.${vanillaGhc}.shellFor {
               packages = ps: map (pname: ps.${pname}) pnames;
               nativeBuildInputs = with pkgs; [
                 cabal-install
                 ghcid
-                haskell.packages.${ghc}.haskell-language-server
+                haskell.packages.${vanillaGhc}.haskell-language-server
                 haskellPackages.feedback
                 http-server
                 nodejs

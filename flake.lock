@@ -62,17 +62,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1775227473,
-        "narHash": "sha256-PRjENt5fhGxX+enyo0+5ZiMUSKYT64mhBdTPi6M3AeU=",
+        "lastModified": 1775305067,
+        "narHash": "sha256-KFWRYVYPgsXu51stX/7/416qc31HFltfQiHPc6nEmH0=",
         "owner": "haskell-wasm",
         "repo": "ghc-wasm-meta",
-        "rev": "36b3e5aa04f8f0255290853a29b790e90e88090e",
+        "rev": "60098a5076557e327b326a1a3ba3b5fb4fec1e49",
         "type": "github"
       },
       "original": {
         "owner": "haskell-wasm",
         "repo": "ghc-wasm-meta",
-        "rev": "36b3e5aa04f8f0255290853a29b790e90e88090e",
         "type": "github"
       }
     },
@@ -103,11 +102,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775633060,
-        "narHash": "sha256-sJIMQBExoniXFD8C0jW/zteGABDD4NDDuItFTkAUkBs=",
+        "lastModified": 1775735215,
+        "narHash": "sha256-5zl0poxf/JRDWVWEVmmNGgNTyMB4T94JGqC5SP5aiUE=",
         "owner": "ners",
         "repo": "nix-wasm",
-        "rev": "2ea9924d43bd87c2efb05f1a75af94096ebbf9c1",
+        "rev": "826a4c41fc0e553490a710c145d362d6d9f0ef03",
         "type": "github"
       },
       "original": {
