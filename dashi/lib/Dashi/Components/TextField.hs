@@ -75,11 +75,17 @@ data TextField action = TextField
 
 instance Widget (TextField action) model action where
     widget' attrs TextField{..}
-        | type' == MultiLine = textarea_ attrs' $ fromMaybe "" value
-        | otherwise =
-            input_ (tokenAttr type' : attrs' <> (value_ <$> maybeToList value))
+        | type' == MultiLine = textarea_ attrs'
+        | otherwise = input_ $ tokenAttr type' : attrs'
       where
-        attrs' = name_ name : Html.onInput onChange : attrs <> [ariaInvalid_ True | not valid]
+        attrs' =
+            mconcat
+                [ pure $ name_ name
+                , pure $ Html.onInput onChange
+                , attrs
+                , value_ <$> maybeToList value
+                , [ariaInvalid_ True | not valid]
+                ]
     style = do
         ":root" ? tokenDecl @Background
         (Clay.select <> textarea <> input # isOneOfAll' @Type) ? do
