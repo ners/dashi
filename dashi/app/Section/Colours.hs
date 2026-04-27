@@ -17,7 +17,9 @@ import Dashi.Style.Colour qualified as Colour
 import Dashi.Style.Tokens
 import Data.Word (Word8)
 import Graphics.Color.Uchu
+import Graphics.Color.Uchu.Extended.OKLCH qualified as Extended
 import Graphics.Color.Uchu.Simple.OKLCH ()
+import Graphics.Color.Uchu.Simple.OKLCH qualified as Simple
 import Miso.CSS (styleInline_)
 import Miso.Html.Element
     ( a_
@@ -74,6 +76,16 @@ view Model =
             , simple "Green" uchu.green
             , simple "Yellow" uchu.yellow
             , simple "Orange" uchu.orange
+            , li_
+                []
+                [ widget $ Heading Small "Yin"
+                , ul_
+                    [class_ "colour"]
+                    [ shade "Yang" Simple.yang "var(--uchu-yang)" "var(--uchu-yin)"
+                    , shade "Light" Simple.lightYin "var(--uchu-light-yin)" "var(--uchu-yin)"
+                    , shade "Yin" Simple.yin "var(--uchu-yin)" "var(--uchu-yang)"
+                    ]
+                ]
             ]
         , widget $ Heading Medium "Extended"
         , ul_
@@ -86,7 +98,24 @@ view Model =
             , extended "Green" uchu.green
             , extended "Yellow" uchu.yellow
             , extended "Orange" uchu.orange
+            , extended "Yin" Extended.yin
             ]
+        ]
+
+shade
+    :: MisoString
+    -> Color OKLCH Micro
+    -> MisoString
+    -> MisoString
+    -> View Model Action
+shade name colour bg fg =
+    li_
+        [ class_ "shade"
+        , styleInline_
+            $ MisoString.intercalate ";" ["background-color:" <> bg, "color:" <> fg]
+        ]
+        [ div_ [class_ "name"] [text name]
+        , codes colour
         ]
 
 simple :: MisoString -> Simple OKLCH Micro -> View Model Action
@@ -96,39 +125,33 @@ simple name oklch =
         [ widget $ Heading Small name
         , ul_
             [class_ "colour"]
-            [ shade "Light"
-            , shade "Base"
-            , shade "Dark"
+            [ shade' "Light"
+            , shade' "Base"
+            , shade' "Dark"
             ]
         ]
   where
-    shade prefix =
+    shade' prefix =
         let
-            bg, fg :: MisoString
-            bg = "background-color: " <> var prefix
+            colour = case prefix of
+                "Dark" -> oklch.dark
+                "Light" -> oklch.light
+                _ -> oklch.base
+            bg =
+                case prefix of
+                    "Base" -> "var(--uchu-" <> MisoString.toLower name <> ")"
+                    _ ->
+                        "var(--uchu-"
+                            <> MisoString.toLower prefix
+                            <> "-"
+                            <> MisoString.toLower name
+                            <> ")"
             fg =
                 case prefix of
-                    "Dark" -> "color: var(--uchu-yang)"
-                    _ -> "color: var(--uchu-yin)"
+                    "Dark" -> "var(--uchu-yang)"
+                    _ -> "var(--uchu-yin)"
          in
-            li_
-                [ class_ "shade"
-                , styleInline_ $ MisoString.intercalate ";" [bg, fg]
-                ]
-                [ div_ [class_ "name"] [text prefix]
-                , codes
-                    $ case prefix of
-                        "Dark" -> oklch.dark
-                        "Light" -> oklch.light
-                        _ -> oklch.base
-                ]
-    var "Base" = "var(--uchu-" <> MisoString.toLower name <> ")"
-    var prefix =
-        "var(--uchu-"
-            <> MisoString.toLower prefix
-            <> "-"
-            <> MisoString.toLower name
-            <> ")"
+            shade prefix colour bg fg
 
 extended :: MisoString -> Extended OKLCH Micro -> View Model Action
 extended name oklch =
@@ -137,43 +160,36 @@ extended name oklch =
         [ widget $ Heading Small name
         , ul_
             [class_ "colour"]
-            $ shade
+            $ shade'
             <$> [1 .. 9]
         ]
   where
-    shade :: Int -> View Model Action
-    shade i =
+    shade' :: Int -> View Model Action
+    shade' i =
         let
-            bg, fg :: MisoString
-            bg = "background-color: " <> var i
+            colour =
+                case i of
+                    1 -> oklch._1
+                    2 -> oklch._2
+                    3 -> oklch._3
+                    4 -> oklch._4
+                    5 -> oklch._5
+                    6 -> oklch._6
+                    7 -> oklch._7
+                    8 -> oklch._8
+                    _ -> oklch._9
+            bg =
+                "var(--uchu-"
+                    <> MisoString.toLower name
+                    <> "-"
+                    <> toMisoString i
+                    <> ")"
             fg =
                 if i > 5
-                    then "color: var(--uchu-yang)"
-                    else "color: var(--uchu-yin)"
+                    then "var(--uchu-yang)"
+                    else "var(--uchu-yin)"
          in
-            li_
-                [ class_ "shade"
-                , styleInline_ $ MisoString.intercalate ";" [bg, fg]
-                ]
-                [ div_ [class_ "name"] [text $ toMisoString i]
-                , codes
-                    $ case i of
-                        1 -> oklch._1
-                        2 -> oklch._2
-                        3 -> oklch._3
-                        4 -> oklch._4
-                        5 -> oklch._5
-                        6 -> oklch._6
-                        7 -> oklch._7
-                        8 -> oklch._8
-                        _ -> oklch._9
-                ]
-    var i =
-        "var(--uchu-"
-            <> MisoString.toLower name
-            <> "-"
-            <> toMisoString i
-            <> ")"
+            shade (toMisoString i) colour bg fg
 
 codes :: Color OKLCH Micro -> View Model Action
 codes oklch =
