@@ -208,6 +208,10 @@
             ];
           };
           inherit (final.haskellPackages) dashi;
+          buildDashiApp = import ./dashi/nix/buildDashiApp.nix {
+            inherit inputs;
+            pkgs = final;
+          };
         })
       ];
       extendHaskellPackages = nativePkgs: pkgs:
@@ -257,28 +261,19 @@
               packages = ps: map (pname: ps.${pname}) pnames;
               nativeBuildInputs = with pkgs; [
                 cabal-install
+                fourmolu
                 ghcid
                 haskell.packages.${vanillaGhc}.haskell-language-server
+                haskellPackages.cabal-gild
                 haskellPackages.feedback
                 http-server
+                nixpkgs-fmt
                 nodejs
+                treefmt
               ];
             })
           ];
         };
-        formatter.${system} = pkgs.writeShellApplication {
-          name = "formatter";
-          runtimeInputs = with pkgs; with haskellPackages; [
-            cabal-gild
-            fd
-            fourmolu
-            nixpkgs-fmt
-          ];
-          text = ''
-            fd --extension=nix -X nixpkgs-fmt
-            fd --extension=hs -X fourmolu -i
-            fd --extension=cabal -x cabal-gild --io
-          '';
-        };
+        formatter.${system} = pkgs.treefmt;
       });
 }
