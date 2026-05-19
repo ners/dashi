@@ -5,7 +5,7 @@ loops:
         set -ex
         workdir=.feedback
         rm -fr $workdir
-        nix build .#wasmPkgs.haskellPackages.dashi.staticAssetsNoCss
+        nix build .#wasmPkgs.haskellPackages.dashi.staticAssetsNoDashiCss
         cp -r "$(realpath ./result)" "$workdir"
         chmod -R +w "$workdir"
 
