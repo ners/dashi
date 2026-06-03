@@ -18,14 +18,14 @@ initialModel = Model
 
 data Action = NoOp
 
-avatar :: Component parent Model Action
+avatar :: Component parent props Model Action
 avatar = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 
-view :: Model -> View Model Action
-view Model =
+view :: props -> Model -> View Model Action
+view _ Model =
     section_
         []
         [ widget $ Heading Large "Avatar"

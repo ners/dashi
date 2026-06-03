@@ -19,14 +19,14 @@ initialModel = Model
 
 data Action = NoOp
 
-textField :: Component parent Model Action
+textField :: Component parent props Model Action
 textField = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 
-view :: Model -> View Model Action
-view Model =
+view :: props -> Model -> View Model Action
+view _ Model =
     section_
         []
         [ widget $ Heading Large "Text field"

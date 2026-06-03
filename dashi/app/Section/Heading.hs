@@ -15,14 +15,14 @@ initialModel = Model
 
 data Action = NoOp
 
-heading :: Component parent Model Action
+heading :: Component parent props Model Action
 heading = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 
-view :: Model -> View Model Action
-view Model =
+view :: props -> Model -> View Model Action
+view _ Model =
     section_
         []
         [ widget $ Heading Large "Heading"

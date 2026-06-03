@@ -22,15 +22,15 @@ data Action
     = NoOp
     | Navigate SectionId
 
-progressBar :: Component parent Model Action
+progressBar :: Component parent props Model Action
 progressBar = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (Navigate s) = io_ . pushURI . toURI $ s
 
-view :: Model -> View Model Action
-view Model =
+view :: props -> Model -> View Model Action
+view _ Model =
     section_
         []
         [ widget $ Heading Large "Progress bar"

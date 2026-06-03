@@ -44,7 +44,7 @@ foreign export javascript "hs_start" main :: IO ()
 main :: IO ()
 main = do
     uri <- getURI
-    let updateModel :: Action -> Effect parent Model Action
+    let updateModel :: Action -> Effect parent props Model Action
         updateModel = liftM2 (>>) traceAction appUpdate
         model = emptyModel & #section . #current .~ eitherToMaybe (route uri)
         events = defaultEvents <> keyboardEvents
@@ -108,13 +108,13 @@ data Action
     | SetCurrentSection SectionId
     deriving stock (Show)
 
-traceAction :: Action -> Effect parent model action
+traceAction :: Action -> Effect parent props model action
 traceAction = io_ . consoleLog . ("traceAction: " <>) . ishow
 
 getCurrentSection :: IO (Maybe SectionId)
 getCurrentSection = eitherToMaybe . route <$> getURI
 
-appUpdate :: Action -> Effect parent Model Action
+appUpdate :: Action -> Effect parent props Model Action
 appUpdate NoOp = pure ()
 appUpdate Setup =
     withSink \sink ->
@@ -155,8 +155,8 @@ appUpdate (SetCurrentSection sectionId) = do
         $ sectionId
     #section . #current ?= sectionId
 
-appView :: Model -> View Model Action
-appView model =
+appView :: props -> Model -> View Model Action
+appView _ model =
     widget @(Page Model Action)
         Page
             { banner = Nothing

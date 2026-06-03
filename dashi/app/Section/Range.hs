@@ -18,15 +18,15 @@ data Action
     = NoOp
     | SetValue Int
 
-range :: Component parent Model Action
+range :: Component parent props Model Action
 range = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (SetValue v) = #value .= v
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     section_
         []
         [ widget $ Heading Large "Range"

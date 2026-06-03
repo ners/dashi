@@ -18,15 +18,15 @@ data Action
     = NoOp
     | SetPage Int
 
-pagination :: Component parent Model Action
+pagination :: Component parent props Model Action
 pagination = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (SetPage page) = #page .= page
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     section_
         []
         [ widget $ Heading Large "Pagination"

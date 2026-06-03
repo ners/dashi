@@ -11,11 +11,11 @@ import Miso.String qualified as MisoString
 
 makePrisms ''Attribute
 
-props :: [Attribute action] -> [(MisoString, JSON.Value)]
-props = toListOf $ traverse . _Property
+properties :: [Attribute action] -> [(MisoString, JSON.Value)]
+properties = toListOf $ traverse . _Property
 
 findProp :: MisoString -> [Attribute action] -> Maybe JSON.Value
-findProp k = List.lookup k . props
+findProp k = List.lookup k . properties
 
 isTrueProp :: MisoString -> Attribute action -> Bool
 isTrueProp k (Property ((k ==) -> True) (JSON.Bool True)) = True

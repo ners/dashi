@@ -78,11 +78,11 @@
     "miso": {
       "flake": false,
       "locked": {
-        "lastModified": 1779076550,
-        "narHash": "sha256-cYZE55uFcJ2u2lux5JNA5h//A2cyp10QOJsnnfwOEXI=",
+        "lastModified": 1780340491,
+        "narHash": "sha256-xXW60WKKuY/Ls6PAT+wLUKoKYny0OJUfVjDa4uwZyTA=",
         "owner": "haskell-miso",
         "repo": "miso",
-        "rev": "863bafa6bca730b5d45cfffcd6badcaa5f5f1a02",
+        "rev": "99f4686cbbe560b02e3734fd7c465248245e62a2",
         "type": "github"
       },
       "original": {
@@ -117,11 +117,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1778869304,
-        "narHash": "sha256-30sZNZoA1cqF5JNO9fVX+wgiQYjB7HJqqJ4ztCDeBZE=",
+        "lastModified": 1780243769,
+        "narHash": "sha256-x5UQuRsH3MqI0U9afaXSNqzTPSeZlRLvFAav2Ux1pNw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+        "rev": "331800de5053fcebacf6813adb5db9c9dca22a0c",
         "type": "github"
       },
       "original": {

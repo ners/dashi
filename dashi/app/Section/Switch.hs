@@ -21,15 +21,15 @@ data Action
     = NoOp
     | Navigate SectionId
 
-switch :: Component parent Model Action
+switch :: Component parent props Model Action
 switch = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (Navigate s) = io_ . pushURI . toURI $ s
 
-view :: Model -> View Model Action
-view Model =
+view :: props -> Model -> View Model Action
+view _ Model =
     section_
         []
         [ widget $ Heading Large "Switch"

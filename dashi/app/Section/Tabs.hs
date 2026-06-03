@@ -21,15 +21,15 @@ data Action
     = NoOp
     | SelectTab Tab
 
-tabs :: Component parent Model Action
+tabs :: Component parent props Model Action
 tabs = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (SelectTab tab) = #tab .= tab
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     section_
         []
         [ widget $ Heading Large "Tabs"

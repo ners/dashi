@@ -62,7 +62,7 @@ data Action
     | Start
     | Stop
 
-plot :: Component parent Model Action
+plot :: Component parent props Model Action
 plot =
     (component initialModel update view)
         { subs = [windowSub "resize" emptyDecoder \() -> UpdateWidth]
@@ -80,7 +80,7 @@ getPlotWidth =
 tick' :: Sink Action -> IO ()
 tick' sink = sink . Tick =<< [js| return Date.now() / 1000; |]
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update Setup = do
     update UpdateWidth
@@ -116,8 +116,8 @@ update Start = do
     withSink tick'
 update Stop = #running .= False
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     section_
         []
         [ widget $ Heading Large "Plot"

@@ -47,8 +47,8 @@ initialModel =
 
 data Action = NoOp
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     div_ [key_ currentKey, id_ currentKey] . pure $ flip (maybe Unknown.unknown) current \case
         Overview -> mount_ Overview.overview
         Foundations Accessibility -> mount_ Accessibility.accessibility
@@ -78,11 +78,11 @@ view Model{..} =
     sectionKey :: SectionId -> MisoString
     sectionKey = toMisoString . MisoString.replace " " "-" . MisoString.toLower . ishow
 
-section :: Lens' parent Model -> Model -> Component parent Model Action
+section :: Lens' parent Model -> Model -> Component parent props Model Action
 section l model =
     (component model Section.update Section.view)
         { bindings = [l <---> id]
         }
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()

@@ -14,7 +14,7 @@ class Widget w model action where
 data SomeWidget = forall w model action. (Widget w model action) => SomeWidget w
 
 instance Widget () model action where
-    widget' _ () = VText Nothing ""
+    widget' _ () = VFrag Nothing []
     style = pure ()
 
 instance Widget (View model action) model action where

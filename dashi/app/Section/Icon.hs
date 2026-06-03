@@ -33,18 +33,18 @@ data Action
     | SetFilter MisoString
     | SetWeight Weight
 
-icon :: Component parent Model Action
+icon :: Component parent props Model Action
 icon = component initialModel update view
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (SetFilter s) = #filter .= s
 update (SetWeight w) = #weight .= w
 
 deriving stock instance Show Phosphor
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     section_
         []
         [ widget $ Heading Large "Icon"

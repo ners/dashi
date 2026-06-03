@@ -50,13 +50,13 @@ data Action
     | Submit
     | Reset
 
-form :: Lens' parent Model -> Model -> Component parent Model Action
+form :: Lens' parent Model -> Model -> Component parent props Model Action
 form l model =
     (component model update view)
         { bindings = [l <---> id]
         }
 
-update :: Action -> Effect parent Model Action
+update :: Action -> Effect parent props Model Action
 update NoOp = pure ()
 update (SetUsername t) = #username ?= t
 update (SetPassword t) = #password ?= t
@@ -77,8 +77,8 @@ update Reset = do
     io_ [js| [...document.forms].forEach(e => e.reset()) |]
     put initialModel
 
-view :: Model -> View Model Action
-view Model{..} =
+view :: props -> Model -> View Model Action
+view _ Model{..} =
     section_
         []
         [ widget $ Heading Large "Form"
